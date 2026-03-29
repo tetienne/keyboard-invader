@@ -57,19 +57,10 @@ describe('Path alias @/ is configured (D-04)', () => {
 })
 
 describe('i18n locale files exist and have required keys (D-14)', () => {
-  const requiredKeys = [
-    'app.title',
-    'app.subtitle',
-    'menu.play',
-    'menu.profiles',
-    'menu.settings',
-  ]
+  const requiredKeys = ['app.title', 'app.subtitle', 'menu.play', 'menu.profiles', 'menu.settings']
 
   it('fr.json has all required keys', () => {
-    const raw = readFileSync(
-      resolve(rootDir, 'src', 'shared', 'i18n', 'fr.json'),
-      'utf-8',
-    )
+    const raw = readFileSync(resolve(rootDir, 'src', 'shared', 'i18n', 'fr.json'), 'utf-8')
     const locale = JSON.parse(raw) as Record<string, string>
 
     for (const key of requiredKeys) {
@@ -78,10 +69,7 @@ describe('i18n locale files exist and have required keys (D-14)', () => {
   })
 
   it('en.json has all required keys', () => {
-    const raw = readFileSync(
-      resolve(rootDir, 'src', 'shared', 'i18n', 'en.json'),
-      'utf-8',
-    )
+    const raw = readFileSync(resolve(rootDir, 'src', 'shared', 'i18n', 'en.json'), 'utf-8')
     const locale = JSON.parse(raw) as Record<string, string>
 
     for (const key of requiredKeys) {
