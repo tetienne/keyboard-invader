@@ -44,10 +44,10 @@
 ### Developer Experience
 
 - [ ] **DX-01**: Pre-commit hooks (pre-commit framework) valident le code avant chaque commit
-- [ ] **DX-02**: ESLint maximum (typescript-eslint strict + stylistic, no-explicit-any, naming-convention, tous plugins necessaires)
-- [ ] **DX-03**: Le projet utilise TypeScript en mode strict (strict: true, noUncheckedIndexedAccess, etc.)
-- [ ] **DX-04**: Tailwind CSS pour le styling des ecrans hors-jeu (menus, profils, settings)
-- [ ] **DX-05**: Vanilla TypeScript pour le DOM (pas de framework UI) -- PixiJS pour le canvas du jeu
+- [x] **DX-02**: ESLint maximum (typescript-eslint strict + stylistic, no-explicit-any, naming-convention, tous plugins necessaires)
+- [x] **DX-03**: Le projet utilise TypeScript en mode strict (strict: true, noUncheckedIndexedAccess, etc.)
+- [x] **DX-04**: Tailwind CSS pour le styling des ecrans hors-jeu (menus, profils, settings)
+- [x] **DX-05**: Vanilla TypeScript pour le DOM (pas de framework UI) -- PixiJS pour le canvas du jeu
 
 ### Infrastructure
 
@@ -108,10 +108,10 @@
 | AV-03 | Phase 9 | Pending |
 | AV-04 | Phase 2 | Pending |
 | DX-01 | Phase 1 | Pending |
-| DX-02 | Phase 1 | Pending |
-| DX-03 | Phase 1 | Pending |
-| DX-04 | Phase 1 | Pending |
-| DX-05 | Phase 1 | Pending |
+| DX-02 | Phase 1 | Complete |
+| DX-03 | Phase 1 | Complete |
+| DX-04 | Phase 1 | Complete |
+| DX-05 | Phase 1 | Complete |
 | INFRA-01 | Phase 1 | Pending |
 | INFRA-02 | Phase 10 | Pending |
 | INFRA-03 | Phase 10 | Pending |
