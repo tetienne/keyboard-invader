@@ -1,0 +1,9 @@
+[tools]
+node = "24.14.1"
+prek = "0.3.5"
+
+[hooks]
+postinstall = "corepack enable pnpm"
+
+[env]
+_.path = ["{{config_root}}/node_modules/.bin"]
