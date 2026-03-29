@@ -1,0 +1,44 @@
+minimum_prek_version = "0.3.0"
+default_stages = ["pre-commit"]
+
+[[repos]]
+repo = "builtin"
+hooks = [
+  { id = "trailing-whitespace" },
+  { id = "end-of-file-fixer" },
+  { id = "check-yaml" },
+]
+
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "eslint"
+name = "eslint"
+language = "system"
+entry = "pnpm exec eslint --max-warnings=0 --no-warn-ignored"
+types_or = ["ts", "javascript"]
+stages = ["pre-commit"]
+
+[[repos.hooks]]
+id = "prettier"
+name = "prettier"
+language = "system"
+entry = "pnpm exec prettier --check"
+types_or = ["ts", "javascript", "css", "json", "yaml"]
+stages = ["pre-commit"]
+
+[[repos.hooks]]
+id = "typecheck"
+name = "typecheck"
+language = "system"
+entry = "pnpm exec tsc --noEmit"
+pass_filenames = false
+stages = ["pre-commit"]
+
+[[repos.hooks]]
+id = "commitlint"
+name = "commitlint"
+language = "system"
+entry = "pnpm exec commitlint --edit"
+stages = ["commit-msg"]
