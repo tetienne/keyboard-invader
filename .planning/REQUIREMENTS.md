@@ -86,13 +86,41 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (populated during roadmap creation) | | |
+| GAME-01 | Phase 2, 3 | Pending |
+| GAME-02 | Phase 3 | Pending |
+| GAME-03 | Phase 4 | Pending |
+| GAME-04 | Phase 3 | Pending |
+| GAME-05 | Phase 3 | Pending |
+| GAME-06 | Phase 4 | Pending |
+| GAME-07 | Phase 4 | Pending |
+| DIFF-01 | Phase 5 | Pending |
+| DIFF-02 | Phase 5 | Pending |
+| DIFF-03 | Phase 5 | Pending |
+| DIFF-04 | Phase 5 | Pending |
+| PROG-01 | Phase 7 | Pending |
+| PROG-02 | Phase 7 | Pending |
+| PROG-03 | Phase 7 | Pending |
+| PROF-01 | Phase 6 | Pending |
+| PROF-02 | Phase 6 | Pending |
+| PROF-03 | Phase 10 | Pending |
+| AV-01 | Phase 8 | Pending |
+| AV-02 | Phase 9 | Pending |
+| AV-03 | Phase 9 | Pending |
+| AV-04 | Phase 2 | Pending |
+| DX-01 | Phase 1 | Pending |
+| DX-02 | Phase 1 | Pending |
+| DX-03 | Phase 1 | Pending |
+| DX-04 | Phase 1 | Pending |
+| DX-05 | Phase 1 | Pending |
+| INFRA-01 | Phase 1 | Pending |
+| INFRA-02 | Phase 10 | Pending |
+| INFRA-03 | Phase 10 | Pending |
 
 **Coverage:**
-- v1 requirements: 26 total
-- Mapped to phases: 0
-- Unmapped: 26
+- v1 requirements: 29 total
+- Mapped to phases: 29
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-28*
-*Last updated: 2026-03-28 after initial definition*
+*Last updated: 2026-03-28 after roadmap creation*
