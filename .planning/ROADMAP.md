@@ -166,3 +166,14 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 8. Visual Identity | 0/0 | Not started | - |
 | 9. Audio System | 0/0 | Not started | - |
 | 10. Responsive Layout & Cross-Browser | 0/0 | Not started | - |
+
+## Backlog
+
+### Phase 999.1: Systeme de code pour sauvegarder sa progression (BACKLOG)
+
+**Goal:** Permettre aux enfants de sauvegarder/restaurer leur progression via un code (alternative au cloud sync, sans compte utilisateur)
+**Requirements:** TBD
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
