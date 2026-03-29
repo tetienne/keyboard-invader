@@ -38,7 +38,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 3 plans
 Plans:
 - [x] 01-01-PLAN.md -- Project init: pnpm, TypeScript strict, Vite, ESLint, Prettier, Tailwind, i18n foundation
-- [ ] 01-02-PLAN.md -- PixiJS canvas test page, Vite entry HTML, Vitest smoke tests
+- [x] 01-02-PLAN.md -- PixiJS canvas test page, Vite entry HTML, Vitest smoke tests
 - [ ] 01-03-PLAN.md -- prek hooks, commitlint, GitHub Actions CI/CD, Cloudflare Workers deploy, LICENSE, README
 
 ### Phase 2: Game Engine Foundation

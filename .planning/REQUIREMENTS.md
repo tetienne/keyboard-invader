@@ -51,7 +51,7 @@
 
 ### Infrastructure
 
-- [ ] **INFRA-01**: L'application est deployable sur une plateforme gratuite (GitHub Pages, Netlify, Vercel)
+- [x] **INFRA-01**: L'application est deployable sur une plateforme gratuite (GitHub Pages, Netlify, Vercel)
 - [ ] **INFRA-02**: L'application fonctionne sur tous les navigateurs modernes (Chrome, Firefox, Safari, Edge)
 - [ ] **INFRA-03**: L'application est responsive (desktop prioritaire, tablette/mobile supportes)
 
@@ -112,7 +112,7 @@
 | DX-03 | Phase 1 | Complete |
 | DX-04 | Phase 1 | Complete |
 | DX-05 | Phase 1 | Complete |
-| INFRA-01 | Phase 1 | Pending |
+| INFRA-01 | Phase 1 | Complete |
 | INFRA-02 | Phase 10 | Pending |
 | INFRA-03 | Phase 10 | Pending |
 
