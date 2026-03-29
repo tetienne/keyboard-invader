@@ -36,14 +36,14 @@ created: 2026-03-29
 
 ## Per-Task Verification Map
 
-| Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
-|---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 01-01-01 | 01 | 1 | DX-01 | build | `pnpm build` | ❌ W0 | ⬜ pending |
-| 01-01-02 | 01 | 1 | DX-02 | lint | `pnpm lint` | ❌ W0 | ⬜ pending |
-| 01-01-03 | 01 | 1 | DX-03 | typecheck | `pnpm tsc --noEmit` | ❌ W0 | ⬜ pending |
-| 01-01-04 | 01 | 1 | DX-04 | unit | `pnpm vitest run` | ❌ W0 | ⬜ pending |
-| 01-01-05 | 01 | 1 | DX-05 | hook | `prek run` | ❌ W0 | ⬜ pending |
-| 01-01-06 | 01 | 1 | INFRA-01 | deploy | `wrangler deploy --dry-run` | ❌ W0 | ⬜ pending |
+| Task ID | Plan | Wave | Requirement | Test Type | Automated Command | Status |
+|---------|------|------|-------------|-----------|-------------------|--------|
+| 01-01 Task 1 | 01 | 1 | DX-02, DX-03, DX-04, DX-05 | build + lint + typecheck | `pnpm install && pnpm exec tsc --noEmit && pnpm exec eslint . && pnpm exec prettier --check .` | ⬜ pending |
+| 01-01 Task 2 | 01 | 1 | DX-05 | typecheck + lint | `pnpm exec tsc --noEmit && pnpm exec eslint src/shared/i18n/` | ⬜ pending |
+| 01-02 Task 1 | 02 | 2 | INFRA-01 | build | `pnpm exec tsc --noEmit && pnpm exec eslint src/main.ts && pnpm run build && test -f dist/index.html` | ⬜ pending |
+| 01-02 Task 2 | 02 | 2 | DX-02, DX-03, DX-05 | unit | `pnpm exec vitest run` | ⬜ pending |
+| 01-03 Task 1 | 03 | 2 | DX-01 | hook | `test -f .git/hooks/pre-commit && prek run --all-files` | ⬜ pending |
+| 01-03 Task 2 | 03 | 2 | INFRA-01 | config | `test -f wrangler.toml && grep -q "assets" wrangler.toml && test -f .github/workflows/ci.yml` | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -51,9 +51,9 @@ created: 2026-03-29
 
 ## Wave 0 Requirements
 
-- [ ] `src/__tests__/smoke.test.ts` — stubs for build, lint, typecheck verification
-- [ ] `vitest.config.ts` — test framework config (or inline in vite.config.ts)
-- [ ] Vitest installed as dev dependency
+- [ ] `tests/smoke.test.ts` — stubs for build, lint, typecheck verification (created in Plan 01-02 Task 2)
+- [ ] `vitest.config.ts` — test framework config (inline in vite.config.ts, configured in Plan 01-02 Task 2)
+- [ ] Vitest installed as dev dependency (installed in Plan 01-01 Task 1)
 
 *Wave 0 is handled within the plans — test infrastructure is part of Phase 1 scaffolding.*
 
@@ -63,7 +63,7 @@ created: 2026-03-29
 
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
-| Cloudflare deployment live | INFRA-01 | Requires Cloudflare account + API token | 1. Set up Cloudflare account 2. Configure API token in GitHub secrets 3. Push to main 4. Verify site loads at assigned URL |
+| Cloudflare deployment live | INFRA-01 | Requires Cloudflare account + API token (see user_setup in Plan 01-03) | 1. Set up Cloudflare account 2. Configure API token in GitHub secrets 3. Push to main 4. Verify site loads at assigned URL |
 | Pre-commit hook rejects bad code | DX-05 | Requires actual git commit attempt | 1. Introduce a lint error 2. Run `git commit` 3. Verify commit is rejected |
 
 ---
