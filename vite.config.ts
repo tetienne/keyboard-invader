@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite'
 import tailwindcss from '@tailwindcss/vite'
 import { resolve } from 'node:path'
@@ -9,4 +10,5 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
     },
   },
+  test: {},
 })
