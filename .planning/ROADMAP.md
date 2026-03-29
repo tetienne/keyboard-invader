@@ -35,7 +35,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. The built application is live on a free hosting platform (Cloudflare Pages or equivalent)
   4. TypeScript strict mode catches an `any` type as a compile error
   5. The project includes PixiJS, Tailwind CSS, and Vite as configured dependencies
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 01-01-PLAN.md -- Project init: pnpm, TypeScript strict, Vite, ESLint, Prettier, Tailwind, i18n foundation
+- [ ] 01-02-PLAN.md -- PixiJS canvas test page, Vite entry HTML, Vitest smoke tests
+- [ ] 01-03-PLAN.md -- prek hooks, commitlint, GitHub Actions CI/CD, Cloudflare Workers deploy, LICENSE, README
 
 ### Phase 2: Game Engine Foundation
 **Goal**: A running game loop with keyboard input capture, canvas rendering, and state transitions that a developer can verify in-browser
@@ -152,7 +156,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Project Scaffolding & Dev Tooling | 0/0 | Not started | - |
+| 1. Project Scaffolding & Dev Tooling | 0/3 | Planning complete | - |
 | 2. Game Engine Foundation | 0/0 | Not started | - |
 | 3. Letter Mode Gameplay | 0/0 | Not started | - |
 | 4. Word Mode & Game Modes | 0/0 | Not started | - |
