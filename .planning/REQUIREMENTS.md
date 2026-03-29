@@ -43,7 +43,7 @@
 
 ### Developer Experience
 
-- [ ] **DX-01**: Pre-commit hooks (pre-commit framework) valident le code avant chaque commit
+- [x] **DX-01**: Pre-commit hooks (pre-commit framework) valident le code avant chaque commit
 - [x] **DX-02**: ESLint maximum (typescript-eslint strict + stylistic, no-explicit-any, naming-convention, tous plugins necessaires)
 - [x] **DX-03**: Le projet utilise TypeScript en mode strict (strict: true, noUncheckedIndexedAccess, etc.)
 - [x] **DX-04**: Tailwind CSS pour le styling des ecrans hors-jeu (menus, profils, settings)
@@ -51,7 +51,7 @@
 
 ### Infrastructure
 
-- [ ] **INFRA-01**: L'application est deployable sur une plateforme gratuite (GitHub Pages, Netlify, Vercel)
+- [x] **INFRA-01**: L'application est deployable sur une plateforme gratuite (GitHub Pages, Netlify, Vercel)
 - [ ] **INFRA-02**: L'application fonctionne sur tous les navigateurs modernes (Chrome, Firefox, Safari, Edge)
 - [ ] **INFRA-03**: L'application est responsive (desktop prioritaire, tablette/mobile supportes)
 
@@ -107,12 +107,12 @@
 | AV-02 | Phase 9 | Pending |
 | AV-03 | Phase 9 | Pending |
 | AV-04 | Phase 2 | Pending |
-| DX-01 | Phase 1 | Pending |
+| DX-01 | Phase 1 | Complete |
 | DX-02 | Phase 1 | Complete |
 | DX-03 | Phase 1 | Complete |
 | DX-04 | Phase 1 | Complete |
 | DX-05 | Phase 1 | Complete |
-| INFRA-01 | Phase 1 | Pending |
+| INFRA-01 | Phase 1 | Complete |
 | INFRA-02 | Phase 10 | Pending |
 | INFRA-03 | Phase 10 | Pending |
 
