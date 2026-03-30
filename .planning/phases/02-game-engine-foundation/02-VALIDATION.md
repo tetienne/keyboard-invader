@@ -2,8 +2,8 @@
 phase: 2
 slug: game-engine-foundation
 status: draft
-nyquist_compliant: false
-wave_0_complete: false
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-03-30
 ---
 
@@ -38,22 +38,25 @@ created: 2026-03-30
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 02-01-01 | 01 | 0 | GAME-01 | unit | `npx vitest run` | ❌ W0 | ⬜ pending |
-| 02-01-02 | 01 | 0 | AV-04 | unit | `npx vitest run` | ❌ W0 | ⬜ pending |
+| 02-01-01 | 01 | 1 | GAME-01 | typecheck | `pnpm typecheck` | N/A (types only) | pending |
+| 02-01-02 | 01 | 1 | GAME-01, AV-04 | unit | `pnpm vitest run tests/game/canvas.test.ts tests/game/pool.test.ts tests/game/input.test.ts` | W0 | pending |
+| 02-02-01 | 02 | 2 | GAME-01 | unit | `pnpm vitest run tests/game/states.test.ts tests/game/loop.test.ts` | W0 | pending |
+| 02-02-02 | 02 | 2 | GAME-01, AV-04 | unit + typecheck | `pnpm vitest run tests/game/ && pnpm typecheck` | W0 | pending |
+| 02-02-03 | 02 | 2 | GAME-01, AV-04 | human-verify | `pnpm vitest run tests/game/ && pnpm typecheck && pnpm lint` | N/A | pending |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+*Status: pending · green · red · flaky*
 
 ---
 
 ## Wave 0 Requirements
 
-- [ ] `src/__tests__/game-loop.test.ts` — fixed-timestep game loop tests
-- [ ] `src/__tests__/state-machine.test.ts` — FSM transition tests
-- [ ] `src/__tests__/input-handler.test.ts` — keyboard input capture tests (AZERTY)
-- [ ] `src/__tests__/object-pool.test.ts` — object pool allocation tests
-- [ ] `src/__tests__/visibility.test.ts` — tab visibility pause/resume tests
+- [x] `tests/game/canvas.test.ts` — letterbox scaling math tests
+- [x] `tests/game/pool.test.ts` — object pool allocation tests
+- [x] `tests/game/input.test.ts` — keyboard input capture tests (AZERTY)
+- [x] `tests/game/states.test.ts` — FSM transition tests + concrete state lifecycle tests
+- [x] `tests/game/loop.test.ts` — fixed-timestep game loop tests
 
-*Test framework (vitest) already installed from Phase 1.*
+*Test framework (vitest) already installed from Phase 1. All test files created within their respective plan tasks (TDD approach).*
 
 ---
 
@@ -69,11 +72,11 @@ created: 2026-03-30
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 5s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 5s
+- [x] `nyquist_compliant: true` set in frontmatter
 
 **Approval:** pending
