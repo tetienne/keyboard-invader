@@ -5,14 +5,21 @@ export const BASE_WIDTH = 1280
 export const BASE_HEIGHT = 720
 
 // State machine types (D-04, D-05)
-export type StateName = 'boot' | 'menu' | 'playing' | 'paused'
+export type StateName = 'boot' | 'menu' | 'playing' | 'paused' | 'gameover'
 
 export const TRANSITIONS: Record<StateName, readonly StateName[]> = {
   boot: ['menu'],
   menu: ['playing'],
-  playing: ['paused', 'menu'],
+  playing: ['paused', 'menu', 'gameover'],
   paused: ['playing', 'menu'],
+  gameover: ['menu', 'playing'],
 } as const
+
+export interface SessionResult {
+  readonly hits: number
+  readonly misses: number
+  readonly total: number
+}
 
 export interface GameState {
   enter(ctx: GameContext): void
@@ -41,4 +48,6 @@ export interface GameContext {
   readonly poolActiveCount: number
   readonly poolTotalCount: number
   readonly currentStateName: StateName
+  setSessionResult(result: SessionResult): void
+  getSessionResult(): SessionResult | null
 }

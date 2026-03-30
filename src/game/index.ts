@@ -11,5 +11,28 @@ export { InputManager } from './input.js'
 export { ObjectPool } from './pool.js'
 export { computeScale, setupCanvas, applyScale } from './canvas.js'
 export { DebugOverlay } from './debug.js'
-export type { GameState, StateName, ScaleResult, GameContext } from './types.js'
+export type {
+  GameState,
+  StateName,
+  ScaleResult,
+  GameContext,
+  SessionResult,
+} from './types.js'
 export { BASE_WIDTH, BASE_HEIGHT, TRANSITIONS } from './types.js'
+export {
+  HOME_ROW,
+  TOP_ROW,
+  BOTTOM_ROW,
+  LETTER_COLORS,
+  getAvailableLetters,
+  findLowestMatch,
+  findLowestEntity,
+} from './letters.js'
+export type { LetterEntity } from './letters.js'
+export {
+  createHitTween,
+  createMissTween,
+  createBottomTween,
+  updateTween,
+} from './tween.js'
+export type { LetterTween } from './tween.js'
