@@ -3,9 +3,20 @@ import { InputManager } from '@/game/input'
 
 function makeKeyEvent(
   key: string,
-  overrides: Partial<KeyboardEventInit> = {},
+  overrides: {
+    repeat?: boolean
+    ctrlKey?: boolean
+    altKey?: boolean
+    metaKey?: boolean
+  } = {},
 ): KeyboardEvent {
-  return new KeyboardEvent('keydown', { key, ...overrides })
+  return {
+    key,
+    repeat: overrides.repeat ?? false,
+    ctrlKey: overrides.ctrlKey ?? false,
+    altKey: overrides.altKey ?? false,
+    metaKey: overrides.metaKey ?? false,
+  } as unknown as KeyboardEvent
 }
 
 describe('InputManager', () => {

@@ -20,6 +20,7 @@ export default tseslint.config(
       '@typescript-eslint/naming-convention': [
         'error',
         { selector: 'default', format: ['camelCase'] },
+        { selector: 'variable', format: ['camelCase', 'UPPER_CASE'] },
         { selector: 'typeLike', format: ['PascalCase'] },
         { selector: 'enumMember', format: ['UPPER_CASE'] },
       ],

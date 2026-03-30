@@ -12,10 +12,11 @@ describe('computeScale', () => {
     expect(result.screenHeight).toBe(720)
   })
 
-  it('pillarboxes on wider screen', () => {
-    const result = computeScale(1920, 1080)
-    expect(result.scale).toBe(1.5)
-    expect(result.offsetX).toBe(320)
+  it('pillarboxes on wider-than-16:9 screen', () => {
+    // 2560x1080 ultrawide: scale limited by height
+    const result = computeScale(2560, 1080)
+    expect(result.scale).toBe(1.5) // 1080/720
+    expect(result.offsetX).toBe(320) // (2560 - 1280*1.5) / 2
     expect(result.offsetY).toBe(0)
   })
 
