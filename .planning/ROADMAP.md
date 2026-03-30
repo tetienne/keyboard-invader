@@ -51,7 +51,10 @@ Plans:
   3. The game transitions between states (boot, menu, playing, paused) via a finite state machine
   4. Object pooling is in place -- no per-frame allocations visible in DevTools memory timeline
   5. Tab visibility changes pause/resume the game loop automatically
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 02-01-PLAN.md -- Pure game engine modules: types, canvas scaling, object pool, input buffer + unit tests
+- [ ] 02-02-PLAN.md -- State machine, game loop, Game class, debug overlay, main.ts wiring + browser verification
 **UI hint**: yes
 
 ### Phase 3: Letter Mode Gameplay
@@ -157,7 +160,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Project Scaffolding & Dev Tooling | 0/3 | Planning complete | - |
-| 2. Game Engine Foundation | 0/0 | Not started | - |
+| 2. Game Engine Foundation | 0/2 | Planning complete | - |
 | 3. Letter Mode Gameplay | 0/0 | Not started | - |
 | 4. Word Mode & Game Modes | 0/0 | Not started | - |
 | 5. Adaptive Difficulty | 0/0 | Not started | - |
