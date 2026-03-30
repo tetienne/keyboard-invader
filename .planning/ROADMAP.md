@@ -53,7 +53,7 @@ Plans:
   5. Tab visibility changes pause/resume the game loop automatically
 **Plans:** 2 plans
 Plans:
-- [ ] 02-01-PLAN.md -- Pure game engine modules: types, canvas scaling, object pool, input buffer + unit tests
+- [x] 02-01-PLAN.md -- Pure game engine modules: types, canvas scaling, object pool, input buffer + unit tests
 - [ ] 02-02-PLAN.md -- State machine, game loop, Game class, debug overlay, main.ts wiring + browser verification
 **UI hint**: yes
 

@@ -7,7 +7,7 @@
 
 ### Core Gameplay
 
-- [ ] **GAME-01**: L'enfant voit des lettres/mots tomber du haut de l'ecran et tape pour les eliminer
+- [x] **GAME-01**: L'enfant voit des lettres/mots tomber du haut de l'ecran et tape pour les eliminer
 - [ ] **GAME-02**: L'enfant en mode lettres (pre-lecteur) voit des lettres individuelles avec gros visuels
 - [ ] **GAME-03**: L'enfant en mode mots (lecteur) voit des mots courts a taper en entier
 - [ ] **GAME-04**: L'enfant recoit un feedback audio et visuel immediat a chaque frappe (correct ou incorrect)
@@ -39,7 +39,7 @@
 - [ ] **AV-01**: Le jeu a un style visuel cartoon/SVG avec des personnages colores et expressifs
 - [ ] **AV-02**: Le jeu a des effets sonores (frappe, destruction, felicitations)
 - [ ] **AV-03**: Le jeu a une musique d'ambiance avec controle du volume
-- [ ] **AV-04**: Les animations sont fluides (60fps) meme sur machines modestes
+- [x] **AV-04**: Les animations sont fluides (60fps) meme sur machines modestes
 
 ### Developer Experience
 
@@ -86,7 +86,7 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GAME-01 | Phase 2, 3 | Pending |
+| GAME-01 | Phase 2, 3 | Complete |
 | GAME-02 | Phase 3 | Pending |
 | GAME-03 | Phase 4 | Pending |
 | GAME-04 | Phase 3 | Pending |
@@ -106,7 +106,7 @@
 | AV-01 | Phase 8 | Pending |
 | AV-02 | Phase 9 | Pending |
 | AV-03 | Phase 9 | Pending |
-| AV-04 | Phase 2 | Pending |
+| AV-04 | Phase 2 | Complete |
 | DX-01 | Phase 1 | Complete |
 | DX-02 | Phase 1 | Complete |
 | DX-03 | Phase 1 | Complete |
