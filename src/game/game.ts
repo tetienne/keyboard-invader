@@ -1,11 +1,12 @@
-import { Application, Container, Graphics, GraphicsContext } from 'pixi.js'
-import type { GameContext, StateName } from './types.js'
+import { Application, BitmapText, Container } from 'pixi.js'
+import type { GameContext, SessionResult, StateName } from './types.js'
 import {
   StateMachine,
   BootState,
   MenuState,
   PlayingState,
   PausedState,
+  GameOverState,
 } from './states.js'
 import { GameLoop } from './loop.js'
 import { InputManager } from './input.js'
@@ -19,19 +20,26 @@ export class Game implements GameContext {
   private readonly _stateMachine: StateMachine
   private readonly _loop: GameLoop
   private readonly _input: InputManager
-  private readonly _pool: ObjectPool<Graphics>
+  private readonly _pool: ObjectPool<BitmapText>
   private readonly _debug: DebugOverlay
   private _cleanupCanvas: (() => void) | null = null
   private _cleanupVisibility: (() => void) | null = null
+  private _sessionResult: SessionResult | null = null
 
   constructor() {
     this.app = new Application()
     this.gameRoot = new Container()
 
-    // Create shared GraphicsContext for pooled rectangles (Pattern 6 from RESEARCH)
-    const rectContext = new GraphicsContext().rect(0, 0, 40, 40).fill(0xe94560)
-
-    this._pool = new ObjectPool(() => new Graphics(rectContext), 20)
+    // BitmapText pool for falling letters (D-01, D-02)
+    this._pool = new ObjectPool(() => {
+      const bt = new BitmapText({
+        text: 'A',
+        style: { fontFamily: 'GameFont', fontSize: 80 },
+      })
+      bt.anchor.set(0.5)
+      bt.visible = false
+      return bt
+    }, 20)
     this._input = new InputManager()
     this._debug = new DebugOverlay()
     this._loop = new GameLoop()
@@ -41,6 +49,7 @@ export class Game implements GameContext {
       menu: new MenuState(),
       playing: new PlayingState(),
       paused: new PausedState(),
+      gameover: new GameOverState(),
     })
   }
 
@@ -102,7 +111,7 @@ export class Game implements GameContext {
     return this._input.drain()
   }
 
-  acquirePoolItem(): { item: Graphics; index: number } {
+  acquirePoolItem(): { item: BitmapText; index: number } {
     return this._pool.acquire()
   }
 
@@ -120,6 +129,14 @@ export class Game implements GameContext {
 
   get currentStateName(): StateName {
     return this._stateMachine.current ?? 'boot'
+  }
+
+  setSessionResult(result: SessionResult): void {
+    this._sessionResult = result
+  }
+
+  getSessionResult(): SessionResult | null {
+    return this._sessionResult
   }
 
   private _setupVisibilityHandlers(): void {
