@@ -21,6 +21,7 @@ function createMockEntity(
     poolIndex: 0,
     letter,
     baseX: 100,
+    originalTint: 0xffffff,
     tween,
     markedForRemoval,
   }

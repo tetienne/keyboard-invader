@@ -5,6 +5,7 @@ export {
   MenuState,
   PlayingState,
   PausedState,
+  GameOverState,
 } from './states.js'
 export { GameLoop, TICK_MS } from './loop.js'
 export { InputManager } from './input.js'

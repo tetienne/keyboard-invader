@@ -39,6 +39,7 @@ export interface LetterEntity {
   readonly poolIndex: number
   letter: string
   baseX: number
+  originalTint: number
   tween: LetterTween | null
   markedForRemoval: boolean
 }
