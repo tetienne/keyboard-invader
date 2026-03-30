@@ -68,8 +68,8 @@ Plans:
   4. A score counter is visible on screen and increments on successful hits
 **Plans:** 2 plans
 Plans:
-- [ ] 03-01-PLAN.md -- Type extensions, letter selection/matching utilities, tween animation system + unit tests
-- [ ] 03-02-PLAN.md -- PlayingState refactor to letter gameplay, GameOverState, Game class wiring + browser verification
+- [x] 03-01-PLAN.md -- Type extensions, letter selection/matching utilities, tween animation system + unit tests
+- [x] 03-02-PLAN.md -- PlayingState refactor to letter gameplay, GameOverState, Game class wiring + browser verification
 **UI hint**: yes
 
 ### Phase 4: Word Mode & Game Modes
