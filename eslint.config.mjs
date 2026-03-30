@@ -19,15 +19,26 @@ export default tseslint.config(
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
       '@typescript-eslint/naming-convention': [
         'error',
-        { selector: 'default', format: ['camelCase'] },
-        { selector: 'variable', format: ['camelCase', 'UPPER_CASE'] },
+        { selector: 'default', format: ['camelCase'], leadingUnderscore: 'allow' },
+        { selector: 'variable', format: ['camelCase', 'UPPER_CASE'], leadingUnderscore: 'allow' },
         { selector: 'typeLike', format: ['PascalCase'] },
         { selector: 'enumMember', format: ['UPPER_CASE'] },
+        { selector: 'classProperty', modifiers: ['private'], format: ['camelCase'], leadingUnderscore: 'allow' },
+        { selector: 'classProperty', modifiers: ['private', 'readonly'], format: ['camelCase', 'UPPER_CASE'], leadingUnderscore: 'allow' },
+        { selector: 'parameter', format: ['camelCase'], leadingUnderscore: 'allow' },
+        { selector: 'objectLiteralProperty', format: null },
       ],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
     },
   },
   importX.flatConfigs.recommended,
   importX.flatConfigs.typescript,
+  {
+    files: ['tests/**/*.ts'],
+    rules: {
+      '@typescript-eslint/unbound-method': 'off',
+    },
+  },
   eslintConfigPrettier,
   {
     ignores: ['dist/', 'node_modules/', '*.config.*'],
