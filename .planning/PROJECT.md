@@ -12,7 +12,7 @@ Rendre l'apprentissage du clavier amusant et non frustrant pour des enfants de 5
 
 ### Validated
 
-(None yet -- ship to validate)
+- [x] Gameplay "typing invaders" rendering infrastructure -- Validated in Phase 02: game-engine-foundation (canvas, game loop, state machine, object pool, input)
 
 ### Active
 
@@ -81,4 +81,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-28 after initialization*
+*Last updated: 2026-03-30 after Phase 02 completion*
