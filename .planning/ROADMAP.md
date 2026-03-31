@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Game Engine Foundation** - Game loop, state machine, input handling (AZERTY-safe), and canvas rendering infrastructure (2026-03-30)
 - [x] **Phase 3: Letter Mode Gameplay** - Single-letter falling invaders with keyboard input matching and basic collision detection (2026-03-31)
 - [ ] **Phase 4: Word Mode & Game Modes** - Word-based gameplay for older children, mode selection, pause/resume, score display, and session summary
-- [ ] **Phase 5: Adaptive Difficulty** - Real-time difficulty adjustment targeting 70% success rate via speed, complexity, and spawn rate
+- [x] **Phase 5: Adaptive Difficulty** - Real-time difficulty adjustment targeting 70% success rate via speed, complexity, and spawn rate (completed 2026-03-31)
 - [ ] **Phase 6: Profiles & Local Persistence** - Avatar-based child profiles with LocalStorage saving of all progress
 - [ ] **Phase 7: Progression System** - XP earning, leveling, and level-up celebration animations
 - [ ] **Phase 8: Visual Identity** - Cartoon/SVG art style, character sprites, visual effects, and 60fps rendering validation
@@ -97,10 +97,10 @@ Plans:
   3. Word complexity and length adapt to the child's demonstrated ability
   4. The spawn rate of new items adjusts so the screen is neither empty nor overwhelming
   5. Over a play session, the child's success rate converges toward approximately 70%
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 Plans:
 - [x] 05-01-PLAN.md -- DifficultyManager TDD: rolling window, asymmetric adjustment, complexity state machine, refactored letter/word selection
-- [ ] 05-02-PLAN.md -- PlayingState integration, GameContext extension, debug overlay difficulty display
+- [x] 05-02-PLAN.md -- PlayingState integration, GameContext extension, debug overlay difficulty display
 
 ### Phase 6: Profiles & Local Persistence
 **Goal**: Two children sharing the same computer each have their own profile with saved progress, selectable by clicking their avatar
@@ -172,7 +172,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 2. Game Engine Foundation | 0/2 | Planning complete | - |
 | 3. Letter Mode Gameplay | 1/2 | Executing | - |
 | 4. Word Mode & Game Modes | 0/0 | Not started | - |
-| 5. Adaptive Difficulty | 0/2 | Planning complete | - |
+| 5. Adaptive Difficulty | 2/2 | Complete   | 2026-03-31 |
 | 6. Profiles & Local Persistence | 0/0 | Not started | - |
 | 7. Progression System | 0/0 | Not started | - |
 | 8. Visual Identity | 0/0 | Not started | - |

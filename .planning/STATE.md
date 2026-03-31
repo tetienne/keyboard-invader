@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-01-PLAN.md
-last_updated: "2026-03-31T21:57:42.495Z"
+stopped_at: Completed 05-02-PLAN.md
+last_updated: "2026-03-31T22:04:31Z"
 last_activity: 2026-03-31
 progress:
   total_phases: 11
   completed_phases: 4
   total_plans: 11
-  completed_plans: 9
-  percent: 18
+  completed_plans: 10
+  percent: 45
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-30)
 
 **Core value:** Rendre l'apprentissage du clavier amusant et non frustrant pour des enfants de 5 a 8 ans
-**Current focus:** Phase 04 — word-mode-game-modes
+**Current focus:** Phase 05 — adaptive-difficulty
 
 ## Current Position
 
-Phase: 999.1
-Plan: Not started
-Status: Executing Phase 04
-Last activity: 2026-03-31
+Phase: 05 (adaptive-difficulty) -- COMPLETE
+Plan: 2 of 2 (complete)
+Status: Phase 05 complete
+Last activity: 2026-03-31 -- Completed 05-02 (DifficultyManager integration)
 
-Progress: [██░░░░░░░░] 18%
+Progress: [█████░░░░░] 45%
 
 ## Performance Metrics
 
@@ -59,6 +59,7 @@ Progress: [██░░░░░░░░] 18%
 | Phase 02 P02 | 7min | 3 tasks | 9 files |
 | Phase 03 P02 | 4min | 2 tasks | 6 files |
 | Phase 05 P01 | 7min | 2 tasks | 6 files |
+| Phase 05 P02 | 4min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -89,6 +90,9 @@ Recent decisions affecting current work:
 - [Phase 03]: Session result passing via GameContext setSessionResult/getSessionResult
 - [Phase 05]: Dead zone boundaries inclusive (0.6/0.8 do not trigger adjustment)
 - [Phase 05]: Complexity level as integer (0/1/2) mapped in selection functions, DifficultyManager owns thresholds
+- [Phase 05]: Bottom items count as misses in score and DifficultyManager (Pitfall 5)
+- [Phase 05]: Word mode records per-word results, not per-keystroke (Pitfall 6)
+- [Phase 05]: Game class stores difficulty params via setDifficulty, PlayingState owns DifficultyManager
 
 ### Pending Todos
 
@@ -101,6 +105,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T21:57:42.493Z
-Stopped at: Completed 05-01-PLAN.md
+Last session: 2026-03-31T22:04:31Z
+Stopped at: Completed 05-02-PLAN.md (Phase 05 complete)
 Resume file: None
