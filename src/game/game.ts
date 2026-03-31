@@ -142,14 +142,8 @@ export class Game implements GameContext {
     return this._sessionResult
   }
 
-  private _pause(): void {
-    if (this._isPaused || this._stateMachine.current !== 'playing') return
-    this._isPaused = true
-
-    // Freeze game loop — no ticks while paused
-    this.app.ticker.stop()
-
-    // Show pause overlay on top of gameRoot (don't touch state machine)
+  private _showPauseOverlay(): void {
+    if (this._pauseOverlay) return
     this._pauseOverlay = new Container()
     const bg = new Graphics()
     bg.rect(0, 0, BASE_WIDTH, BASE_HEIGHT)
@@ -162,21 +156,45 @@ export class Game implements GameContext {
     text.x = BASE_WIDTH / 2 - text.width / 2
     text.y = BASE_HEIGHT / 2 - text.height / 2
     this._pauseOverlay.addChild(text)
+    const hint = new BitmapText({
+      text: 'Appuie sur Espace pour continuer',
+      style: { fontFamily: 'GameFont', fontSize: 20 },
+    })
+    hint.x = BASE_WIDTH / 2 - hint.width / 2
+    hint.y = BASE_HEIGHT / 2 + 40
+    this._pauseOverlay.addChild(hint)
     this.gameRoot.addChild(this._pauseOverlay)
   }
 
-  private _resume(): void {
-    if (!this._isPaused) return
-    this._isPaused = false
-
-    // Remove pause overlay
+  private _hidePauseOverlay(): void {
     if (this._pauseOverlay) {
       this.gameRoot.removeChild(this._pauseOverlay)
       this._pauseOverlay.destroy({ children: true })
       this._pauseOverlay = null
     }
+  }
 
-    // Resume game loop with accumulator reset (D-16: no catch-up burst)
+  private _pause(): void {
+    if (this._isPaused || this._stateMachine.current !== 'playing') return
+    this._isPaused = true
+    this.app.ticker.stop()
+    this._showPauseOverlay()
+  }
+
+  private _resume(): void {
+    if (!this._isPaused) return
+    // On focus return: keep overlay visible, wait for keypress to actually resume
+    // Ticker stays stopped, overlay stays shown — render one frame to show it
+    this.app.ticker.start()
+    this.app.ticker.update()
+    this.app.ticker.stop()
+  }
+
+  private _unpause(): void {
+    if (!this._isPaused) return
+    this._isPaused = false
+    this._hidePauseOverlay()
+    this._input.drain() // Clear any buffered keys from the unpause press
     this._loop.resetAccumulator()
     this.app.ticker.start()
   }
@@ -195,13 +213,21 @@ export class Game implements GameContext {
         this._resume()
       }
     }
+    const onUnpauseKey = (e: KeyboardEvent): void => {
+      if (this._isPaused && (e.key === ' ' || e.key === 'Enter')) {
+        e.preventDefault()
+        this._unpause()
+      }
+    }
     window.addEventListener('blur', onBlur)
     window.addEventListener('focus', onFocus)
     document.addEventListener('visibilitychange', onVisChange)
+    window.addEventListener('keydown', onUnpauseKey)
     this._cleanupVisibility = () => {
       window.removeEventListener('blur', onBlur)
       window.removeEventListener('focus', onFocus)
       document.removeEventListener('visibilitychange', onVisChange)
+      window.removeEventListener('keydown', onUnpauseKey)
     }
   }
 
