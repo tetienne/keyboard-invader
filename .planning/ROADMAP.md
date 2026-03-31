@@ -81,7 +81,10 @@ Plans:
   2. In word mode, complete words fall and the child types them letter-by-letter to destroy them
   3. The child can pause the game at any time and resume from where they left off
   4. At the end of a session, a summary screen shows accuracy, items practiced, and time played
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [x] 04-01-PLAN.md -- Word mode data layer: GameMode type, word list JSONs, words.ts selection/matching module
+- [ ] 04-02-PLAN.md -- PlayingState word mode integration, mode selection UI, session summary screen
 **UI hint**: yes
 
 ### Phase 5: Adaptive Difficulty
