@@ -24,61 +24,131 @@ export interface DifficultyConfig {
 }
 
 export class DifficultyManager {
-  constructor(_config: DifficultyConfig) {
-    // stub
+  private readonly window: boolean[] = []
+  private _fallSpeed: number
+  private _spawnInterval: number
+  private _complexityLevel = 0
+  private consecutiveHighAccuracy = 0
+
+  constructor(private readonly config: DifficultyConfig) {
+    this._fallSpeed = config.baseFallSpeed
+    this._spawnInterval = config.baseSpawnInterval
   }
 
-  recordResult(_hit: boolean): void {
-    // stub
+  recordResult(hit: boolean): void {
+    this.window.push(hit)
+    if (this.window.length > this.config.windowSize) {
+      this.window.shift()
+    }
+
+    if (this.window.length < this.config.windowSize) return
+
+    const accuracy =
+      this.window.filter(Boolean).length / this.window.length
+    this.adjust(accuracy)
+  }
+
+  private adjust(accuracy: number): void {
+    if (accuracy > this.config.deadZoneHigh) {
+      // Ramp: make harder (small step)
+      this._fallSpeed = Math.min(
+        this.config.maxFallSpeed,
+        this._fallSpeed + this.config.speedStep,
+      )
+      this._spawnInterval = Math.max(
+        this.config.minSpawnInterval,
+        this._spawnInterval - this.config.spawnStep,
+      )
+    } else if (accuracy < this.config.deadZoneLow) {
+      // Ease: make easier (2x step)
+      this._fallSpeed = Math.max(
+        this.config.minFallSpeed,
+        this._fallSpeed - this.config.speedStep * 2,
+      )
+      this._spawnInterval = Math.min(
+        this.config.maxSpawnInterval,
+        this._spawnInterval + this.config.spawnStep * 2,
+      )
+    }
+    // Dead zone (60-80%): no speed/spawn change
+
+    this.updateComplexity(accuracy)
+  }
+
+  private updateComplexity(accuracy: number): void {
+    if (accuracy > this.config.complexityUpThreshold) {
+      this.consecutiveHighAccuracy++
+      if (
+        this.consecutiveHighAccuracy >= this.config.complexityUpCount &&
+        this._complexityLevel < this.config.maxComplexityLevel
+      ) {
+        this._complexityLevel++
+        this.consecutiveHighAccuracy = 0
+      }
+    } else {
+      this.consecutiveHighAccuracy = 0
+    }
+
+    if (
+      accuracy < this.config.complexityDownThreshold &&
+      this._complexityLevel > 0
+    ) {
+      this._complexityLevel--
+    }
   }
 
   get params(): DifficultyParams {
-    return { fallSpeed: 0, spawnInterval: 0, complexityLevel: 0 }
+    return Object.freeze({
+      fallSpeed: this._fallSpeed,
+      spawnInterval: this._spawnInterval,
+      complexityLevel: this._complexityLevel,
+    })
   }
 
   get rollingAccuracy(): number {
-    return 0
+    if (this.window.length === 0) return 0
+    return this.window.filter(Boolean).length / this.window.length
   }
 
   get windowFull(): boolean {
-    return false
+    return this.window.length >= this.config.windowSize
   }
 }
 
 export const LETTER_DIFFICULTY_CONFIG: DifficultyConfig = {
   mode: 'letters',
-  minFallSpeed: 0,
-  maxFallSpeed: 0,
-  baseFallSpeed: 0,
-  minSpawnInterval: 0,
-  maxSpawnInterval: 0,
-  baseSpawnInterval: 0,
-  speedStep: 0,
-  spawnStep: 0,
-  deadZoneLow: 0,
-  deadZoneHigh: 0,
-  windowSize: 0,
-  complexityUpThreshold: 0,
-  complexityDownThreshold: 0,
-  complexityUpCount: 0,
-  maxComplexityLevel: 0,
+  minFallSpeed: 40,
+  maxFallSpeed: 150,
+  baseFallSpeed: 80,
+  minSpawnInterval: 800,
+  maxSpawnInterval: 3000,
+  baseSpawnInterval: 1500,
+  speedStep: 5,
+  spawnStep: 150,
+  deadZoneLow: 0.6,
+  deadZoneHigh: 0.8,
+  windowSize: 10,
+  complexityUpThreshold: 0.8,
+  complexityDownThreshold: 0.5,
+  complexityUpCount: 5,
+  maxComplexityLevel: 2,
 }
 
 export const WORD_DIFFICULTY_CONFIG: DifficultyConfig = {
   mode: 'words',
-  minFallSpeed: 0,
-  maxFallSpeed: 0,
-  baseFallSpeed: 0,
-  minSpawnInterval: 0,
-  maxSpawnInterval: 0,
-  baseSpawnInterval: 0,
-  speedStep: 0,
-  spawnStep: 0,
-  deadZoneLow: 0,
-  deadZoneHigh: 0,
-  windowSize: 0,
-  complexityUpThreshold: 0,
-  complexityDownThreshold: 0,
-  complexityUpCount: 0,
-  maxComplexityLevel: 0,
+  minFallSpeed: 25,
+  maxFallSpeed: 100,
+  baseFallSpeed: 50,
+  minSpawnInterval: 1500,
+  maxSpawnInterval: 4000,
+  baseSpawnInterval: 2500,
+  speedStep: 5,
+  spawnStep: 150,
+  deadZoneLow: 0.6,
+  deadZoneHigh: 0.8,
+  windowSize: 10,
+  complexityUpThreshold: 0.8,
+  complexityDownThreshold: 0.5,
+  complexityUpCount: 5,
+  maxComplexityLevel: 1,
 }
