@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-03-31T20:23:01.893Z"
-last_activity: 2026-03-31 -- Completed 04-01 word mode data layer
+status: verifying
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-03-31T21:23:53.667Z"
+last_activity: 2026-03-31
 progress:
   total_phases: 11
   completed_phases: 3
   total_plans: 7
-  completed_plans: 7
+  completed_plans: 8
   percent: 18
 ---
 
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 
 Phase: 04 (word-mode-game-modes) -- EXECUTING
 Plan: 2 of 2
-Status: Executing Phase 04
-Last activity: 2026-03-31 -- Completed 04-01 word mode data layer
+Status: Phase complete — ready for verification
+Last activity: 2026-03-31
 
 Progress: [██░░░░░░░░] 18%
 
@@ -59,6 +59,7 @@ Progress: [██░░░░░░░░] 18%
 | Phase 02 P02 | 7min | 3 tasks | 9 files |
 | Phase 03 P02 | 4min | 2 tasks | 6 files |
 | Phase 04 P01 | 17min | 2 tasks | 11 files |
+| Phase 04 P02 | 9min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -89,6 +90,8 @@ Recent decisions affecting current work:
 - [Phase 03]: Session result passing via GameContext setSessionResult/getSessionResult
 - [Phase 04]: WordEntity.text uses structural interface (not PixiJS import) to keep module pure-logic testable
 - [Phase 04]: matchWordKey returns union type without mutating entity, caller handles state changes
+- [Phase 04]: SplitBitmapText from PixiJS 8 for word entities with per-character tint control
+- [Phase 04]: Word mode: slower fall (50), longer interval (2500ms), fewer items (15) for readability
 
 ### Pending Todos
 
@@ -101,6 +104,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T20:23:01.890Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-03-31T21:23:53.665Z
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None

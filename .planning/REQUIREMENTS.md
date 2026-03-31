@@ -12,8 +12,8 @@
 - [x] **GAME-03**: L'enfant en mode mots (lecteur) voit des mots courts a taper en entier
 - [x] **GAME-04**: L'enfant recoit un feedback audio et visuel immediat a chaque frappe (correct ou incorrect)
 - [x] **GAME-05**: L'enfant voit son score affiche pendant la partie
-- [ ] **GAME-06**: L'enfant peut mettre le jeu en pause et reprendre
-- [ ] **GAME-07**: L'enfant voit un resume de fin de session (precision, lettres/mots pratiques, temps)
+- [x] **GAME-06**: L'enfant peut mettre le jeu en pause et reprendre
+- [x] **GAME-07**: L'enfant voit un resume de fin de session (precision, lettres/mots pratiques, temps)
 
 ### Adaptive Difficulty
 
@@ -91,8 +91,8 @@
 | GAME-03 | Phase 4 | Complete |
 | GAME-04 | Phase 3 | Complete |
 | GAME-05 | Phase 3 | Complete |
-| GAME-06 | Phase 4 | Pending |
-| GAME-07 | Phase 4 | Pending |
+| GAME-06 | Phase 4 | Complete |
+| GAME-07 | Phase 4 | Complete |
 | DIFF-01 | Phase 5 | Pending |
 | DIFF-02 | Phase 5 | Pending |
 | DIFF-03 | Phase 5 | Pending |
