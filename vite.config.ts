@@ -10,5 +10,7 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
     },
   },
-  test: {},
+  test: {
+    exclude: ['.claude/**', 'node_modules/**'],
+  },
 })
