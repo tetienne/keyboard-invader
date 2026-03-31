@@ -99,7 +99,7 @@ Plans:
   5. Over a play session, the child's success rate converges toward approximately 70%
 **Plans:** 2 plans
 Plans:
-- [ ] 05-01-PLAN.md -- DifficultyManager TDD: rolling window, asymmetric adjustment, complexity state machine, refactored letter/word selection
+- [x] 05-01-PLAN.md -- DifficultyManager TDD: rolling window, asymmetric adjustment, complexity state machine, refactored letter/word selection
 - [ ] 05-02-PLAN.md -- PlayingState integration, GameContext extension, debug overlay difficulty display
 
 ### Phase 6: Profiles & Local Persistence

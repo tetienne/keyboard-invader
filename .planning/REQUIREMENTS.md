@@ -17,10 +17,10 @@
 
 ### Adaptive Difficulty
 
-- [ ] **DIFF-01**: La vitesse de chute s'ajuste automatiquement selon la performance de l'enfant
-- [ ] **DIFF-02**: La longueur/complexite des mots s'adapte au niveau de l'enfant
-- [ ] **DIFF-03**: Le taux d'apparition des lettres/mots s'adapte a la performance en temps reel
-- [ ] **DIFF-04**: Le systeme vise un taux de reussite d'environ 70% pour maintenir l'etat de flow
+- [x] **DIFF-01**: La vitesse de chute s'ajuste automatiquement selon la performance de l'enfant
+- [x] **DIFF-02**: La longueur/complexite des mots s'adapte au niveau de l'enfant
+- [x] **DIFF-03**: Le taux d'apparition des lettres/mots s'adapte a la performance en temps reel
+- [x] **DIFF-04**: Le systeme vise un taux de reussite d'environ 70% pour maintenir l'etat de flow
 
 ### Progression
 
@@ -93,10 +93,10 @@
 | GAME-05 | Phase 3 | Complete |
 | GAME-06 | Phase 4 | Complete |
 | GAME-07 | Phase 4 | Complete |
-| DIFF-01 | Phase 5 | Pending |
-| DIFF-02 | Phase 5 | Pending |
-| DIFF-03 | Phase 5 | Pending |
-| DIFF-04 | Phase 5 | Pending |
+| DIFF-01 | Phase 5 | Complete |
+| DIFF-02 | Phase 5 | Complete |
+| DIFF-03 | Phase 5 | Complete |
+| DIFF-04 | Phase 5 | Complete |
 | PROG-01 | Phase 7 | Pending |
 | PROG-02 | Phase 7 | Pending |
 | PROG-03 | Phase 7 | Pending |
