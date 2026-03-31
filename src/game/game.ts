@@ -1,4 +1,10 @@
-import { Application, BitmapText, Container, Graphics } from 'pixi.js'
+import {
+  Application,
+  BitmapText,
+  Container,
+  Graphics,
+  SplitBitmapText,
+} from 'pixi.js'
 import type { GameContext, GameMode, SessionResult, StateName } from './types.js'
 import { BASE_WIDTH, BASE_HEIGHT } from './types.js'
 import {
@@ -22,6 +28,7 @@ export class Game implements GameContext {
   private readonly _loop: GameLoop
   private readonly _input: InputManager
   private readonly _pool: ObjectPool<BitmapText>
+  private readonly _wordPool: ObjectPool<SplitBitmapText>
   private readonly _debug: DebugOverlay
   private _cleanupCanvas: (() => void) | null = null
   private _cleanupVisibility: (() => void) | null = null
@@ -44,6 +51,15 @@ export class Game implements GameContext {
       bt.visible = false
       return bt
     }, 20)
+    // SplitBitmapText pool for falling words (word mode)
+    this._wordPool = new ObjectPool(() => {
+      const sbt = new SplitBitmapText({
+        text: 'MOT',
+        style: { fontFamily: 'GameFont', fontSize: 64 },
+      })
+      sbt.visible = false
+      return sbt
+    }, 10)
     this._input = new InputManager()
     this._debug = new DebugOverlay()
     this._loop = new GameLoop()
@@ -149,6 +165,14 @@ export class Game implements GameContext {
 
   getGameMode(): GameMode {
     return this._gameMode
+  }
+
+  acquireWordPoolItem(): { item: SplitBitmapText; index: number } {
+    return this._wordPool.acquire()
+  }
+
+  releaseWordPoolItem(index: number): void {
+    this._wordPool.release(index)
   }
 
   private _showPauseOverlay(): void {

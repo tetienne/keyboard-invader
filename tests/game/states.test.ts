@@ -198,6 +198,22 @@ function createMockGameContext(): GameContext & {
     getSessionResult: () => sessionResult,
     setGameMode: vi.fn(),
     getGameMode: () => 'letters' as const,
+    acquireWordPoolItem: vi.fn(() => ({
+      item: {
+        visible: true,
+        x: 0,
+        y: 0,
+        text: '',
+        tint: 0xffffff,
+        alpha: 1,
+        scale: { set: vi.fn() },
+        chars: [],
+        width: 100,
+        split: vi.fn(),
+      },
+      index: 0,
+    })),
+    releaseWordPoolItem: vi.fn(),
     transitions,
     inputBuffer,
   }
