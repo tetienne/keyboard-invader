@@ -1,5 +1,6 @@
-import { Application, BitmapText, Container } from 'pixi.js'
+import { Application, BitmapText, Container, Graphics } from 'pixi.js'
 import type { GameContext, SessionResult, StateName } from './types.js'
+import { BASE_WIDTH, BASE_HEIGHT } from './types.js'
 import {
   StateMachine,
   BootState,
@@ -25,6 +26,8 @@ export class Game implements GameContext {
   private _cleanupCanvas: (() => void) | null = null
   private _cleanupVisibility: (() => void) | null = null
   private _sessionResult: SessionResult | null = null
+  private _pauseOverlay: Container | null = null
+  private _isPaused = false
 
   constructor() {
     this.app = new Application()
@@ -139,23 +142,57 @@ export class Game implements GameContext {
     return this._sessionResult
   }
 
+  private _pause(): void {
+    if (this._isPaused || this._stateMachine.current !== 'playing') return
+    this._isPaused = true
+
+    // Freeze game loop — no ticks while paused
+    this.app.ticker.stop()
+
+    // Show pause overlay on top of gameRoot (don't touch state machine)
+    this._pauseOverlay = new Container()
+    const bg = new Graphics()
+    bg.rect(0, 0, BASE_WIDTH, BASE_HEIGHT)
+    bg.fill({ color: 0x000000, alpha: 0.5 })
+    this._pauseOverlay.addChild(bg)
+    const text = new BitmapText({
+      text: 'PAUSE',
+      style: { fontFamily: 'GameFont', fontSize: 48 },
+    })
+    text.x = BASE_WIDTH / 2 - text.width / 2
+    text.y = BASE_HEIGHT / 2 - text.height / 2
+    this._pauseOverlay.addChild(text)
+    this.gameRoot.addChild(this._pauseOverlay)
+  }
+
+  private _resume(): void {
+    if (!this._isPaused) return
+    this._isPaused = false
+
+    // Remove pause overlay
+    if (this._pauseOverlay) {
+      this.gameRoot.removeChild(this._pauseOverlay)
+      this._pauseOverlay.destroy({ children: true })
+      this._pauseOverlay = null
+    }
+
+    // Resume game loop with accumulator reset (D-16: no catch-up burst)
+    this._loop.resetAccumulator()
+    this.app.ticker.start()
+  }
+
   private _setupVisibilityHandlers(): void {
     const onBlur = (): void => {
-      if (this._stateMachine.current === 'playing') {
-        this._stateMachine.transition('paused', this)
-      }
+      this._pause()
     }
     const onFocus = (): void => {
-      if (this._stateMachine.current === 'paused') {
-        this._loop.resetAccumulator() // D-16: no catch-up burst
-        this._stateMachine.transition('playing', this)
-      }
+      this._resume()
     }
     const onVisChange = (): void => {
       if (document.hidden) {
-        onBlur()
+        this._pause()
       } else {
-        onFocus()
+        this._resume()
       }
     }
     window.addEventListener('blur', onBlur)
