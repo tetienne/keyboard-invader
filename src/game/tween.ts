@@ -12,6 +12,7 @@ interface TweenTarget {
     tint: number
     alpha: number
     x: number
+    chars?: Array<{ tint: number }>
   }
   baseX: number
   tween: LetterTween | null
