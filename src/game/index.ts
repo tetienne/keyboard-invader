@@ -14,6 +14,7 @@ export { computeScale, setupCanvas, applyScale } from './canvas.js'
 export { DebugOverlay } from './debug.js'
 export type {
   GameState,
+  GameMode,
   StateName,
   ScaleResult,
   GameContext,

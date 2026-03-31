@@ -1,5 +1,5 @@
 import { Application, BitmapText, Container, Graphics } from 'pixi.js'
-import type { GameContext, SessionResult, StateName } from './types.js'
+import type { GameContext, GameMode, SessionResult, StateName } from './types.js'
 import { BASE_WIDTH, BASE_HEIGHT } from './types.js'
 import {
   StateMachine,
@@ -26,6 +26,7 @@ export class Game implements GameContext {
   private _cleanupCanvas: (() => void) | null = null
   private _cleanupVisibility: (() => void) | null = null
   private _sessionResult: SessionResult | null = null
+  private _gameMode: GameMode = 'letters'
   private _pauseOverlay: Container | null = null
   private _isPaused = false
 
@@ -140,6 +141,14 @@ export class Game implements GameContext {
 
   getSessionResult(): SessionResult | null {
     return this._sessionResult
+  }
+
+  setGameMode(mode: GameMode): void {
+    this._gameMode = mode
+  }
+
+  getGameMode(): GameMode {
+    return this._gameMode
   }
 
   private _showPauseOverlay(): void {

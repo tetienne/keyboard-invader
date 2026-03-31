@@ -196,6 +196,8 @@ function createMockGameContext(): GameContext & {
       sessionResult = result
     }),
     getSessionResult: () => sessionResult,
+    setGameMode: vi.fn(),
+    getGameMode: () => 'letters' as const,
     transitions,
     inputBuffer,
   }
@@ -426,7 +428,7 @@ describe('GameOverState', () => {
   it('enter reads getSessionResult to display stats', () => {
     const ctx = createMockGameContext()
     // Set a session result before entering gameover
-    ctx.setSessionResult({ hits: 15, misses: 5, total: 20 })
+    ctx.setSessionResult({ hits: 15, misses: 5, total: 20, timePlayed: 30000, mode: 'letters' })
     const state = new GameOverState()
     state.enter(ctx)
     // Should not crash and should add container to gameRoot
