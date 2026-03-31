@@ -21,11 +21,11 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-30)
 
 **Core value:** Rendre l'apprentissage du clavier amusant et non frustrant pour des enfants de 5 a 8 ans
-**Current focus:** Phase 03 — letter-mode-gameplay
+**Current focus:** Phase 04 — word-mode-game-modes
 
 ## Current Position
 
-Phase: 999.1
+Phase: 04
 Plan: Not started
 Status: Ready to execute
 Last activity: 2026-03-31
@@ -93,8 +93,8 @@ None yet.
 
 ### Blockers/Concerns
 
-- Accented characters scope decision needed before Phase 3 (ASCII-safe French words vs dead-key handling)
 - Adaptive difficulty parameters (window size, thresholds) need calibration with real child testing in Phase 5
+- Accented characters deferred — Phase 3 uses ASCII-only (a-z). Dead-key handling for French accents needed before word lists in Phase 4+
 
 ## Session Continuity
 

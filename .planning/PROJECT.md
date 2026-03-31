@@ -13,11 +13,10 @@ Rendre l'apprentissage du clavier amusant et non frustrant pour des enfants de 5
 ### Validated
 
 - [x] Gameplay "typing invaders" rendering infrastructure -- Validated in Phase 02: game-engine-foundation (canvas, game loop, state machine, object pool, input)
+- [x] Gameplay "typing invaders" lettres tombent, taper pour eliminer -- Validated in Phase 03: letter-mode-gameplay
+- [x] Mode lettres individuelles pour les plus jeunes (5 ans, pre-lecture) -- Validated in Phase 03: letter-mode-gameplay
 
 ### Active
-
-- [ ] Gameplay "typing invaders" -- mots/lettres tombent, taper pour eliminer
-- [ ] Mode lettres individuelles pour les plus jeunes (5 ans, pre-lecture)
 - [ ] Mode mots pour les plus grands (8 ans, lecture acquise)
 - [ ] Difficulte adaptive (vitesse, longueur des mots, complexite)
 - [ ] Systeme de niveaux et d'experience (XP)
@@ -81,4 +80,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-30 after Phase 02 completion*
+*Last updated: 2026-03-31 after Phase 03 completion*

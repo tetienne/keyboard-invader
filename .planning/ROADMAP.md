@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Project Scaffolding & Dev Tooling** - TypeScript + Vite + PixiJS project with strict linting, pre-commit hooks, and deployment pipeline (2026-03-29)
 - [x] **Phase 2: Game Engine Foundation** - Game loop, state machine, input handling (AZERTY-safe), and canvas rendering infrastructure (2026-03-30)
-- [ ] **Phase 3: Letter Mode Gameplay** - Single-letter falling invaders with keyboard input matching and basic collision detection
+- [x] **Phase 3: Letter Mode Gameplay** - Single-letter falling invaders with keyboard input matching and basic collision detection (2026-03-31)
 - [ ] **Phase 4: Word Mode & Game Modes** - Word-based gameplay for older children, mode selection, pause/resume, score display, and session summary
 - [ ] **Phase 5: Adaptive Difficulty** - Real-time difficulty adjustment targeting 70% success rate via speed, complexity, and spawn rate
 - [ ] **Phase 6: Profiles & Local Persistence** - Avatar-based child profiles with LocalStorage saving of all progress
