@@ -22,6 +22,11 @@ import {
   createMissTween,
   createBottomTween,
 } from './tween.js'
+import {
+  DifficultyManager,
+  LETTER_DIFFICULTY_CONFIG,
+  WORD_DIFFICULTY_CONFIG,
+} from './difficulty.js'
 import { getLocale } from '../shared/i18n/index.js'
 
 export class StateMachine {
@@ -236,16 +241,11 @@ export class PlayingState implements GameState {
   private timePlayedMs = 0
   private mode: GameMode = 'letters'
   private scoreText: BitmapText | null = null
+  private difficulty!: DifficultyManager
 
-  // Letter mode constants
+  // Session lengths stay fixed (D-14)
   private readonly SESSION_LENGTH = 20
-  private readonly SPAWN_INTERVAL_MS = 1500
-  private readonly FALL_SPEED = 80
-
-  // Word mode constants
   private readonly WORD_SESSION_LENGTH = 15
-  private readonly WORD_SPAWN_INTERVAL_MS = 2500
-  private readonly WORD_FALL_SPEED = 50
 
   enter(ctx: GameContext): void {
     this.spawnTimer = 0
@@ -256,6 +256,9 @@ export class PlayingState implements GameState {
     this.misses = 0
     this.timePlayedMs = 0
     this.mode = ctx.getGameMode()
+    this.difficulty = new DifficultyManager(
+      this.mode === 'words' ? WORD_DIFFICULTY_CONFIG : LETTER_DIFFICULTY_CONFIG,
+    )
 
     if (this.mode === 'words') {
       this.wordLists = loadWordLists(getLocale())
@@ -276,12 +279,7 @@ export class PlayingState implements GameState {
 
     const sessionLength =
       this.mode === 'words' ? this.WORD_SESSION_LENGTH : this.SESSION_LENGTH
-    const spawnInterval =
-      this.mode === 'words'
-        ? this.WORD_SPAWN_INTERVAL_MS
-        : this.SPAWN_INTERVAL_MS
-    const fallSpeed =
-      this.mode === 'words' ? this.WORD_FALL_SPEED : this.FALL_SPEED
+    const { fallSpeed, spawnInterval } = this.difficulty.params
 
     // --- Spawn logic ---
     this.spawnTimer += dt
@@ -329,13 +327,15 @@ export class PlayingState implements GameState {
     this._updateTweens(this.activeEntities, dt)
     this._updateWordTweens(this.activeWordEntities, dt)
 
-    // --- Bottom detection ---
+    // --- Bottom detection (Pitfall 5: items reaching bottom count as misses) ---
     for (const entity of this.activeEntities) {
       if (
         entity.tween === null &&
         !entity.markedForRemoval &&
         entity.text.y > BASE_HEIGHT + 40
       ) {
+        this.misses++
+        this.difficulty.recordResult(false)
         entity.tween = createBottomTween()
         entity.markedForRemoval = true
       }
@@ -346,6 +346,8 @@ export class PlayingState implements GameState {
         !entity.markedForRemoval &&
         entity.text.y > BASE_HEIGHT + 40
       ) {
+        this.misses++
+        this.difficulty.recordResult(false)
         entity.tween = createBottomTween()
         entity.markedForRemoval = true
       }
@@ -372,6 +374,9 @@ export class PlayingState implements GameState {
       }
     }
 
+    // --- Push difficulty to context for debug overlay ---
+    ctx.setDifficulty(this.difficulty.params)
+
     // --- Session end check ---
     const activeCount =
       this.mode === 'words'
@@ -394,6 +399,8 @@ export class PlayingState implements GameState {
   }
 
   exit(ctx: GameContext): void {
+    ctx.setDifficulty(null)
+
     // Release letter entities
     for (const entity of this.activeEntities) {
       entity.text.visible = false
@@ -429,10 +436,7 @@ export class PlayingState implements GameState {
   // --- Private helpers ---
 
   private _spawnLetter(ctx: GameContext): void {
-    const available = getAvailableLetters(
-      this.totalSpawned,
-      this.SESSION_LENGTH,
-    )
+    const available = getAvailableLetters(this.difficulty.params.complexityLevel)
     const letter =
       available[Math.floor(Math.random() * available.length)] ?? 'a'
 
@@ -466,8 +470,7 @@ export class PlayingState implements GameState {
 
     const available = getAvailableWords(
       this.wordLists,
-      this.totalSpawned,
-      this.WORD_SESSION_LENGTH,
+      this.difficulty.params.complexityLevel,
     )
     const word =
       available[Math.floor(Math.random() * available.length)] ?? 'mot'
@@ -517,10 +520,12 @@ export class PlayingState implements GameState {
       const match = findLowestMatch(this.activeEntities, key)
       if (match) {
         this.hits++
+        this.difficulty.recordResult(true)
         match.tween = createHitTween()
         match.markedForRemoval = true
       } else {
         this.misses++
+        this.difficulty.recordResult(false)
         const lowest = findLowestEntity(this.activeEntities)
         if (lowest?.tween === null) {
           lowest.tween = createMissTween()
@@ -547,6 +552,7 @@ export class PlayingState implements GameState {
         if (charObj) charObj.tint = 0x4ade80
         activeWord.cursorIndex++
         this.hits++
+        this.difficulty.recordResult(true)
         activeWord.tween = createHitTween()
         activeWord.markedForRemoval = true
       } else {

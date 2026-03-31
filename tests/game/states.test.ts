@@ -225,6 +225,8 @@ function createMockGameContext(
       gameMode = m
     }),
     getGameMode: () => gameMode,
+    getDifficulty: vi.fn(() => null),
+    setDifficulty: vi.fn(),
     transitions,
     inputBuffer,
   }
@@ -372,8 +374,11 @@ describe('PlayingState', () => {
     const state = new PlayingState()
     state.enter(ctx)
 
+    // Spawn all 20 with large enough dt to account for dynamic spawn interval
+    // DifficultyManager may increase spawnInterval as items fall to bottom (misses)
+    // Use a generous dt (5000ms) to ensure spawns happen regardless of interval changes
     for (let i = 0; i < 20; i++) {
-      state.update(ctx, 1500)
+      state.update(ctx, 5000)
     }
     expect(ctx.acquirePoolItem).toHaveBeenCalledTimes(20)
 
@@ -409,8 +414,9 @@ describe('PlayingState', () => {
     const state = new PlayingState()
     state.enter(ctx)
 
+    // Use large dt to ensure spawns happen despite dynamic spawn interval
     for (let i = 0; i < 20; i++) {
-      state.update(ctx, 1500)
+      state.update(ctx, 5000)
     }
 
     for (const item of items) {
