@@ -97,7 +97,10 @@ Plans:
   3. Word complexity and length adapt to the child's demonstrated ability
   4. The spawn rate of new items adjusts so the screen is neither empty nor overwhelming
   5. Over a play session, the child's success rate converges toward approximately 70%
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 05-01-PLAN.md -- DifficultyManager TDD: rolling window, asymmetric adjustment, complexity state machine, refactored letter/word selection
+- [ ] 05-02-PLAN.md -- PlayingState integration, GameContext extension, debug overlay difficulty display
 
 ### Phase 6: Profiles & Local Persistence
 **Goal**: Two children sharing the same computer each have their own profile with saved progress, selectable by clicking their avatar
@@ -169,7 +172,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 2. Game Engine Foundation | 0/2 | Planning complete | - |
 | 3. Letter Mode Gameplay | 1/2 | Executing | - |
 | 4. Word Mode & Game Modes | 0/0 | Not started | - |
-| 5. Adaptive Difficulty | 0/0 | Not started | - |
+| 5. Adaptive Difficulty | 0/2 | Planning complete | - |
 | 6. Profiles & Local Persistence | 0/0 | Not started | - |
 | 7. Progression System | 0/0 | Not started | - |
 | 8. Visual Identity | 0/0 | Not started | - |
