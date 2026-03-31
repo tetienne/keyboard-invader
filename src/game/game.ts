@@ -6,6 +6,7 @@ import {
   SplitBitmapText,
 } from 'pixi.js'
 import type { GameContext, GameMode, SessionResult, StateName } from './types.js'
+import type { DifficultyParams } from './difficulty.js'
 import { BASE_WIDTH, BASE_HEIGHT } from './types.js'
 import {
   StateMachine,
@@ -36,6 +37,7 @@ export class Game implements GameContext {
   private _gameMode: GameMode = 'letters'
   private _pauseOverlay: Container | null = null
   private _isPaused = false
+  private _currentDifficulty: DifficultyParams | null = null
 
   constructor() {
     this.app = new Application()
@@ -110,6 +112,7 @@ export class Game implements GameContext {
         this._stateMachine.current ?? 'none',
         this._pool.activeCount,
         this._pool.totalCount,
+        this._currentDifficulty,
       )
     }
 
@@ -173,6 +176,14 @@ export class Game implements GameContext {
 
   releaseWordPoolItem(index: number): void {
     this._wordPool.release(index)
+  }
+
+  getDifficulty(): DifficultyParams | null {
+    return this._currentDifficulty
+  }
+
+  setDifficulty(params: DifficultyParams | null): void {
+    this._currentDifficulty = params
   }
 
   private _showPauseOverlay(): void {

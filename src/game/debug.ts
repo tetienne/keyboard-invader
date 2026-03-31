@@ -1,3 +1,5 @@
+import type { DifficultyParams } from './difficulty.js'
+
 export class DebugOverlay {
   private el: HTMLDivElement
   private visible = false
@@ -32,13 +34,22 @@ export class DebugOverlay {
     state: string,
     poolActive: number,
     poolTotal: number,
+    difficulty?: DifficultyParams | null,
   ): void {
     if (!this.visible) return
-    this.el.innerHTML = [
+    const lines = [
       `<div style="color:#ffffff;font-weight:bold">FPS: ${String(Math.round(fps))}</div>`,
       `<div>State: <span style="color:#e94560">${state}</span></div>`,
       `<div>Pool: ${String(poolActive)}/${String(poolTotal)}</div>`,
-    ].join('')
+    ]
+    if (difficulty) {
+      lines.push(
+        `<div>Speed: ${String(Math.round(difficulty.fallSpeed))} px/s</div>`,
+        `<div>Spawn: ${String(Math.round(difficulty.spawnInterval))} ms</div>`,
+        `<div>Complexity: ${String(difficulty.complexityLevel)}</div>`,
+      )
+    }
+    this.el.innerHTML = lines.join('')
   }
 
   destroy(): void {

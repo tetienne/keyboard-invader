@@ -1,4 +1,5 @@
 import type { Application, Container } from 'pixi.js'
+import type { DifficultyParams } from './difficulty.js'
 
 // Canvas constants (D-15)
 export const BASE_WIDTH = 1280
@@ -57,4 +58,6 @@ export interface GameContext {
   getGameMode(): GameMode
   acquireWordPoolItem(): { item: unknown; index: number }
   releaseWordPoolItem(index: number): void
+  getDifficulty(): DifficultyParams | null
+  setDifficulty(params: DifficultyParams | null): void
 }
