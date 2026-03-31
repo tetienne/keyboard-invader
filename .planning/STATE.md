@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 4 context gathered
-last_updated: "2026-03-31T19:09:59.392Z"
-last_activity: 2026-03-31
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-03-31T20:23:01.893Z"
+last_activity: 2026-03-31 -- Completed 04-01 word mode data layer
 progress:
   total_phases: 11
   completed_phases: 3
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 
 ## Current Position
 
-Phase: 04
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-03-31
+Phase: 04 (word-mode-game-modes) -- EXECUTING
+Plan: 2 of 2
+Status: Executing Phase 04
+Last activity: 2026-03-31 -- Completed 04-01 word mode data layer
 
 Progress: [██░░░░░░░░] 18%
 
@@ -58,6 +58,7 @@ Progress: [██░░░░░░░░] 18%
 | Phase 02 P01 | 10min | 2 tasks | 8 files |
 | Phase 02 P02 | 7min | 3 tasks | 9 files |
 | Phase 03 P02 | 4min | 2 tasks | 6 files |
+| Phase 04 P01 | 17min | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,8 @@ Recent decisions affecting current work:
 - [Phase 03]: BitmapText pool (80px) replaces Graphics pool for letter entities
 - [Phase 03]: originalTint field on LetterEntity for miss tween color restoration
 - [Phase 03]: Session result passing via GameContext setSessionResult/getSessionResult
+- [Phase 04]: WordEntity.text uses structural interface (not PixiJS import) to keep module pure-logic testable
+- [Phase 04]: matchWordKey returns union type without mutating entity, caller handles state changes
 
 ### Pending Todos
 
@@ -98,6 +101,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T19:09:59.372Z
-Stopped at: Phase 4 context gathered
-Resume file: .planning/phases/04-word-mode-game-modes/04-CONTEXT.md
+Last session: 2026-03-31T20:23:01.890Z
+Stopped at: Completed 04-01-PLAN.md
+Resume file: None

@@ -3,5 +3,13 @@
   "app.subtitle": "Apprends a taper en t'amusant !",
   "menu.play": "Jouer",
   "menu.profiles": "Profils",
-  "menu.settings": "Reglages"
+  "menu.settings": "Reglages",
+  "menu.mode.letters": "Lettres",
+  "menu.mode.words": "Mots",
+  "summary.accuracy": "Precision",
+  "summary.items": "Pratiques",
+  "summary.time": "Temps",
+  "summary.replay": "Rejouer",
+  "summary.menu": "Menu",
+  "summary.bravo": "Bravo !"
 }

@@ -6,6 +6,7 @@ export const BASE_HEIGHT = 720
 
 // State machine types (D-04, D-05)
 export type StateName = 'boot' | 'menu' | 'playing' | 'paused' | 'gameover'
+export type GameMode = 'letters' | 'words'
 
 export const TRANSITIONS: Record<StateName, readonly StateName[]> = {
   boot: ['menu'],
@@ -19,6 +20,8 @@ export interface SessionResult {
   readonly hits: number
   readonly misses: number
   readonly total: number
+  readonly timePlayed: number
+  readonly mode: GameMode
 }
 
 export interface GameState {
@@ -50,4 +53,6 @@ export interface GameContext {
   readonly currentStateName: StateName
   setSessionResult(result: SessionResult): void
   getSessionResult(): SessionResult | null
+  setGameMode(mode: GameMode): void
+  getGameMode(): GameMode
 }

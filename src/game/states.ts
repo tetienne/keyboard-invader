@@ -170,6 +170,7 @@ export class PlayingState implements GameState {
   private activeEntities: LetterEntity[] = []
   private hits = 0
   private misses = 0
+  private sessionElapsed = 0
   private scoreText: BitmapText | null = null
   private readonly SESSION_LENGTH = 20 // D-11: fixed letter count
   private readonly SPAWN_INTERVAL_MS = 1500 // D-05: constant spawn rate (gentle)
@@ -181,6 +182,7 @@ export class PlayingState implements GameState {
     this.activeEntities = []
     this.hits = 0
     this.misses = 0
+    this.sessionElapsed = 0
 
     // D-10: score counter at top-right
     this.scoreText = new BitmapText({
@@ -193,6 +195,8 @@ export class PlayingState implements GameState {
   }
 
   update(ctx: GameContext, dt: number): void {
+    this.sessionElapsed += dt
+
     // --- Spawn logic ---
     this.spawnTimer += dt
     while (
@@ -317,6 +321,8 @@ export class PlayingState implements GameState {
         hits: this.hits,
         misses: this.misses,
         total: this.SESSION_LENGTH,
+        timePlayed: Math.round(this.sessionElapsed),
+        mode: 'letters',
       })
       ctx.transitionTo('gameover')
     }
