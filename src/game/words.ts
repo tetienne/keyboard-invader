@@ -13,17 +13,14 @@ export function loadWordLists(locale: string): WordLists {
 }
 
 /**
- * Returns available words based on session progress.
- * Short words only below 40% progress, short + medium at 40%+.
+ * Returns available words based on complexity level.
+ * Level 0: short words only, level 1+: short + medium words.
  */
 export function getAvailableWords(
   wordLists: WordLists,
-  progress: number,
-  total: number,
+  complexityLevel: number,
 ): readonly string[] {
-  if (total === 0) return wordLists.short
-  const ratio = progress / total
-  if (ratio < 0.4) return wordLists.short
+  if (complexityLevel <= 0) return wordLists.short
   return [...wordLists.short, ...wordLists.medium]
 }
 

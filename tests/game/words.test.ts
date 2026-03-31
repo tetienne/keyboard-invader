@@ -63,23 +63,18 @@ describe('loadWordLists', () => {
 describe('getAvailableWords', () => {
   const lists = loadWordLists('fr')
 
-  it('returns only short words when total is 0', () => {
-    const result = getAvailableWords(lists, 0, 0)
+  it('returns only short words at complexity level 0', () => {
+    const result = getAvailableWords(lists, 0)
     expect([...result]).toEqual([...lists.short])
   })
 
-  it('returns only short words when progress/total < 0.4', () => {
-    const result = getAvailableWords(lists, 3, 20) // 15%
-    expect([...result]).toEqual([...lists.short])
-  })
-
-  it('returns short + medium when progress/total >= 0.4', () => {
-    const result = getAvailableWords(lists, 10, 20) // 50%
+  it('returns short + medium at complexity level 1', () => {
+    const result = getAvailableWords(lists, 1)
     expect([...result]).toEqual([...lists.short, ...lists.medium])
   })
 
-  it('returns short + medium at exactly 0.4', () => {
-    const result = getAvailableWords(lists, 8, 20) // 40%
+  it('returns short + medium for level > 1 (clamped)', () => {
+    const result = getAvailableWords(lists, 5)
     expect([...result]).toEqual([...lists.short, ...lists.medium])
   })
 })

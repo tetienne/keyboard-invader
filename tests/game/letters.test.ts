@@ -43,24 +43,24 @@ describe('LETTER_COLORS', () => {
 })
 
 describe('getAvailableLetters', () => {
-  it('returns only HOME_ROW for 0 progress', () => {
-    const result = getAvailableLetters(0, 20)
+  it('returns only HOME_ROW at complexity level 0', () => {
+    const result = getAvailableLetters(0)
     expect([...result]).toEqual([...HOME_ROW])
   })
 
-  it('returns HOME_ROW + TOP_ROW at 40% progress', () => {
-    const result = getAvailableLetters(8, 20) // 40%
+  it('returns HOME_ROW + TOP_ROW at complexity level 1', () => {
+    const result = getAvailableLetters(1)
     expect([...result]).toEqual([...HOME_ROW, ...TOP_ROW])
   })
 
-  it('returns all rows at 70% progress', () => {
-    const result = getAvailableLetters(14, 20) // 70%
+  it('returns all rows at complexity level 2', () => {
+    const result = getAvailableLetters(2)
     expect([...result]).toEqual([...HOME_ROW, ...TOP_ROW, ...BOTTOM_ROW])
   })
 
-  it('returns HOME_ROW when total is 0 (edge case)', () => {
-    const result = getAvailableLetters(0, 0)
-    expect([...result]).toEqual([...HOME_ROW])
+  it('returns all rows for level > 2 (clamped)', () => {
+    const result = getAvailableLetters(5)
+    expect([...result]).toEqual([...HOME_ROW, ...TOP_ROW, ...BOTTOM_ROW])
   })
 })
 

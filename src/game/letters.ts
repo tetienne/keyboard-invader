@@ -19,17 +19,14 @@ export const LETTER_COLORS = [
 ] as const
 
 /**
- * Returns available letters based on session progress.
- * Starts with home row, adds top row at 40%, all rows at 70%.
+ * Returns available letters based on complexity level.
+ * Level 0: home row only, level 1: +top row, level 2+: all rows.
  */
 export function getAvailableLetters(
-  progress: number,
-  total: number,
+  complexityLevel: number,
 ): readonly string[] {
-  if (total === 0) return HOME_ROW
-  const ratio = progress / total
-  if (ratio < 0.4) return HOME_ROW
-  if (ratio < 0.7) return [...HOME_ROW, ...TOP_ROW]
+  if (complexityLevel <= 0) return HOME_ROW
+  if (complexityLevel === 1) return [...HOME_ROW, ...TOP_ROW]
   return [...HOME_ROW, ...TOP_ROW, ...BOTTOM_ROW]
 }
 
