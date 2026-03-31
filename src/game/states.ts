@@ -1,5 +1,6 @@
 import { BitmapFont, BitmapText, Container, Graphics } from 'pixi.js'
-import type { GameState, StateName, GameContext } from './types.js'
+import type { SplitBitmapText } from 'pixi.js'
+import type { GameState, StateName, GameContext, GameMode } from './types.js'
 import { TRANSITIONS, BASE_WIDTH, BASE_HEIGHT } from './types.js'
 import {
   getAvailableLetters,
@@ -8,12 +9,20 @@ import {
   LETTER_COLORS,
 } from './letters.js'
 import type { LetterEntity } from './letters.js'
+import type { WordEntity, WordLists } from './words.js'
+import {
+  loadWordLists,
+  getAvailableWords,
+  findActiveWord,
+  matchWordKey,
+} from './words.js'
 import {
   updateTween,
   createHitTween,
   createMissTween,
   createBottomTween,
 } from './tween.js'
+import { getLocale } from '../shared/i18n/index.js'
 
 export class StateMachine {
   private states: Map<StateName, GameState>
@@ -101,11 +110,14 @@ export class BootState implements GameState {
 }
 
 /**
- * Menu state: shows game title and interactive "Jouer" button.
+ * Menu state: shows game title and two mode selection buttons.
  */
 export class MenuState implements GameState {
   private title: BitmapText | null = null
-  private button: BitmapText | null = null
+  private letterBtn: BitmapText | null = null
+  private letterLabel: BitmapText | null = null
+  private wordBtn: BitmapText | null = null
+  private wordLabel: BitmapText | null = null
 
   enter(ctx: GameContext): void {
     this.title = new BitmapText({
@@ -113,42 +125,92 @@ export class MenuState implements GameState {
       style: { fontFamily: 'GameFont', fontSize: 48 },
     })
     this.title.x = BASE_WIDTH / 2 - this.title.width / 2
-    this.title.y = BASE_HEIGHT * 0.35
+    this.title.y = BASE_HEIGHT * 0.2
 
-    this.button = new BitmapText({
-      text: 'Jouer',
-      style: { fontFamily: 'GameFont', fontSize: 24 },
+    // Letter mode button
+    this.letterBtn = new BitmapText({
+      text: 'A B C',
+      style: { fontFamily: 'GameFont', fontSize: 36 },
     })
-    this.button.x = BASE_WIDTH / 2 - this.button.width / 2
-    this.button.y = BASE_HEIGHT * 0.55
-    this.button.eventMode = 'static'
-    this.button.cursor = 'pointer'
-
-    this.button.on('pointerover', () => {
-      if (this.button) this.button.scale.set(1.1)
+    this.letterBtn.anchor.set(0.5)
+    this.letterBtn.x = BASE_WIDTH / 2
+    this.letterBtn.y = BASE_HEIGHT * 0.45
+    this.letterBtn.eventMode = 'static'
+    this.letterBtn.cursor = 'pointer'
+    this.letterBtn.on('pointerover', () => {
+      this.letterBtn?.scale.set(1.1)
     })
-    this.button.on('pointerout', () => {
-      if (this.button) this.button.scale.set(1.0)
+    this.letterBtn.on('pointerout', () => {
+      this.letterBtn?.scale.set(1.0)
     })
-    this.button.on('pointertap', () => {
+    this.letterBtn.on('pointertap', () => {
+      ctx.setGameMode('letters')
       ctx.transitionTo('playing')
     })
 
+    this.letterLabel = new BitmapText({
+      text: 'Lettres',
+      style: { fontFamily: 'GameFont', fontSize: 18 },
+    })
+    this.letterLabel.anchor.set(0.5)
+    this.letterLabel.x = BASE_WIDTH / 2
+    this.letterLabel.y = BASE_HEIGHT * 0.45 + 35
+
+    // Word mode button
+    this.wordBtn = new BitmapText({
+      text: 'MOT',
+      style: { fontFamily: 'GameFont', fontSize: 36 },
+    })
+    this.wordBtn.anchor.set(0.5)
+    this.wordBtn.x = BASE_WIDTH / 2
+    this.wordBtn.y = BASE_HEIGHT * 0.62
+    this.wordBtn.eventMode = 'static'
+    this.wordBtn.cursor = 'pointer'
+    this.wordBtn.on('pointerover', () => {
+      this.wordBtn?.scale.set(1.1)
+    })
+    this.wordBtn.on('pointerout', () => {
+      this.wordBtn?.scale.set(1.0)
+    })
+    this.wordBtn.on('pointertap', () => {
+      ctx.setGameMode('words')
+      ctx.transitionTo('playing')
+    })
+
+    this.wordLabel = new BitmapText({
+      text: 'Mots',
+      style: { fontFamily: 'GameFont', fontSize: 18 },
+    })
+    this.wordLabel.anchor.set(0.5)
+    this.wordLabel.x = BASE_WIDTH / 2
+    this.wordLabel.y = BASE_HEIGHT * 0.62 + 35
+
     ctx.gameRoot.addChild(this.title)
-    ctx.gameRoot.addChild(this.button)
+    ctx.gameRoot.addChild(this.letterBtn)
+    ctx.gameRoot.addChild(this.letterLabel)
+    ctx.gameRoot.addChild(this.wordBtn)
+    ctx.gameRoot.addChild(this.wordLabel)
   }
 
   exit(ctx: GameContext): void {
-    if (this.title) {
-      ctx.gameRoot.removeChild(this.title)
-      this.title.destroy()
-      this.title = null
+    const items = [
+      this.title,
+      this.letterBtn,
+      this.letterLabel,
+      this.wordBtn,
+      this.wordLabel,
+    ]
+    for (const item of items) {
+      if (item) {
+        ctx.gameRoot.removeChild(item)
+        item.destroy()
+      }
     }
-    if (this.button) {
-      ctx.gameRoot.removeChild(this.button)
-      this.button.destroy()
-      this.button = null
-    }
+    this.title = null
+    this.letterBtn = null
+    this.letterLabel = null
+    this.wordBtn = null
+    this.wordLabel = null
   }
 
   update(): void {
@@ -161,30 +223,45 @@ export class MenuState implements GameState {
 }
 
 /**
- * Playing state: spawns falling BitmapText letters matched by correct keypress.
- * D-01 through D-15 from 03-CONTEXT.md.
+ * Playing state: spawns falling letters or words based on game mode.
  */
 export class PlayingState implements GameState {
   private spawnTimer = 0
   private totalSpawned = 0
   private activeEntities: LetterEntity[] = []
+  private activeWordEntities: WordEntity[] = []
+  private wordLists: WordLists | null = null
   private hits = 0
   private misses = 0
-  private sessionElapsed = 0
+  private timePlayedMs = 0
+  private mode: GameMode = 'letters'
   private scoreText: BitmapText | null = null
-  private readonly SESSION_LENGTH = 20 // D-11: fixed letter count
-  private readonly SPAWN_INTERVAL_MS = 1500 // D-05: constant spawn rate (gentle)
-  private readonly FALL_SPEED = 80 // D-05: constant fall speed (gentle for 5yo)
+
+  // Letter mode constants
+  private readonly SESSION_LENGTH = 20
+  private readonly SPAWN_INTERVAL_MS = 1500
+  private readonly FALL_SPEED = 80
+
+  // Word mode constants
+  private readonly WORD_SESSION_LENGTH = 15
+  private readonly WORD_SPAWN_INTERVAL_MS = 2500
+  private readonly WORD_FALL_SPEED = 50
 
   enter(ctx: GameContext): void {
     this.spawnTimer = 0
     this.totalSpawned = 0
     this.activeEntities = []
+    this.activeWordEntities = []
     this.hits = 0
     this.misses = 0
-    this.sessionElapsed = 0
+    this.timePlayedMs = 0
+    this.mode = ctx.getGameMode()
 
-    // D-10: score counter at top-right
+    if (this.mode === 'words') {
+      this.wordLists = loadWordLists(getLocale())
+    }
+
+    // Score counter at top-right
     this.scoreText = new BitmapText({
       text: 'Score: 0',
       style: { fontFamily: 'GameFont', fontSize: 24 },
@@ -195,48 +272,30 @@ export class PlayingState implements GameState {
   }
 
   update(ctx: GameContext, dt: number): void {
-    this.sessionElapsed += dt
+    this.timePlayedMs += dt
+
+    const sessionLength =
+      this.mode === 'words' ? this.WORD_SESSION_LENGTH : this.SESSION_LENGTH
+    const spawnInterval =
+      this.mode === 'words'
+        ? this.WORD_SPAWN_INTERVAL_MS
+        : this.SPAWN_INTERVAL_MS
+    const fallSpeed =
+      this.mode === 'words' ? this.WORD_FALL_SPEED : this.FALL_SPEED
 
     // --- Spawn logic ---
     this.spawnTimer += dt
     while (
-      this.spawnTimer >= this.SPAWN_INTERVAL_MS &&
-      this.totalSpawned < this.SESSION_LENGTH
+      this.spawnTimer >= spawnInterval &&
+      this.totalSpawned < sessionLength
     ) {
-      this.spawnTimer -= this.SPAWN_INTERVAL_MS
+      this.spawnTimer -= spawnInterval
 
-      // D-04: progressive letter pool
-      const available = getAvailableLetters(
-        this.totalSpawned,
-        this.SESSION_LENGTH,
-      )
-      const letter =
-        available[Math.floor(Math.random() * available.length)] ?? 'a'
-
-      const { item, index } = ctx.acquirePoolItem()
-      const bt = item as BitmapText
-
-      // Pitfall 2: reset ALL properties on reused pool item
-      bt.text = letter.toUpperCase()
-      const colorIdx = Math.floor(Math.random() * LETTER_COLORS.length)
-      bt.tint = LETTER_COLORS[colorIdx] ?? 0xffffff
-      bt.scale.set(1)
-      bt.alpha = 1
-      bt.anchor.set(0.5)
-      bt.x = 80 + Math.random() * (BASE_WIDTH - 160)
-      bt.y = -40
-      bt.visible = true
-
-      ctx.gameRoot.addChild(bt)
-      this.activeEntities.push({
-        text: bt,
-        poolIndex: index,
-        letter, // lowercase for matching
-        baseX: bt.x,
-        originalTint: bt.tint,
-        tween: null,
-        markedForRemoval: false,
-      })
+      if (this.mode === 'letters') {
+        this._spawnLetter(ctx)
+      } else {
+        this._spawnWord(ctx)
+      }
       this.totalSpawned++
     }
 
@@ -244,52 +303,33 @@ export class PlayingState implements GameState {
     const dtSec = dt / 1000
     for (const entity of this.activeEntities) {
       if (entity.tween === null && !entity.markedForRemoval) {
-        entity.text.y += this.FALL_SPEED * dtSec
+        entity.text.y += fallSpeed * dtSec
+      }
+    }
+    for (const entity of this.activeWordEntities) {
+      if (entity.tween === null && !entity.markedForRemoval) {
+        entity.text.y += fallSpeed * dtSec
       }
     }
 
-    // --- Input processing (D-13, D-14, D-15) ---
+    // --- Input processing ---
     const keys = ctx.getInputBuffer()
-    for (const key of keys) {
-      const match = findLowestMatch(this.activeEntities, key)
-      if (match) {
-        this.hits++
-        match.tween = createHitTween()
-        match.markedForRemoval = true
-      } else {
-        this.misses++
-        // D-08: red flash on lowest letter
-        const lowest = findLowestEntity(this.activeEntities)
-        if (lowest?.tween === null) {
-          lowest.tween = createMissTween()
-        }
-      }
+    if (this.mode === 'letters') {
+      this._processLetterInput(keys)
+    } else {
+      this._processWordInput(keys)
     }
 
-    // --- Update score display (D-10) ---
+    // --- Update score display ---
     if (this.scoreText) {
       this.scoreText.text = 'Score: ' + String(this.hits)
     }
 
-    // --- Tween updates ---
-    for (const entity of this.activeEntities) {
-      if (entity.tween !== null) {
-        const done = updateTween(entity, dt)
-        if (done) {
-          if (entity.tween.type === 'miss') {
-            // Restore visual after miss feedback
-            entity.text.tint = entity.originalTint
-            entity.text.x = entity.baseX
-            entity.tween = null
-          } else {
-            // hit or bottom: tween complete, null it for cleanup pass
-            entity.tween = null
-          }
-        }
-      }
-    }
+    // --- Tween updates (both arrays) ---
+    this._updateTweens(this.activeEntities, dt)
+    this._updateWordTweens(this.activeWordEntities, dt)
 
-    // --- Bottom detection (D-09) ---
+    // --- Bottom detection ---
     for (const entity of this.activeEntities) {
       if (
         entity.tween === null &&
@@ -300,8 +340,18 @@ export class PlayingState implements GameState {
         entity.markedForRemoval = true
       }
     }
+    for (const entity of this.activeWordEntities) {
+      if (
+        entity.tween === null &&
+        !entity.markedForRemoval &&
+        entity.text.y > BASE_HEIGHT + 40
+      ) {
+        entity.tween = createBottomTween()
+        entity.markedForRemoval = true
+      }
+    }
 
-    // --- Cleanup pass (Pitfall 3: reverse iteration) ---
+    // --- Cleanup pass (reverse iteration) ---
     for (let i = this.activeEntities.length - 1; i >= 0; i--) {
       const entity = this.activeEntities[i]
       if (entity?.markedForRemoval && entity.tween === null) {
@@ -311,18 +361,29 @@ export class PlayingState implements GameState {
         this.activeEntities.splice(i, 1)
       }
     }
+    for (let i = this.activeWordEntities.length - 1; i >= 0; i--) {
+      const entity = this.activeWordEntities[i]
+      if (entity?.markedForRemoval && entity.tween === null) {
+        const sbt = entity.text as unknown as SplitBitmapText
+        sbt.visible = false
+        ctx.gameRoot.removeChild(sbt)
+        ctx.releaseWordPoolItem(entity.poolIndex)
+        this.activeWordEntities.splice(i, 1)
+      }
+    }
 
-    // --- Session end check (D-11) ---
-    if (
-      this.totalSpawned >= this.SESSION_LENGTH &&
-      this.activeEntities.length === 0
-    ) {
+    // --- Session end check ---
+    const activeCount =
+      this.mode === 'words'
+        ? this.activeWordEntities.length
+        : this.activeEntities.length
+    if (this.totalSpawned >= sessionLength && activeCount === 0) {
       ctx.setSessionResult({
         hits: this.hits,
         misses: this.misses,
-        total: this.SESSION_LENGTH,
-        timePlayed: Math.round(this.sessionElapsed),
-        mode: 'letters',
+        total: sessionLength,
+        timePlayed: Math.round(this.timePlayedMs),
+        mode: this.mode,
       })
       ctx.transitionTo('gameover')
     }
@@ -333,13 +394,22 @@ export class PlayingState implements GameState {
   }
 
   exit(ctx: GameContext): void {
-    // Release all remaining active entities
+    // Release letter entities
     for (const entity of this.activeEntities) {
       entity.text.visible = false
       ctx.gameRoot.removeChild(entity.text)
       ctx.releasePoolItem(entity.poolIndex)
     }
     this.activeEntities = []
+
+    // Release word entities
+    for (const entity of this.activeWordEntities) {
+      const sbt = entity.text as unknown as SplitBitmapText
+      sbt.visible = false
+      ctx.gameRoot.removeChild(sbt)
+      ctx.releaseWordPoolItem(entity.poolIndex)
+    }
+    this.activeWordEntities = []
 
     // Remove score text
     if (this.scoreText) {
@@ -352,11 +422,184 @@ export class PlayingState implements GameState {
     this.totalSpawned = 0
     this.hits = 0
     this.misses = 0
+    this.timePlayedMs = 0
+    this.wordLists = null
+  }
+
+  // --- Private helpers ---
+
+  private _spawnLetter(ctx: GameContext): void {
+    const available = getAvailableLetters(
+      this.totalSpawned,
+      this.SESSION_LENGTH,
+    )
+    const letter =
+      available[Math.floor(Math.random() * available.length)] ?? 'a'
+
+    const { item, index } = ctx.acquirePoolItem()
+    const bt = item as BitmapText
+
+    bt.text = letter.toUpperCase()
+    const colorIdx = Math.floor(Math.random() * LETTER_COLORS.length)
+    bt.tint = LETTER_COLORS[colorIdx] ?? 0xffffff
+    bt.scale.set(1)
+    bt.alpha = 1
+    bt.anchor.set(0.5)
+    bt.x = 80 + Math.random() * (BASE_WIDTH - 160)
+    bt.y = -40
+    bt.visible = true
+
+    ctx.gameRoot.addChild(bt)
+    this.activeEntities.push({
+      text: bt,
+      poolIndex: index,
+      letter,
+      baseX: bt.x,
+      originalTint: bt.tint,
+      tween: null,
+      markedForRemoval: false,
+    })
+  }
+
+  private _spawnWord(ctx: GameContext): void {
+    if (!this.wordLists) return
+
+    const available = getAvailableWords(
+      this.wordLists,
+      this.totalSpawned,
+      this.WORD_SESSION_LENGTH,
+    )
+    const word =
+      available[Math.floor(Math.random() * available.length)] ?? 'mot'
+
+    const { item, index } = ctx.acquireWordPoolItem()
+    const sbt = item as SplitBitmapText
+
+    sbt.text = word.toUpperCase()
+    // Ensure chars are populated after text change
+    sbt.split()
+
+    const colorIdx = Math.floor(Math.random() * LETTER_COLORS.length)
+    const tint = LETTER_COLORS[colorIdx] ?? 0xffffff
+
+    // Reset all char tints to the chosen color
+    for (const char of sbt.chars) {
+      char.tint = tint
+    }
+
+    sbt.tint = 0xffffff // Container tint neutral so char tints show
+    sbt.scale.set(1)
+    sbt.alpha = 1
+
+    // Constrain x to prevent edge overflow
+    const wordWidth = sbt.width || 100
+    const minX = wordWidth / 2 + 20
+    const maxX = BASE_WIDTH - wordWidth / 2 - 20
+    sbt.x = minX + Math.random() * Math.max(0, maxX - minX)
+    sbt.y = -40
+    sbt.visible = true
+
+    ctx.gameRoot.addChild(sbt)
+    this.activeWordEntities.push({
+      text: sbt as unknown as WordEntity['text'],
+      poolIndex: index,
+      word: word.toLowerCase(),
+      cursorIndex: 0,
+      baseX: sbt.x,
+      originalTint: tint,
+      tween: null,
+      markedForRemoval: false,
+    })
+  }
+
+  private _processLetterInput(keys: string[]): void {
+    for (const key of keys) {
+      const match = findLowestMatch(this.activeEntities, key)
+      if (match) {
+        this.hits++
+        match.tween = createHitTween()
+        match.markedForRemoval = true
+      } else {
+        this.misses++
+        const lowest = findLowestEntity(this.activeEntities)
+        if (lowest?.tween === null) {
+          lowest.tween = createMissTween()
+        }
+      }
+    }
+  }
+
+  private _processWordInput(keys: string[]): void {
+    const activeWord = findActiveWord(this.activeWordEntities)
+    if (!activeWord) return
+
+    for (const key of keys) {
+      const result = matchWordKey(activeWord, key)
+      if (result === 'correct') {
+        // Green highlight on matched character
+        const charObj = activeWord.text.chars[activeWord.cursorIndex]
+        if (charObj) charObj.tint = 0x4ade80
+        activeWord.cursorIndex++
+        this.hits++
+      } else if (result === 'complete') {
+        // Green the last character, then trigger hit tween
+        const charObj = activeWord.text.chars[activeWord.cursorIndex]
+        if (charObj) charObj.tint = 0x4ade80
+        activeWord.cursorIndex++
+        this.hits++
+        activeWord.tween = createHitTween()
+        activeWord.markedForRemoval = true
+      } else {
+        // Wrong key: red flash + shake, no cursor reset
+        this.misses++
+        if (activeWord.tween === null) {
+          activeWord.tween = createMissTween()
+        }
+      }
+    }
+  }
+
+  private _updateTweens(entities: LetterEntity[], dt: number): void {
+    for (const entity of entities) {
+      if (entity.tween !== null) {
+        const done = updateTween(entity, dt)
+        if (done) {
+          if (entity.tween.type === 'miss') {
+            entity.text.tint = entity.originalTint
+            entity.text.x = entity.baseX
+            entity.tween = null
+          } else {
+            entity.tween = null
+          }
+        }
+      }
+    }
+  }
+
+  private _updateWordTweens(entities: WordEntity[], dt: number): void {
+    for (const entity of entities) {
+      if (entity.tween !== null) {
+        const done = updateTween(entity, dt)
+        if (done) {
+          if (entity.tween.type === 'miss') {
+            // Restore char tints after miss
+            for (let i = entity.cursorIndex; i < entity.text.chars.length; i++) {
+              const c = entity.text.chars[i]
+              if (c) c.tint = entity.originalTint
+            }
+            entity.text.x = entity.baseX
+            entity.tween = null
+          } else {
+            entity.tween = null
+          }
+        }
+      }
+    }
   }
 }
 
 /**
- * Game over / results state: shows session stats and replay button (D-12, D-16).
+ * Game over / results state: shows session summary with accuracy, items, and time.
  */
 export class GameOverState implements GameState {
   private container: Container | null = null
@@ -365,30 +608,58 @@ export class GameOverState implements GameState {
     const result = ctx.getSessionResult()
     this.container = new Container()
 
-    // Title -- encouraging "Bravo !" text
+    // Title
     const title = new BitmapText({
       text: 'Bravo !',
       style: { fontFamily: 'GameFont', fontSize: 48 },
     })
     title.anchor.set(0.5)
     title.x = BASE_WIDTH / 2
-    title.y = BASE_HEIGHT * 0.2
+    title.y = BASE_HEIGHT * 0.15
 
-    // Stats display
+    // Stats
     const hits = result?.hits ?? 0
-    const misses = result?.misses ?? 0
     const total = result?.total ?? 0
+    const mode = result?.mode ?? ctx.getGameMode()
+    const timePlayed = result?.timePlayed ?? 0
     const accuracy = total > 0 ? Math.round((hits / total) * 100) : 0
 
-    const statsText = new BitmapText({
-      text: `${String(hits)} touches  |  ${String(misses)} rates  |  ${String(accuracy)}% precision`,
-      style: { fontFamily: 'GameFont', fontSize: 20 },
-    })
-    statsText.anchor.set(0.5)
-    statsText.x = BASE_WIDTH / 2
-    statsText.y = BASE_HEIGHT * 0.45
+    // Format time as mm:ss
+    const totalSec = Math.floor(timePlayed / 1000)
+    const min = Math.floor(totalSec / 60)
+    const sec = totalSec % 60
+    const timeStr = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
 
-    // "Rejouer" button (D-12)
+    const itemLabel = mode === 'words' ? 'mots' : 'lettres'
+
+    // Accuracy line
+    const accuracyText = new BitmapText({
+      text: `${String(accuracy)}% precision`,
+      style: { fontFamily: 'GameFont', fontSize: 22 },
+    })
+    accuracyText.anchor.set(0.5)
+    accuracyText.x = BASE_WIDTH / 2
+    accuracyText.y = BASE_HEIGHT * 0.35
+
+    // Items line
+    const itemsText = new BitmapText({
+      text: `${String(total)} ${itemLabel} pratiques`,
+      style: { fontFamily: 'GameFont', fontSize: 22 },
+    })
+    itemsText.anchor.set(0.5)
+    itemsText.x = BASE_WIDTH / 2
+    itemsText.y = BASE_HEIGHT * 0.42
+
+    // Time line
+    const timeText = new BitmapText({
+      text: `Temps: ${timeStr}`,
+      style: { fontFamily: 'GameFont', fontSize: 22 },
+    })
+    timeText.anchor.set(0.5)
+    timeText.x = BASE_WIDTH / 2
+    timeText.y = BASE_HEIGHT * 0.49
+
+    // "Rejouer" button
     const replayBtn = new BitmapText({
       text: 'Rejouer',
       style: { fontFamily: 'GameFont', fontSize: 28 },
@@ -428,7 +699,14 @@ export class GameOverState implements GameState {
       ctx.transitionTo('menu')
     })
 
-    this.container.addChild(title, statsText, replayBtn, menuBtn)
+    this.container.addChild(
+      title,
+      accuracyText,
+      itemsText,
+      timeText,
+      replayBtn,
+      menuBtn,
+    )
     ctx.gameRoot.addChild(this.container)
   }
 

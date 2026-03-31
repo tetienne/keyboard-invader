@@ -2,12 +2,14 @@ import { describe, it, expect, vi } from 'vitest'
 import type {
   GameState,
   GameContext,
+  GameMode,
   StateName,
   SessionResult,
 } from '@/game/types.js'
 import {
   StateMachine,
   BootState,
+  MenuState,
   PlayingState,
   PausedState,
   GameOverState,
@@ -148,14 +150,18 @@ describe('StateMachine', () => {
 
 // --- Concrete State Tests ---
 
-function createMockGameContext(): GameContext & {
+function createMockGameContext(
+  mode: GameMode = 'letters',
+): GameContext & {
   transitions: StateName[]
   inputBuffer: string[]
 } {
   const transitions: StateName[] = []
   const inputBuffer: string[] = []
   let sessionResult: SessionResult | null = null
-  let itemCount = 0
+  let gameMode: GameMode = mode
+  let letterItemCount = 0
+  let wordItemCount = 0
   const addChildFn = vi.fn()
   const removeChildFn = vi.fn()
   return {
@@ -173,7 +179,7 @@ function createMockGameContext(): GameContext & {
       return buf
     },
     acquirePoolItem: vi.fn(() => {
-      const idx = itemCount++
+      const idx = letterItemCount++
       return {
         item: {
           visible: true,
@@ -189,6 +195,25 @@ function createMockGameContext(): GameContext & {
       }
     }),
     releasePoolItem: vi.fn(),
+    acquireWordPoolItem: vi.fn(() => {
+      const idx = wordItemCount++
+      return {
+        item: {
+          visible: true,
+          x: 0,
+          y: 0,
+          text: '',
+          tint: 0xffffff,
+          alpha: 1,
+          width: 200,
+          scale: { set: vi.fn() },
+          chars: [] as Array<{ tint: number }>,
+          split: vi.fn(),
+        },
+        index: idx,
+      }
+    }),
+    releaseWordPoolItem: vi.fn(),
     poolActiveCount: 0,
     poolTotalCount: 20,
     currentStateName: 'boot' as StateName,
@@ -196,8 +221,10 @@ function createMockGameContext(): GameContext & {
       sessionResult = result
     }),
     getSessionResult: () => sessionResult,
-    setGameMode: vi.fn(),
-    getGameMode: () => 'letters' as const,
+    setGameMode: vi.fn((m: GameMode) => {
+      gameMode = m
+    }),
+    getGameMode: () => gameMode,
     transitions,
     inputBuffer,
   }
@@ -212,9 +239,37 @@ describe('BootState', () => {
   })
 })
 
-describe('PlayingState', () => {
-  it('spawns BitmapText letter after SPAWN_INTERVAL_MS (1500ms)', () => {
+describe('MenuState', () => {
+  it('enter creates mode selection buttons', () => {
     const ctx = createMockGameContext()
+    const state = new MenuState()
+    state.enter(ctx)
+    // Title + 2 buttons + 2 labels = 5 addChild calls
+    expect(ctx.gameRoot.addChild).toHaveBeenCalledTimes(5)
+  })
+
+  it('exit cleans up all display objects', () => {
+    const ctx = createMockGameContext()
+    const state = new MenuState()
+    state.enter(ctx)
+    state.exit(ctx)
+    // Should remove 5 items
+    expect(ctx.gameRoot.removeChild).toHaveBeenCalledTimes(5)
+  })
+})
+
+describe('PlayingState', () => {
+  it('reads gameMode from context on enter', () => {
+    const ctx = createMockGameContext('words')
+    const state = new PlayingState()
+    state.enter(ctx)
+    // Should not crash; mode stored internally
+    expect(ctx.getGameMode()).toBe('words')
+    state.exit(ctx)
+  })
+
+  it('spawns BitmapText letter after SPAWN_INTERVAL_MS (1500ms) in letter mode', () => {
+    const ctx = createMockGameContext('letters')
     const state = new PlayingState()
     state.enter(ctx)
     state.update(ctx, 1500)
@@ -229,9 +284,17 @@ describe('PlayingState', () => {
     expect(ctx.acquirePoolItem).not.toHaveBeenCalled()
   })
 
+  it('spawns word via acquireWordPoolItem in word mode', () => {
+    const ctx = createMockGameContext('words')
+    const state = new PlayingState()
+    state.enter(ctx)
+    // Word spawn interval is 2500ms
+    state.update(ctx, 2500)
+    expect(ctx.acquireWordPoolItem).toHaveBeenCalled()
+  })
+
   it('correct keypress increments hits counter', () => {
     const ctx = createMockGameContext()
-    // Make pool items return objects with a known letter
     let itemCount = 0
     vi.mocked(ctx.acquirePoolItem).mockImplementation(() => {
       return {
@@ -251,18 +314,9 @@ describe('PlayingState', () => {
 
     const state = new PlayingState()
     state.enter(ctx)
-
-    // Spawn a letter (1500ms)
     state.update(ctx, 1500)
-
-    // Now we need to match the spawned letter. The letter is random from HOME_ROW.
-    // We can push all home row keys to ensure at least one matches.
     ctx.inputBuffer.push('a', 's', 'd', 'f', 'j', 'k', 'l')
     state.update(ctx, 16)
-
-    // After processing, setSessionResult won't be called yet (only 1 letter out of 20)
-    // but hits should have incremented. We can verify by running the full session.
-    // For now just verify no crash and acquirePoolItem was called.
     expect(ctx.acquirePoolItem).toHaveBeenCalled()
   })
 
@@ -289,18 +343,15 @@ describe('PlayingState', () => {
     state.enter(ctx)
     state.update(ctx, 1500) // spawn
 
-    // Press a key that is definitely NOT in the home row
     ctx.inputBuffer.push('1')
     state.update(ctx, 16) // process input
 
-    // Miss should have been counted -- we can verify by running to session end
     expect(ctx.acquirePoolItem).toHaveBeenCalledTimes(1)
   })
 
   it('transitions to gameover when all 20 letters processed and cleared', () => {
     const ctx = createMockGameContext()
     let itemCount = 0
-    // Track spawned items so we can make them fall off-screen
     const items: { y: number; visible: boolean; alpha: number; x: number }[] =
       []
     vi.mocked(ctx.acquirePoolItem).mockImplementation(() => {
@@ -321,27 +372,21 @@ describe('PlayingState', () => {
     const state = new PlayingState()
     state.enter(ctx)
 
-    // Spawn all 20 letters (20 * 1500ms = 30000ms)
-    // Then let them all fall off-screen and have their bottom tweens complete
     for (let i = 0; i < 20; i++) {
-      state.update(ctx, 1500) // spawn one letter
+      state.update(ctx, 1500)
     }
     expect(ctx.acquirePoolItem).toHaveBeenCalledTimes(20)
 
-    // Move all letters way below screen to trigger bottom detection
     for (const item of items) {
       item.y = 800
     }
-    state.update(ctx, 16) // detect bottom, start bottom tweens
-
-    // Advance time to complete all bottom tweens (400ms duration)
+    state.update(ctx, 16)
     state.update(ctx, 500)
 
-    // Cleanup pass should remove them, then session end triggers
     expect(ctx.transitions).toContain('gameover')
   })
 
-  it('setSessionResult called before transitioning to gameover', () => {
+  it('setSessionResult includes timePlayed and mode', () => {
     const ctx = createMockGameContext()
     let itemCount = 0
     const items: { y: number; visible: boolean; alpha: number; x: number }[] =
@@ -364,22 +409,22 @@ describe('PlayingState', () => {
     const state = new PlayingState()
     state.enter(ctx)
 
-    // Spawn all 20
     for (let i = 0; i < 20; i++) {
       state.update(ctx, 1500)
     }
 
-    // Force all off-screen
     for (const item of items) {
       item.y = 800
     }
-    state.update(ctx, 16) // detect bottom
-    state.update(ctx, 500) // complete tweens + cleanup
+    state.update(ctx, 16)
+    state.update(ctx, 500)
 
     expect(ctx.setSessionResult).toHaveBeenCalled()
     const result = ctx.getSessionResult()
     expect(result).not.toBeNull()
     expect(result?.total).toBe(20)
+    expect(result?.timePlayed).toBeGreaterThan(0)
+    expect(result?.mode).toBe('letters')
   })
 
   it('exit clears all active entities', () => {
@@ -425,13 +470,31 @@ describe('GameOverState', () => {
     expect(ctx.gameRoot.removeChild).toHaveBeenCalled()
   })
 
-  it('enter reads getSessionResult to display stats', () => {
+  it('reads timePlayed and mode from SessionResult', () => {
     const ctx = createMockGameContext()
-    // Set a session result before entering gameover
-    ctx.setSessionResult({ hits: 15, misses: 5, total: 20, timePlayed: 30000, mode: 'letters' })
+    ctx.setSessionResult({
+      hits: 15,
+      misses: 5,
+      total: 20,
+      timePlayed: 30000,
+      mode: 'letters',
+    })
     const state = new GameOverState()
     state.enter(ctx)
-    // Should not crash and should add container to gameRoot
+    expect(ctx.gameRoot.addChild).toHaveBeenCalled()
+  })
+
+  it('reads word mode from SessionResult', () => {
+    const ctx = createMockGameContext('words')
+    ctx.setSessionResult({
+      hits: 10,
+      misses: 3,
+      total: 15,
+      timePlayed: 45000,
+      mode: 'words',
+    })
+    const state = new GameOverState()
+    state.enter(ctx)
     expect(ctx.gameRoot.addChild).toHaveBeenCalled()
   })
 })

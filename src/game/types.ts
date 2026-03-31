@@ -55,4 +55,6 @@ export interface GameContext {
   getSessionResult(): SessionResult | null
   setGameMode(mode: GameMode): void
   getGameMode(): GameMode
+  acquireWordPoolItem(): { item: unknown; index: number }
+  releaseWordPoolItem(index: number): void
 }
