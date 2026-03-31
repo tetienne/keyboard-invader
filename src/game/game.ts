@@ -179,15 +179,14 @@ export class Game implements GameContext {
     this._isPaused = true
     this.app.ticker.stop()
     this._showPauseOverlay()
+    // Force one render so the overlay is visible while ticker is stopped
+    this.app.renderer.render(this.app.stage)
   }
 
   private _resume(): void {
     if (!this._isPaused) return
-    // On focus return: keep overlay visible, wait for keypress to actually resume
-    // Ticker stays stopped, overlay stays shown — render one frame to show it
-    this.app.ticker.start()
-    this.app.ticker.update()
-    this.app.ticker.stop()
+    // On focus return: keep overlay visible, force render so user sees it
+    this.app.renderer.render(this.app.stage)
   }
 
   private _unpause(): void {
