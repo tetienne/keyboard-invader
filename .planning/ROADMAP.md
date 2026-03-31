@@ -81,7 +81,10 @@ Plans:
   2. In word mode, complete words fall and the child types them letter-by-letter to destroy them
   3. The child can pause the game at any time and resume from where they left off
   4. At the end of a session, a summary screen shows accuracy, items practiced, and time played
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 04-01-PLAN.md -- Types, word lists, words.ts module with selection/matching logic + unit tests
+- [ ] 04-02-PLAN.md -- MenuState mode buttons, PlayingState word mode, GameOverState summary + browser verification
 **UI hint**: yes
 
 ### Phase 5: Adaptive Difficulty
@@ -165,7 +168,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 1. Project Scaffolding & Dev Tooling | 0/3 | Planning complete | - |
 | 2. Game Engine Foundation | 0/2 | Planning complete | - |
 | 3. Letter Mode Gameplay | 1/2 | Executing | - |
-| 4. Word Mode & Game Modes | 0/0 | Not started | - |
+| 4. Word Mode & Game Modes | 0/2 | Planning complete | - |
 | 5. Adaptive Difficulty | 0/0 | Not started | - |
 | 6. Profiles & Local Persistence | 0/0 | Not started | - |
 | 7. Progression System | 0/0 | Not started | - |
