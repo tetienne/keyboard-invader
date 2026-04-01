@@ -537,6 +537,8 @@ export class ProfileState implements GameState {
     input.style.border = '2px solid #a855f7'
     input.style.outline = 'none'
     input.style.fontFamily = 'Arial, sans-serif'
+    input.style.backgroundColor = '#1a1a2e'
+    input.style.color = '#ffffff'
 
     const container = document.getElementById('game-container')
     if (container) {
