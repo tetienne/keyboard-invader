@@ -11,11 +11,9 @@ import { AVATARS } from '../avatars/definitions.js'
 import type { AvatarDefinition } from '../avatars/definitions.js'
 import { drawAvatar } from '../avatars/renderer.js'
 import { t } from '../shared/i18n/index.js'
-
-type ProfileView = 'select' | 'create' | 'edit' | 'delete-confirm'
+import type { TranslationKey } from '../shared/i18n/index.js'
 
 export class ProfileState implements GameState {
-  private _currentView: ProfileView = 'select'
   private _container: Container | null = null
   private _profiles: ProfileData[] = []
   private _editTarget: ProfileData | null = null
@@ -29,10 +27,8 @@ export class ProfileState implements GameState {
     this._profiles = ctx.getProfileRepository().loadAll()
 
     if (this._profiles.length === 0) {
-      this._currentView = 'create'
       this._renderCreateView(ctx)
     } else {
-      this._currentView = 'select'
       this._renderSelectView(ctx)
     }
   }
@@ -61,9 +57,8 @@ export class ProfileState implements GameState {
   private _clearView(): void {
     this._removeInput()
     if (this._container) {
-      this._container.removeChildren()
-      // Destroy children manually since removeChildren does not destroy
-      // (PixiJS v8 requires explicit destroy)
+      const removed = this._container.removeChildren()
+      for (const child of removed) child.destroy({ children: true })
     }
   }
 
@@ -143,7 +138,6 @@ export class ProfileState implements GameState {
       editBtn.on('pointerout', () => editBtn.scale.set(1.0))
       editBtn.on('pointertap', () => {
         this._editTarget = profile
-        this._currentView = 'edit'
         this._renderEditView(ctx, profile)
       })
       this._container.addChild(editBtn)
@@ -162,7 +156,6 @@ export class ProfileState implements GameState {
       deleteBtn.on('pointerout', () => deleteBtn.scale.set(1.0))
       deleteBtn.on('pointertap', () => {
         this._editTarget = profile
-        this._currentView = 'delete-confirm'
         this._renderDeleteConfirmView(ctx, profile)
       })
       this._container.addChild(deleteBtn)
@@ -185,7 +178,6 @@ export class ProfileState implements GameState {
       plusBtn.on('pointerover', () => plusBtn.scale.set(1.15))
       plusBtn.on('pointerout', () => plusBtn.scale.set(1.0))
       plusBtn.on('pointertap', () => {
-        this._currentView = 'create'
         this._renderCreateView(ctx)
       })
       this._container.addChild(plusBtn)
@@ -210,14 +202,58 @@ export class ProfileState implements GameState {
   }
 
   private _renderCreateView(ctx: GameContext): void {
+    this._selectedAvatarId = null
+    this._renderProfileForm(ctx, {
+      titleKey: 'profiles.create.title',
+      initialName: '',
+      initialAvatarId: null,
+      onConfirm: (name) => {
+        const newProfile: ProfileData = {
+          id: generateProfileId(),
+          name,
+          avatarId: this._selectedAvatarId!,
+          cumulativeStats: createDefaultStats(),
+          lastDifficultyParams: null,
+          preferredGameMode: null,
+          sessionHistory: [],
+          createdAt: new Date().toISOString(),
+        }
+        this._profiles.push(newProfile)
+        ctx.getProfileRepository().saveAll(this._profiles)
+        this._selectProfile(ctx, newProfile)
+      },
+    })
+  }
+
+  private _renderEditView(ctx: GameContext, profile: ProfileData): void {
+    this._selectedAvatarId = profile.avatarId
+    this._renderProfileForm(ctx, {
+      titleKey: 'profiles.edit',
+      initialName: profile.name,
+      initialAvatarId: profile.avatarId,
+      onConfirm: (name) => {
+        profile.name = name
+        profile.avatarId = this._selectedAvatarId!
+        ctx.getProfileRepository().saveAll(this._profiles)
+        this._renderSelectView(ctx)
+      },
+    })
+  }
+
+  private _renderProfileForm(
+    ctx: GameContext,
+    opts: {
+      titleKey: TranslationKey
+      initialName: string
+      initialAvatarId: string | null
+      onConfirm: (name: string) => void
+    },
+  ): void {
     this._clearView()
     if (!this._container) return
 
-    this._selectedAvatarId = null
-
-    // Title
     const title = new BitmapText({
-      text: t('profiles.create.title'),
+      text: t(opts.titleKey),
       style: { fontFamily: 'GameFont', fontSize: 36 },
     })
     title.anchor.set(0.5)
@@ -225,7 +261,6 @@ export class ProfileState implements GameState {
     title.y = BASE_HEIGHT * 0.08
     this._container.addChild(title)
 
-    // Name input label
     const nameLabel = new BitmapText({
       text: t('profiles.create.name'),
       style: { fontFamily: 'GameFont', fontSize: 18 },
@@ -235,10 +270,8 @@ export class ProfileState implements GameState {
     nameLabel.y = BASE_HEIGHT * 0.2
     this._container.addChild(nameLabel)
 
-    // HTML input for name entry
-    this._createNameInput('')
+    this._createNameInput(opts.initialName)
 
-    // Avatar selection label
     const avatarLabel = new BitmapText({
       text: t('profiles.create.avatar'),
       style: { fontFamily: 'GameFont', fontSize: 18 },
@@ -248,51 +281,8 @@ export class ProfileState implements GameState {
     avatarLabel.y = BASE_HEIGHT * 0.4
     this._container.addChild(avatarLabel)
 
-    // Avatar grid
-    const avatarSize = 70
-    const spacing = 110
-    const totalWidth = AVATARS.length * spacing
-    const startX = (BASE_WIDTH - totalWidth) / 2 + spacing / 2
-    const highlightGraphics: Graphics[] = []
+    this._renderAvatarGrid(opts.initialAvatarId)
 
-    for (let i = 0; i < AVATARS.length; i++) {
-      const def = AVATARS[i]!
-      const x = startX + i * spacing
-      const y = BASE_HEIGHT * 0.55
-
-      const avatarContainer = new Container()
-      avatarContainer.x = x
-      avatarContainer.y = y
-
-      // Highlight ring (hidden by default)
-      const highlight = new Graphics()
-      highlight.circle(0, 0, avatarSize / 2 + 8)
-      highlight.fill({ color: 0xffffff, alpha: 0.3 })
-      highlight.visible = false
-      avatarContainer.addChild(highlight)
-      highlightGraphics.push(highlight)
-
-      const g = new Graphics()
-      drawAvatar(g, def, avatarSize)
-      avatarContainer.addChild(g)
-
-      avatarContainer.eventMode = 'static'
-      avatarContainer.cursor = 'pointer'
-      avatarContainer.on('pointerover', () => avatarContainer.scale.set(1.15))
-      avatarContainer.on('pointerout', () => avatarContainer.scale.set(1.0))
-      avatarContainer.on('pointertap', () => {
-        this._selectedAvatarId = def.id
-        // Update highlight rings
-        for (const h of highlightGraphics) {
-          h.visible = false
-        }
-        highlight.visible = true
-      })
-
-      this._container.addChild(avatarContainer)
-    }
-
-    // Confirm button
     const confirmBtn = new BitmapText({
       text: t('profiles.create.confirm'),
       style: { fontFamily: 'GameFont', fontSize: 24 },
@@ -307,61 +297,13 @@ export class ProfileState implements GameState {
     confirmBtn.on('pointertap', () => {
       const name = this._nameInput?.value.trim() ?? ''
       if (name.length === 0 || !this._selectedAvatarId) return
-
-      const newProfile: ProfileData = {
-        id: generateProfileId(),
-        name,
-        avatarId: this._selectedAvatarId,
-        cumulativeStats: createDefaultStats(),
-        lastDifficultyParams: null,
-        preferredGameMode: null,
-        sessionHistory: [],
-        createdAt: new Date().toISOString(),
-      }
-      this._profiles.push(newProfile)
-      ctx.getProfileRepository().saveAll(this._profiles)
-      this._selectProfile(ctx, newProfile)
+      opts.onConfirm(name)
     })
     this._container.addChild(confirmBtn)
   }
 
-  private _renderEditView(ctx: GameContext, profile: ProfileData): void {
-    this._clearView()
+  private _renderAvatarGrid(initialSelectedId: string | null): void {
     if (!this._container) return
-
-    this._selectedAvatarId = profile.avatarId
-
-    // Title
-    const title = new BitmapText({
-      text: t('profiles.edit'),
-      style: { fontFamily: 'GameFont', fontSize: 36 },
-    })
-    title.anchor.set(0.5)
-    title.x = BASE_WIDTH / 2
-    title.y = BASE_HEIGHT * 0.08
-    this._container.addChild(title)
-
-    // Name input (pre-filled)
-    const nameLabel = new BitmapText({
-      text: t('profiles.create.name'),
-      style: { fontFamily: 'GameFont', fontSize: 18 },
-    })
-    nameLabel.anchor.set(0.5)
-    nameLabel.x = BASE_WIDTH / 2
-    nameLabel.y = BASE_HEIGHT * 0.2
-    this._container.addChild(nameLabel)
-
-    this._createNameInput(profile.name)
-
-    // Avatar selection
-    const avatarLabel = new BitmapText({
-      text: t('profiles.create.avatar'),
-      style: { fontFamily: 'GameFont', fontSize: 18 },
-    })
-    avatarLabel.anchor.set(0.5)
-    avatarLabel.x = BASE_WIDTH / 2
-    avatarLabel.y = BASE_HEIGHT * 0.4
-    this._container.addChild(avatarLabel)
 
     const avatarSize = 70
     const spacing = 110
@@ -381,7 +323,7 @@ export class ProfileState implements GameState {
       const highlight = new Graphics()
       highlight.circle(0, 0, avatarSize / 2 + 8)
       highlight.fill({ color: 0xffffff, alpha: 0.3 })
-      highlight.visible = def.id === profile.avatarId
+      highlight.visible = def.id === initialSelectedId
       avatarContainer.addChild(highlight)
       highlightGraphics.push(highlight)
 
@@ -395,39 +337,12 @@ export class ProfileState implements GameState {
       avatarContainer.on('pointerout', () => avatarContainer.scale.set(1.0))
       avatarContainer.on('pointertap', () => {
         this._selectedAvatarId = def.id
-        for (const h of highlightGraphics) {
-          h.visible = false
-        }
+        for (const h of highlightGraphics) h.visible = false
         highlight.visible = true
       })
 
       this._container.addChild(avatarContainer)
     }
-
-    // Confirm button
-    const confirmBtn = new BitmapText({
-      text: t('profiles.create.confirm'),
-      style: { fontFamily: 'GameFont', fontSize: 24 },
-    })
-    confirmBtn.anchor.set(0.5)
-    confirmBtn.x = BASE_WIDTH / 2
-    confirmBtn.y = BASE_HEIGHT * 0.78
-    confirmBtn.eventMode = 'static'
-    confirmBtn.cursor = 'pointer'
-    confirmBtn.on('pointerover', () => confirmBtn.scale.set(1.1))
-    confirmBtn.on('pointerout', () => confirmBtn.scale.set(1.0))
-    confirmBtn.on('pointertap', () => {
-      const name = this._nameInput?.value.trim() ?? ''
-      if (name.length === 0 || !this._selectedAvatarId) return
-
-      profile.name = name
-      profile.avatarId = this._selectedAvatarId
-      ctx.getProfileRepository().saveAll(this._profiles)
-
-      this._currentView = 'select'
-      this._renderSelectView(ctx)
-    })
-    this._container.addChild(confirmBtn)
   }
 
   private _renderDeleteConfirmView(
@@ -488,10 +403,8 @@ export class ProfileState implements GameState {
       }
 
       if (this._profiles.length === 0) {
-        this._currentView = 'create'
         this._renderCreateView(ctx)
       } else {
-        this._currentView = 'select'
         this._renderSelectView(ctx)
       }
     })
@@ -510,7 +423,6 @@ export class ProfileState implements GameState {
     noBtn.on('pointerover', () => noBtn.scale.set(1.1))
     noBtn.on('pointerout', () => noBtn.scale.set(1.0))
     noBtn.on('pointertap', () => {
-      this._currentView = 'select'
       this._renderSelectView(ctx)
     })
     this._container.addChild(noBtn)

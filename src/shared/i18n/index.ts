@@ -2,7 +2,7 @@ import fr from './fr.json'
 import en from './en.json'
 
 type Locale = 'fr' | 'en'
-type TranslationKey = keyof typeof fr
+export type TranslationKey = keyof typeof fr
 
 const translations: Record<Locale, Record<string, string>> = { fr, en }
 

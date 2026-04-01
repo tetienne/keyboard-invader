@@ -10,72 +10,9 @@ import type { ProfileData } from '@/persistence/types.js'
 import { createDefaultStats } from '@/persistence/types.js'
 
 // Mock pixi.js
-vi.mock('pixi.js', () => {
-  class MockContainer {
-    children: unknown[] = []
-    x = 0
-    y = 0
-    scale = { set: vi.fn() }
-    eventMode = 'auto'
-    cursor = 'default'
-    addChild = vi.fn((...args: unknown[]) => {
-      this.children.push(...args)
-      return args[0]
-    })
-    removeChild = vi.fn()
-    removeChildren = vi.fn(() => {
-      this.children = []
-      return []
-    })
-    destroy = vi.fn()
-    on = vi.fn()
-    emit = vi.fn()
-  }
-
-  class MockBitmapText {
-    x = 0
-    y = 0
-    width = 100
-    height = 40
-    text = ''
-    tint = 0xffffff
-    alpha = 1
-    eventMode = 'auto'
-    cursor = 'default'
-    visible = true
-    anchor = { set: vi.fn() }
-    scale = { set: vi.fn() }
-    on = vi.fn()
-    destroy = vi.fn()
-    emit = vi.fn()
-
-    constructor(opts?: { text?: string }) {
-      if (opts?.text) this.text = opts.text
-    }
-  }
-
-  class MockGraphics {
-    x = 0
-    y = 0
-    visible = true
-    emit = vi.fn()
-    destroy = vi.fn()
-    clear = vi.fn().mockReturnThis()
-    rect = vi.fn().mockReturnThis()
-    circle = vi.fn().mockReturnThis()
-    moveTo = vi.fn().mockReturnThis()
-    lineTo = vi.fn().mockReturnThis()
-    closePath = vi.fn().mockReturnThis()
-    roundRect = vi.fn().mockReturnThis()
-    fill = vi.fn().mockReturnThis()
-  }
-
-  return {
-    Container: MockContainer,
-    BitmapText: MockBitmapText,
-    Graphics: MockGraphics,
-    BitmapFont: { install: vi.fn() },
-  }
+vi.mock('pixi.js', async () => {
+  const { createPixiMocks } = await import('../__mocks__/pixi.js')
+  return createPixiMocks()
 })
 
 // Mock i18n

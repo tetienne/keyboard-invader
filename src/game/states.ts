@@ -27,7 +27,7 @@ import {
   LETTER_DIFFICULTY_CONFIG,
   WORD_DIFFICULTY_CONFIG,
 } from './difficulty.js'
-import { getLocale } from '../shared/i18n/index.js'
+import { getLocale, t } from '../shared/i18n/index.js'
 import { MAX_SESSION_HISTORY } from '../persistence/types.js'
 
 function saveSessionToProfile(ctx: GameContext): void {
@@ -239,7 +239,7 @@ export class MenuState implements GameState {
 
     // "Change player" back-link (D-14)
     this.profileBtn = new BitmapText({
-      text: 'Changer de joueur',
+      text: t('profiles.back'),
       style: { fontFamily: 'GameFont', fontSize: 18 },
     })
     this.profileBtn.anchor.set(0.5)

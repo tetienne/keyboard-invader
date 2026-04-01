@@ -16,55 +16,9 @@ import {
 } from '@/game/states.js'
 
 // Mock pixi.js BEFORE any imports that use it
-vi.mock('pixi.js', () => {
-  class MockContainer {
-    children: unknown[] = []
-    x = 0
-    y = 0
-    scale = { set: vi.fn() }
-    addChild = vi.fn((child: unknown) => {
-      this.children.push(child)
-      return child
-    })
-    removeChild = vi.fn()
-    destroy = vi.fn()
-    emit = vi.fn()
-  }
-
-  class MockBitmapText {
-    x = 0
-    y = 0
-    width = 100
-    height = 40
-    text = ''
-    tint = 0xffffff
-    alpha = 1
-    eventMode = 'auto'
-    cursor = 'default'
-    visible = true
-    anchor = { set: vi.fn() }
-    scale = { set: vi.fn() }
-    on = vi.fn()
-    destroy = vi.fn()
-    emit = vi.fn()
-  }
-
-  class MockGraphics {
-    x = 0
-    y = 0
-    visible = true
-    emit = vi.fn()
-    destroy = vi.fn()
-    rect = vi.fn().mockReturnThis()
-    fill = vi.fn().mockReturnThis()
-  }
-
-  return {
-    Container: MockContainer,
-    BitmapText: MockBitmapText,
-    BitmapFont: { install: vi.fn() },
-    Graphics: MockGraphics,
-  }
+vi.mock('pixi.js', async () => {
+  const { createPixiMocks } = await import('../__mocks__/pixi.js')
+  return createPixiMocks()
 })
 
 function createMockState(): GameState {
