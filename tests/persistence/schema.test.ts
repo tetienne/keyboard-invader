@@ -52,9 +52,9 @@ describe('migrateIfNeeded', () => {
 
     const result = migrateIfNeeded(envelope)
     expect(result).toHaveLength(1)
-    expect(result[0].lastDifficultyParams).toBeNull()
-    expect(result[0].preferredGameMode).toBeNull()
-    expect(result[0].sessionHistory).toEqual([])
+    expect(result[0]!.lastDifficultyParams).toBeNull()
+    expect(result[0]!.preferredGameMode).toBeNull()
+    expect(result[0]!.sessionHistory).toEqual([])
   })
 
   it('preserves existing fields while adding defaults for missing ones', () => {
@@ -82,13 +82,13 @@ describe('migrateIfNeeded', () => {
     }
 
     const result = migrateIfNeeded(envelope)
-    expect(result[0].lastDifficultyParams).toEqual({
+    expect(result[0]!.lastDifficultyParams).toEqual({
       fallSpeed: 1.5,
       spawnInterval: 2000,
       complexityLevel: 2,
     })
-    expect(result[0].preferredGameMode).toBeNull()
-    expect(result[0].sessionHistory).toEqual([])
-    expect(result[0].name).toBe('Raphael')
+    expect(result[0]!.preferredGameMode).toBeNull()
+    expect(result[0]!.sessionHistory).toEqual([])
+    expect(result[0]!.name).toBe('Raphael')
   })
 })

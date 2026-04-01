@@ -63,7 +63,7 @@ describe('LocalStorageProfileRepository', () => {
 
       const result = repo.loadAll()
       expect(result).toHaveLength(1)
-      expect(result[0].name).toBe('Lea')
+      expect(result[0]!.name).toBe('Lea')
     })
 
     it('returns empty array and removes key when JSON is corrupted', () => {
@@ -89,7 +89,7 @@ describe('LocalStorageProfileRepository', () => {
         expect.any(String),
       )
       const written = JSON.parse(
-        mockStorage.setItem.mock.calls[0][1] as string,
+        mockStorage.setItem.mock.calls[0]![1] as string,
       ) as StorageEnvelope
       expect(written.schemaVersion).toBe(CURRENT_SCHEMA_VERSION)
       expect(written.profiles).toHaveLength(1)
