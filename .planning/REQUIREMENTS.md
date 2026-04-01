@@ -30,7 +30,7 @@
 
 ### Profiles & Persistence
 
-- [ ] **PROF-01**: L'enfant choisit son profil en cliquant sur son avatar (pas de mot de passe)
+- [x] **PROF-01**: L'enfant choisit son profil en cliquant sur son avatar (pas de mot de passe)
 - [x] **PROF-02**: La progression de chaque enfant est sauvegardee dans le navigateur (LocalStorage)
 - [ ] **PROF-03**: La progression peut etre synchronisee entre appareils via Firebase (optionnel)
 
@@ -100,7 +100,7 @@
 | PROG-01 | Phase 7 | Pending |
 | PROG-02 | Phase 7 | Pending |
 | PROG-03 | Phase 7 | Pending |
-| PROF-01 | Phase 6 | Pending |
+| PROF-01 | Phase 6 | Complete |
 | PROF-02 | Phase 6 | Complete |
 | PROF-03 | Phase 10 | Pending |
 | AV-01 | Phase 8 | Pending |
