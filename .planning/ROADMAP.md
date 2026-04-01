@@ -111,7 +111,11 @@ Plans:
   2. Clicking an avatar loads that child's saved progress (difficulty level, scores, settings)
   3. A new profile can be created by choosing an avatar and a name
   4. Closing the browser and reopening preserves all profile data via LocalStorage
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 06-01-PLAN.md -- Persistence layer: types, repository interface, LocalStorage implementation, schema migration, avatar definitions
+- [ ] 06-02-PLAN.md -- ProfileState UI, state machine integration, GameContext profile methods, i18n keys
+- [ ] 06-03-PLAN.md -- Session save wiring in GameOverState, difficulty restoration in PlayingState, browser verification
 **UI hint**: yes
 
 ### Phase 7: Progression System
@@ -173,7 +177,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 3. Letter Mode Gameplay | 1/2 | Executing | - |
 | 4. Word Mode & Game Modes | 0/0 | Not started | - |
 | 5. Adaptive Difficulty | 2/2 | Complete   | 2026-03-31 |
-| 6. Profiles & Local Persistence | 0/0 | Not started | - |
+| 6. Profiles & Local Persistence | 0/3 | Planning complete | - |
 | 7. Progression System | 0/0 | Not started | - |
 | 8. Visual Identity | 0/0 | Not started | - |
 | 9. Audio System | 0/0 | Not started | - |
