@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import type { GameMode, SessionResult } from '@/game/types.js'
+import type { GameMode, SessionResult, StateName } from '@/game/types.js'
+import { TRANSITIONS } from '@/game/types.js'
 import frWords from '@/shared/i18n/fr.words.json'
 import enWords from '@/shared/i18n/en.words.json'
 
@@ -9,6 +10,28 @@ describe('GameMode type', () => {
     const words: GameMode = 'words'
     expect(letters).toBe('letters')
     expect(words).toBe('words')
+  })
+})
+
+describe('StateName includes profiles', () => {
+  it('profiles is a valid StateName', () => {
+    const name: StateName = 'profiles'
+    expect(name).toBe('profiles')
+  })
+})
+
+describe('TRANSITIONS for profiles', () => {
+  it('boot transitions to profiles', () => {
+    expect(TRANSITIONS.boot).toEqual(['profiles'])
+  })
+
+  it('profiles transitions to menu', () => {
+    expect(TRANSITIONS.profiles).toEqual(['menu'])
+  })
+
+  it('menu includes profiles for back-link', () => {
+    expect(TRANSITIONS.menu).toContain('profiles')
+    expect(TRANSITIONS.menu).toContain('playing')
   })
 })
 

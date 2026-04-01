@@ -84,6 +84,7 @@ describe('StateMachine', () => {
   function makeStates() {
     return {
       boot: createMockState(),
+      profiles: createMockState(),
       menu: createMockState(),
       playing: createMockState(),
       paused: createMockState(),
@@ -105,8 +106,8 @@ describe('StateMachine', () => {
     const sm = new StateMachine(states)
     const ctx = createMockContext()
     sm.start('boot', ctx)
-    sm.transition('menu', ctx)
-    expect(sm.current).toBe('menu')
+    sm.transition('profiles', ctx)
+    expect(sm.current).toBe('profiles')
   })
 
   it('throws on invalid transition', () => {
@@ -124,9 +125,9 @@ describe('StateMachine', () => {
     const sm = new StateMachine(states)
     const ctx = createMockContext()
     sm.start('boot', ctx)
-    sm.transition('menu', ctx)
+    sm.transition('profiles', ctx)
     expect(states.boot.exit).toHaveBeenCalledWith(ctx)
-    expect(states.menu.enter).toHaveBeenCalledWith(ctx)
+    expect(states.profiles.enter).toHaveBeenCalledWith(ctx)
   })
 
   it('throws when not started', () => {
@@ -227,27 +228,33 @@ function createMockGameContext(
     getGameMode: () => gameMode,
     getDifficulty: vi.fn(() => null),
     setDifficulty: vi.fn(),
+    setActiveProfile: vi.fn(),
+    getActiveProfile: vi.fn(() => null),
+    getProfileRepository: vi.fn(() => ({
+      loadAll: vi.fn(() => []),
+      saveAll: vi.fn(),
+    })),
     transitions,
     inputBuffer,
   }
 }
 
 describe('BootState', () => {
-  it('enter calls transitionTo menu', () => {
+  it('enter calls transitionTo profiles', () => {
     const ctx = createMockGameContext()
     const state = new BootState()
     state.enter(ctx)
-    expect(ctx.transitions).toContain('menu')
+    expect(ctx.transitions).toContain('profiles')
   })
 })
 
 describe('MenuState', () => {
-  it('enter creates mode selection buttons', () => {
+  it('enter creates mode selection buttons and profile back-link', () => {
     const ctx = createMockGameContext()
     const state = new MenuState()
     state.enter(ctx)
-    // Title + 2 buttons + 2 labels = 5 addChild calls
-    expect(ctx.gameRoot.addChild).toHaveBeenCalledTimes(5)
+    // Title + 2 buttons + 2 labels + profile back-link = 6 addChild calls
+    expect(ctx.gameRoot.addChild).toHaveBeenCalledTimes(6)
   })
 
   it('exit cleans up all display objects', () => {
@@ -255,8 +262,8 @@ describe('MenuState', () => {
     const state = new MenuState()
     state.enter(ctx)
     state.exit(ctx)
-    // Should remove 5 items
-    expect(ctx.gameRoot.removeChild).toHaveBeenCalledTimes(5)
+    // Should remove 6 items
+    expect(ctx.gameRoot.removeChild).toHaveBeenCalledTimes(6)
   })
 })
 

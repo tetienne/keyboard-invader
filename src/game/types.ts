@@ -1,17 +1,26 @@
 import type { Application, Container } from 'pixi.js'
 import type { DifficultyParams } from './difficulty.js'
+import type { ProfileData } from '../persistence/types.js'
+import type { ProfileRepository } from '../persistence/repository.js'
 
 // Canvas constants (D-15)
 export const BASE_WIDTH = 1280
 export const BASE_HEIGHT = 720
 
 // State machine types (D-04, D-05)
-export type StateName = 'boot' | 'menu' | 'playing' | 'paused' | 'gameover'
+export type StateName =
+  | 'boot'
+  | 'profiles'
+  | 'menu'
+  | 'playing'
+  | 'paused'
+  | 'gameover'
 export type GameMode = 'letters' | 'words'
 
 export const TRANSITIONS: Record<StateName, readonly StateName[]> = {
-  boot: ['menu'],
-  menu: ['playing'],
+  boot: ['profiles'],
+  profiles: ['menu'],
+  menu: ['playing', 'profiles'],
   playing: ['paused', 'menu', 'gameover'],
   paused: ['playing', 'menu'],
   gameover: ['menu', 'playing'],
@@ -60,4 +69,7 @@ export interface GameContext {
   releaseWordPoolItem(index: number): void
   getDifficulty(): DifficultyParams | null
   setDifficulty(params: DifficultyParams | null): void
+  setActiveProfile(profile: ProfileData | null): void
+  getActiveProfile(): ProfileData | null
+  getProfileRepository(): ProfileRepository
 }

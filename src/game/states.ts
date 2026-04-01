@@ -98,7 +98,7 @@ export class BootState implements GameState {
     } catch {
       // Font install may fail in test environments without canvas
     }
-    ctx.transitionTo('menu')
+    ctx.transitionTo('profiles')
   }
 
   exit(): void {
@@ -123,6 +123,7 @@ export class MenuState implements GameState {
   private letterLabel: BitmapText | null = null
   private wordBtn: BitmapText | null = null
   private wordLabel: BitmapText | null = null
+  private profileBtn: BitmapText | null = null
 
   enter(ctx: GameContext): void {
     this.title = new BitmapText({
@@ -190,11 +191,32 @@ export class MenuState implements GameState {
     this.wordLabel.x = BASE_WIDTH / 2
     this.wordLabel.y = BASE_HEIGHT * 0.62 + 35
 
+    // "Change player" back-link (D-14)
+    this.profileBtn = new BitmapText({
+      text: 'Changer de joueur',
+      style: { fontFamily: 'GameFont', fontSize: 18 },
+    })
+    this.profileBtn.anchor.set(0.5)
+    this.profileBtn.x = BASE_WIDTH / 2
+    this.profileBtn.y = BASE_HEIGHT * 0.85
+    this.profileBtn.eventMode = 'static'
+    this.profileBtn.cursor = 'pointer'
+    this.profileBtn.on('pointerover', () => {
+      this.profileBtn?.scale.set(1.1)
+    })
+    this.profileBtn.on('pointerout', () => {
+      this.profileBtn?.scale.set(1.0)
+    })
+    this.profileBtn.on('pointertap', () => {
+      ctx.transitionTo('profiles')
+    })
+
     ctx.gameRoot.addChild(this.title)
     ctx.gameRoot.addChild(this.letterBtn)
     ctx.gameRoot.addChild(this.letterLabel)
     ctx.gameRoot.addChild(this.wordBtn)
     ctx.gameRoot.addChild(this.wordLabel)
+    ctx.gameRoot.addChild(this.profileBtn)
   }
 
   exit(ctx: GameContext): void {
@@ -204,6 +226,7 @@ export class MenuState implements GameState {
       this.letterLabel,
       this.wordBtn,
       this.wordLabel,
+      this.profileBtn,
     ]
     for (const item of items) {
       if (item) {
@@ -216,6 +239,7 @@ export class MenuState implements GameState {
     this.letterLabel = null
     this.wordBtn = null
     this.wordLabel = null
+    this.profileBtn = null
   }
 
   update(): void {

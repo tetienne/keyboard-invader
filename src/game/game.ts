@@ -7,6 +7,9 @@ import {
 } from 'pixi.js'
 import type { GameContext, GameMode, SessionResult, StateName } from './types.js'
 import type { DifficultyParams } from './difficulty.js'
+import type { ProfileData } from '../persistence/types.js'
+import type { ProfileRepository } from '../persistence/repository.js'
+import { LocalStorageProfileRepository } from '../persistence/local-storage.js'
 import { BASE_WIDTH, BASE_HEIGHT } from './types.js'
 import {
   StateMachine,
@@ -16,6 +19,7 @@ import {
   PausedState,
   GameOverState,
 } from './states.js'
+import { ProfileState } from './profile-state.js'
 import { GameLoop } from './loop.js'
 import { InputManager } from './input.js'
 import { ObjectPool } from './pool.js'
@@ -38,6 +42,8 @@ export class Game implements GameContext {
   private _pauseOverlay: Container | null = null
   private _isPaused = false
   private _currentDifficulty: DifficultyParams | null = null
+  private _activeProfile: ProfileData | null = null
+  private readonly _profileRepo: ProfileRepository
 
   constructor() {
     this.app = new Application()
@@ -65,9 +71,11 @@ export class Game implements GameContext {
     this._input = new InputManager()
     this._debug = new DebugOverlay()
     this._loop = new GameLoop()
+    this._profileRepo = new LocalStorageProfileRepository()
 
     this._stateMachine = new StateMachine({
       boot: new BootState(),
+      profiles: new ProfileState(),
       menu: new MenuState(),
       playing: new PlayingState(),
       paused: new PausedState(),
@@ -184,6 +192,18 @@ export class Game implements GameContext {
 
   setDifficulty(params: DifficultyParams | null): void {
     this._currentDifficulty = params
+  }
+
+  setActiveProfile(profile: ProfileData | null): void {
+    this._activeProfile = profile
+  }
+
+  getActiveProfile(): ProfileData | null {
+    return this._activeProfile
+  }
+
+  getProfileRepository(): ProfileRepository {
+    return this._profileRepo
   }
 
   private _showPauseOverlay(): void {

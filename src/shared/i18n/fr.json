@@ -11,5 +11,17 @@
   "summary.time": "Temps",
   "summary.replay": "Rejouer",
   "summary.menu": "Menu",
-  "summary.bravo": "Bravo !"
+  "summary.bravo": "Bravo !",
+  "profiles.title": "Qui joue ?",
+  "profiles.new": "Nouveau joueur",
+  "profiles.create.title": "Cree ton profil !",
+  "profiles.create.name": "Ton prenom",
+  "profiles.create.avatar": "Choisis ton avatar",
+  "profiles.create.confirm": "C'est parti !",
+  "profiles.edit": "Modifier",
+  "profiles.delete": "Supprimer",
+  "profiles.delete.confirm": "Vraiment supprimer ?",
+  "profiles.delete.yes": "Oui",
+  "profiles.delete.no": "Non",
+  "profiles.back": "Changer de joueur"
 }
