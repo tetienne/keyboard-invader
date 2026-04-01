@@ -11,5 +11,17 @@
   "summary.time": "Time",
   "summary.replay": "Replay",
   "summary.menu": "Menu",
-  "summary.bravo": "Well done!"
+  "summary.bravo": "Well done!",
+  "profiles.title": "Who's playing?",
+  "profiles.new": "New player",
+  "profiles.create.title": "Create your profile!",
+  "profiles.create.name": "Your first name",
+  "profiles.create.avatar": "Pick your avatar",
+  "profiles.create.confirm": "Let's go!",
+  "profiles.edit": "Edit",
+  "profiles.delete": "Delete",
+  "profiles.delete.confirm": "Really delete?",
+  "profiles.delete.yes": "Yes",
+  "profiles.delete.no": "No",
+  "profiles.back": "Change player"
 }

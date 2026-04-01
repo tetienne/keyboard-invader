@@ -113,7 +113,7 @@ Plans:
   4. Closing the browser and reopening preserves all profile data via LocalStorage
 **Plans:** 3 plans
 Plans:
-- [ ] 06-01-PLAN.md -- Persistence layer: types, repository interface, LocalStorage implementation, schema migration, avatar definitions
+- [x] 06-01-PLAN.md -- Persistence layer: types, repository interface, LocalStorage implementation, schema migration, avatar definitions
 - [ ] 06-02-PLAN.md -- ProfileState UI, state machine integration, GameContext profile methods, i18n keys
 - [ ] 06-03-PLAN.md -- Session save wiring in GameOverState, difficulty restoration in PlayingState, browser verification
 **UI hint**: yes
