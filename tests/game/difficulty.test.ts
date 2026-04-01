@@ -251,6 +251,39 @@ describe('convergence', () => {
   })
 })
 
+describe('initialParams restoration', () => {
+  it('uses config base values when no initialParams provided', () => {
+    const config = makeConfig()
+    const dm = new DifficultyManager(config)
+    expect(dm.params.fallSpeed).toBe(config.baseFallSpeed)
+    expect(dm.params.spawnInterval).toBe(config.baseSpawnInterval)
+    expect(dm.params.complexityLevel).toBe(0)
+  })
+
+  it('uses initialParams.fallSpeed when provided', () => {
+    const dm = new DifficultyManager(makeConfig(), { fallSpeed: 2.0, spawnInterval: 800, complexityLevel: 2 })
+    expect(dm.params.fallSpeed).toBe(2.0)
+  })
+
+  it('uses initialParams.spawnInterval when provided', () => {
+    const dm = new DifficultyManager(makeConfig(), { fallSpeed: 2.0, spawnInterval: 800, complexityLevel: 2 })
+    expect(dm.params.spawnInterval).toBe(800)
+  })
+
+  it('uses initialParams.complexityLevel when provided', () => {
+    const dm = new DifficultyManager(makeConfig(), { fallSpeed: 2.0, spawnInterval: 800, complexityLevel: 2 })
+    expect(dm.params.complexityLevel).toBe(2)
+  })
+
+  it('uses full initialParams object when all fields provided', () => {
+    const initialParams = { fallSpeed: 2.0, spawnInterval: 800, complexityLevel: 2 }
+    const dm = new DifficultyManager(makeConfig(), initialParams)
+    expect(dm.params.fallSpeed).toBe(2.0)
+    expect(dm.params.spawnInterval).toBe(800)
+    expect(dm.params.complexityLevel).toBe(2)
+  })
+})
+
 describe('config presets', () => {
   it('LETTER_DIFFICULTY_CONFIG has correct values', () => {
     expect(LETTER_DIFFICULTY_CONFIG.mode).toBe('letters')

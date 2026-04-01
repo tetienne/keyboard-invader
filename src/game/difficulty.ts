@@ -30,9 +30,13 @@ export class DifficultyManager {
   private _complexityLevel = 0
   private consecutiveHighAccuracy = 0
 
-  constructor(private readonly config: DifficultyConfig) {
-    this._fallSpeed = config.baseFallSpeed
-    this._spawnInterval = config.baseSpawnInterval
+  constructor(
+    private readonly config: DifficultyConfig,
+    initialParams?: DifficultyParams,
+  ) {
+    this._fallSpeed = initialParams?.fallSpeed ?? config.baseFallSpeed
+    this._spawnInterval = initialParams?.spawnInterval ?? config.baseSpawnInterval
+    this._complexityLevel = initialParams?.complexityLevel ?? 0
   }
 
   recordResult(hit: boolean): void {
