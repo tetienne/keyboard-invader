@@ -28,6 +28,52 @@ import {
   WORD_DIFFICULTY_CONFIG,
 } from './difficulty.js'
 import { getLocale } from '../shared/i18n/index.js'
+import { MAX_SESSION_HISTORY } from '../persistence/types.js'
+
+function saveSessionToProfile(ctx: GameContext): void {
+  const profile = ctx.getActiveProfile()
+  const result = ctx.getSessionResult()
+  if (!profile || !result) return
+
+  const accuracy =
+    result.total > 0 ? Math.round((result.hits / result.total) * 100) : 0
+
+  // Update cumulative stats
+  profile.cumulativeStats.totalSessions++
+  profile.cumulativeStats.totalHits += result.hits
+  profile.cumulativeStats.totalMisses += result.misses
+  profile.cumulativeStats.bestAccuracy = Math.max(
+    profile.cumulativeStats.bestAccuracy,
+    accuracy,
+  )
+
+  // Add session summary (FIFO, max 10)
+  profile.sessionHistory.push({
+    hits: result.hits,
+    misses: result.misses,
+    accuracy,
+    mode: result.mode,
+    date: new Date().toISOString(),
+  })
+  if (profile.sessionHistory.length > MAX_SESSION_HISTORY) {
+    profile.sessionHistory.shift()
+  }
+
+  // Save difficulty params for next session restoration
+  profile.lastDifficultyParams = ctx.getDifficulty() ?? null
+
+  // Save preferred game mode
+  profile.preferredGameMode = ctx.getGameMode()
+
+  // Persist all profiles
+  const repo = ctx.getProfileRepository()
+  const allProfiles = repo.loadAll()
+  const idx = allProfiles.findIndex((p) => p.id === profile.id)
+  if (idx >= 0) {
+    allProfiles[idx] = profile
+  }
+  repo.saveAll(allProfiles)
+}
 
 export class StateMachine {
   private states: Map<StateName, GameState>
@@ -280,8 +326,11 @@ export class PlayingState implements GameState {
     this.misses = 0
     this.timePlayedMs = 0
     this.mode = ctx.getGameMode()
+    const profile = ctx.getActiveProfile()
+    const initialDifficulty = profile?.lastDifficultyParams ?? undefined
     this.difficulty = new DifficultyManager(
       this.mode === 'words' ? WORD_DIFFICULTY_CONFIG : LETTER_DIFFICULTY_CONFIG,
+      initialDifficulty,
     )
 
     if (this.mode === 'words') {
@@ -636,6 +685,7 @@ export class GameOverState implements GameState {
 
   enter(ctx: GameContext): void {
     const result = ctx.getSessionResult()
+    saveSessionToProfile(ctx)
     this.container = new Container()
 
     // Title

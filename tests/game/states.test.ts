@@ -512,6 +512,129 @@ describe('GameOverState', () => {
   })
 })
 
+describe('GameOverState profile saving', () => {
+  it('saves session to profile when active profile exists', () => {
+    const ctx = createMockGameContext()
+    const saveAllFn = vi.fn()
+    const profile = {
+      id: 'test-1',
+      name: 'Lea',
+      avatarId: 'circle',
+      cumulativeStats: { totalSessions: 0, totalHits: 0, totalMisses: 0, bestAccuracy: 0 },
+      lastDifficultyParams: null,
+      preferredGameMode: null,
+      sessionHistory: [] as Array<{ hits: number; misses: number; accuracy: number; mode: string; date: string }>,
+      createdAt: '2026-01-01T00:00:00Z',
+    }
+    vi.mocked(ctx.getActiveProfile).mockReturnValue(profile as never)
+    vi.mocked(ctx.getProfileRepository).mockReturnValue({
+      loadAll: vi.fn(() => [profile] as never),
+      saveAll: saveAllFn,
+    })
+    ctx.setSessionResult({
+      hits: 15,
+      misses: 5,
+      total: 20,
+      timePlayed: 30000,
+      mode: 'letters',
+    })
+    vi.mocked(ctx.getDifficulty).mockReturnValue({
+      fallSpeed: 90,
+      spawnInterval: 1200,
+      complexityLevel: 1,
+    })
+
+    const state = new GameOverState()
+    state.enter(ctx)
+
+    expect(saveAllFn).toHaveBeenCalled()
+    expect(profile.cumulativeStats.totalSessions).toBe(1)
+    expect(profile.cumulativeStats.totalHits).toBe(15)
+    expect(profile.cumulativeStats.totalMisses).toBe(5)
+    expect(profile.cumulativeStats.bestAccuracy).toBe(75)
+    expect(profile.sessionHistory).toHaveLength(1)
+    expect(profile.lastDifficultyParams).toEqual({
+      fallSpeed: 90,
+      spawnInterval: 1200,
+      complexityLevel: 1,
+    })
+    expect(profile.preferredGameMode).toBe('letters')
+  })
+
+  it('does not crash when no active profile exists', () => {
+    const ctx = createMockGameContext()
+    vi.mocked(ctx.getActiveProfile).mockReturnValue(null)
+    ctx.setSessionResult({
+      hits: 10,
+      misses: 5,
+      total: 15,
+      timePlayed: 20000,
+      mode: 'letters',
+    })
+
+    const state = new GameOverState()
+    expect(() => state.enter(ctx)).not.toThrow()
+  })
+})
+
+describe('PlayingState profile difficulty restoration', () => {
+  it('passes lastDifficultyParams to DifficultyManager when profile has saved params', () => {
+    const ctx = createMockGameContext()
+    const savedParams = { fallSpeed: 100, spawnInterval: 1000, complexityLevel: 1 }
+    vi.mocked(ctx.getActiveProfile).mockReturnValue({
+      id: 'test-1',
+      name: 'Lea',
+      avatarId: 'circle',
+      cumulativeStats: { totalSessions: 1, totalHits: 10, totalMisses: 5, bestAccuracy: 67 },
+      lastDifficultyParams: savedParams,
+      preferredGameMode: 'letters',
+      sessionHistory: [],
+      createdAt: '2026-01-01T00:00:00Z',
+    } as never)
+
+    const state = new PlayingState()
+    state.enter(ctx)
+    // After enter, difficulty should be set from profile params
+    // The update loop pushes difficulty to context via setDifficulty
+    state.update(ctx, 16)
+    expect(ctx.setDifficulty).toHaveBeenCalledWith(
+      expect.objectContaining({
+        fallSpeed: 100,
+        spawnInterval: 1000,
+        complexityLevel: 1,
+      }),
+    )
+    state.exit(ctx)
+  })
+
+  it('uses default difficulty when profile has no saved params', () => {
+    const ctx = createMockGameContext()
+    vi.mocked(ctx.getActiveProfile).mockReturnValue({
+      id: 'test-1',
+      name: 'Lea',
+      avatarId: 'circle',
+      cumulativeStats: { totalSessions: 0, totalHits: 0, totalMisses: 0, bestAccuracy: 0 },
+      lastDifficultyParams: null,
+      preferredGameMode: null,
+      sessionHistory: [],
+      createdAt: '2026-01-01T00:00:00Z',
+    } as never)
+
+    const state = new PlayingState()
+    state.enter(ctx)
+    state.update(ctx, 16)
+    // Should use base config values (80 fall speed for letters)
+    expect(ctx.setDifficulty).toHaveBeenCalledWith(
+      expect.objectContaining({
+        fallSpeed: 80,
+        spawnInterval: 1500,
+        complexityLevel: 0,
+      }),
+    )
+    state.exit(ctx)
+  })
+})
+
 describe('PausedState', () => {
   it('enter adds overlay to gameRoot', () => {
     const ctx = createMockGameContext()
