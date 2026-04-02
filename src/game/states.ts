@@ -35,6 +35,7 @@ import {
 } from './difficulty.js'
 import { calculateXpGain, applyXp, xpForCurrentLevel } from './progression.js'
 import { XpBar } from './xp-bar.js'
+import { CelebrationOverlay } from './celebration.js'
 import { AVATARS } from '../avatars/definitions.js'
 import { getLocale, t } from '../shared/i18n/index.js'
 import { MAX_SESSION_HISTORY } from '../persistence/types.js'
@@ -770,6 +771,7 @@ export class GameOverState implements GameState {
   private targetProgress = 0
   private targetXpCurrent = 0
   private targetXpRequired = 0
+  private celebration: CelebrationOverlay | null = null
 
   enter(ctx: GameContext): void {
     const result = ctx.getSessionResult()
@@ -953,6 +955,10 @@ export class GameOverState implements GameState {
       this.container.destroy({ children: true })
       this.container = null
     }
+    if (this.celebration) {
+      this.celebration.destroy()
+      this.celebration = null
+    }
     this.saveResult = null
     this.resultsPhase = 'stats'
     this.phaseTimer = 0
@@ -995,32 +1001,44 @@ export class GameOverState implements GameState {
         break
       }
       case 'celebrating': {
-        // Placeholder for celebration overlay (Plan 03 adds particles)
-        this.phaseTimer += dt
-        if (this.phaseTimer >= 2500) {
-          this.pendingLevelUps--
-          this.currentDisplayLevel++
-          this.xpBar.resetFill()
-          this.xpBar.setLevel(this.currentDisplayLevel)
+        // Create celebration overlay if not already active
+        if (!this.celebration && this.container) {
+          this.celebration = new CelebrationOverlay(this.currentDisplayLevel + 1)
+          this.container.addChild(this.celebration.container)
+        }
 
-          // Compute the target for remaining XP at new level
-          if (this.pendingLevelUps > 0) {
-            // More level-ups: fill to 100% again
-            this.targetProgress = 1.0
-          } else {
-            // Final level: fill to actual remaining progress
-            const newProgress = xpForCurrentLevel(
-              this.saveResult!.levelUp.remainingXp,
-              this.saveResult!.levelUp.newLevel,
-            )
-            this.targetProgress = newProgress.required > 0
-              ? newProgress.current / newProgress.required
-              : 0
-            this.targetXpCurrent = newProgress.current
-            this.targetXpRequired = newProgress.required
+        // Update celebration; when done, advance level-up sequence
+        if (this.celebration) {
+          const celebrationDone = this.celebration.update(dt)
+          if (celebrationDone) {
+            this.container?.removeChild(this.celebration.container)
+            this.celebration.destroy()
+            this.celebration = null
+
+            this.pendingLevelUps--
+            this.currentDisplayLevel++
+            this.xpBar.resetFill()
+            this.xpBar.setLevel(this.currentDisplayLevel)
+
+            // Compute the target for remaining XP at new level
+            if (this.pendingLevelUps > 0) {
+              // More level-ups: fill to 100% again
+              this.targetProgress = 1.0
+            } else {
+              // Final level: fill to actual remaining progress
+              const newProgress = xpForCurrentLevel(
+                this.saveResult!.levelUp.remainingXp,
+                this.saveResult!.levelUp.newLevel,
+              )
+              this.targetProgress = newProgress.required > 0
+                ? newProgress.current / newProgress.required
+                : 0
+              this.targetXpCurrent = newProgress.current
+              this.targetXpRequired = newProgress.required
+            }
+            this.resultsPhase = 'xp-resetting'
+            this.phaseTimer = 0
           }
-          this.resultsPhase = 'xp-resetting'
-          this.phaseTimer = 0
         }
         break
       }
