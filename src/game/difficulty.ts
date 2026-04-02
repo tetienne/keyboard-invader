@@ -30,9 +30,13 @@ export class DifficultyManager {
   private _complexityLevel = 0
   private consecutiveHighAccuracy = 0
 
-  constructor(private readonly config: DifficultyConfig) {
-    this._fallSpeed = config.baseFallSpeed
-    this._spawnInterval = config.baseSpawnInterval
+  constructor(
+    private readonly config: DifficultyConfig,
+    initialParams?: DifficultyParams,
+  ) {
+    this._fallSpeed = initialParams?.fallSpeed ?? config.baseFallSpeed
+    this._spawnInterval = initialParams?.spawnInterval ?? config.baseSpawnInterval
+    this._complexityLevel = initialParams?.complexityLevel ?? 0
   }
 
   recordResult(hit: boolean): void {
@@ -50,6 +54,7 @@ export class DifficultyManager {
 
   private adjust(accuracy: number): void {
     if (accuracy > this.config.deadZoneHigh) {
+      // Ramp: make harder (small step)
       this._fallSpeed = Math.min(
         this.config.maxFallSpeed,
         this._fallSpeed + this.config.speedStep,
@@ -59,6 +64,7 @@ export class DifficultyManager {
         this._spawnInterval - this.config.spawnStep,
       )
     } else if (accuracy < this.config.deadZoneLow) {
+      // Ease: make easier (2x step)
       this._fallSpeed = Math.max(
         this.config.minFallSpeed,
         this._fallSpeed - this.config.speedStep * 2,
@@ -68,6 +74,7 @@ export class DifficultyManager {
         this._spawnInterval + this.config.spawnStep * 2,
       )
     }
+    // Dead zone (60-80%): no speed/spawn change
 
     this.updateComplexity(accuracy)
   }

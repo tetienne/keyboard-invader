@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 07-01-PLAN.md
-last_updated: "2026-04-02T08:03:53.604Z"
-last_activity: 2026-03-31
+stopped_at: Phase 7 UI-SPEC approved
+last_updated: "2026-04-02T07:56:39.682Z"
+last_activity: 2026-04-02 -- Phase 07 execution started
 progress:
   total_phases: 11
-  completed_phases: 4
-  total_plans: 8
-  completed_plans: 8
+  completed_phases: 6
+  total_plans: 17
+  completed_plans: 14
   percent: 18
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-30)
 
 **Core value:** Rendre l'apprentissage du clavier amusant et non frustrant pour des enfants de 5 a 8 ans
-**Current focus:** Phase 04 — word-mode-game-modes
+**Current focus:** Phase 07 — progression-system
 
 ## Current Position
 
-Phase: 04
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-03-31
+Phase: 07 (progression-system) — EXECUTING
+Plan: 1 of 3
+Status: Executing Phase 07
+Last activity: 2026-04-02 -- Phase 07 execution started
 
 Progress: [██░░░░░░░░] 18%
 
@@ -58,7 +58,8 @@ Progress: [██░░░░░░░░] 18%
 | Phase 02 P01 | 10min | 2 tasks | 8 files |
 | Phase 02 P02 | 7min | 3 tasks | 9 files |
 | Phase 03 P02 | 4min | 2 tasks | 6 files |
-| Phase 07 P01 | 3min | 2 tasks | 10 files |
+| Phase 06 P01 | 3min | 2 tasks | 8 files |
+| Phase 06 P02 | 5min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -87,9 +88,11 @@ Recent decisions affecting current work:
 - [Phase 03]: BitmapText pool (80px) replaces Graphics pool for letter entities
 - [Phase 03]: originalTint field on LetterEntity for miss tween color restoration
 - [Phase 03]: Session result passing via GameContext setSessionResult/getSessionResult
-- [Phase 07]: LEVEL_THRESHOLDS: 10 levels [0,50,120,220,360,540,780,1080,1440,1900] for 2-8 session pacing
-- [Phase 07]: XP formula: 2/hit + accuracy bonus (baseXp*accuracy*0.5) with 1.5x words multiplier
-- [Phase 07]: 3 free avatars (red,blue,green), 3 locked (yellow@3, purple@5, orange@8)
+- [Phase 06]: Repository adapter pattern for persistence (LocalStorage now, Firebase Phase 10)
+- [Phase 06]: Single JSON key with versioned schema envelope for migration
+- [Phase 06]: Non-crypto ID generation (Date.now + random) for max 4 local profiles
+- [Phase 06]: ProfileState uses internal ProfileView enum for sub-view switching
+- [Phase 06]: HTML input overlay for name entry (PixiJS cannot handle text input natively)
 
 ### Pending Todos
 
@@ -102,6 +105,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-02T08:03:53.602Z
-Stopped at: Completed 07-01-PLAN.md
-Resume file: None
+Last session: 2026-04-02T07:30:09.817Z
+Stopped at: Phase 7 UI-SPEC approved
+Resume file: .planning/phases/07-progression-system/07-UI-SPEC.md
