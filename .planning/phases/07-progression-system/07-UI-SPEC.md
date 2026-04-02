@@ -52,8 +52,7 @@ All text on the PixiJS canvas uses BitmapText with `fontFamily: 'GameFont'`. Siz
 | Display | 48px | normal (400) | 1.2 | "Bravo !" title (existing), "Niveau {n} !" celebration text |
 | Heading | 28px | normal (400) | 1.2 | "Rejouer" CTA button (existing), XP earned summary "+42 XP" |
 | Body | 22px | normal (400) | 1.4 | Results stats lines (existing), XP bar label "45/120" |
-| Label | 18px | normal (400) | 1.4 | HUD level badge "Niv. 3", mini XP text, lock level label |
-| Small | 14px | normal (400) | 1.4 | Lock tooltip message |
+| Label | 18px | normal (400) | 1.4 | HUD level badge "Niv. 3", mini XP text, lock level label, lock tooltip message (muted color 0xa0aec0 to differentiate from lock level label) |
 
 Note: BitmapFont does not support font weights. All text is rendered at normal weight. Visual emphasis is achieved through size, color, and tint instead.
 
@@ -69,7 +68,7 @@ Existing palette from `src/style.css` @theme, extended for Phase 7 elements.
 | Secondary (30%) | #16213e (0x16213e) | XP bar background pill, card backgrounds |
 | Accent (10%) | #e94560 (0xe94560) | Reserved: XP gain text highlight, level-up number |
 | Text primary | #ffffff (0xffffff) | All BitmapText default, XP bar labels |
-| Text muted | #a0aec0 (0xa0aec0) | Secondary stats, lock level label on grayed avatars |
+| Text muted | #a0aec0 (0xa0aec0) | Secondary stats, lock level label on grayed avatars, lock tooltip message |
 
 ### XP Bar Gradient (layered solid fills)
 
@@ -153,7 +152,7 @@ Festive palette (reuse kid-friendly colors from `src/game/letters.ts`):
 |----------|-------|
 | Location | Bottom-right of each avatar in the profile selection grid |
 | Shape | Circle, radius 12px, fill 0x16213e, stroke 0xffffff 1px |
-| Text | BitmapText 14px, level number, centered in circle |
+| Text | BitmapText 18px, level number, centered in circle |
 | New profile (level 1) | Show "1" |
 
 ### 5. Lock Icon (Profile screen, locked avatars)
@@ -163,7 +162,7 @@ Festive palette (reuse kid-friendly colors from `src/game/letters.ts`):
 | Location | Center of the locked avatar |
 | Shape | PixiJS Graphics padlock: rect body 16x14 + arc shackle on top |
 | Color | 0xffffff at alpha 0.8 |
-| Level label | BitmapText 14px, "Niv. {n}", muted color 0xa0aec0, centered below avatar |
+| Level label | BitmapText 18px, "Niv. {n}", muted color 0xa0aec0, centered below avatar |
 
 ---
 
@@ -194,7 +193,7 @@ Festive palette (reuse kid-friendly colors from `src/game/letters.ts`):
 |----------|-------|
 | Trigger | Player taps a locked (grayed) avatar on profile screen |
 | Response | Show encouraging BitmapText tooltip below avatar for 2s, then fade out |
-| Text | "Atteins le niveau {n} pour debloquer !" at 14px, muted color |
+| Text | "Atteins le niveau {n} pour debloquer !" at 18px Label size, muted color 0xa0aec0 |
 | Selection | Locked avatars are NOT selectable for profile creation or editing |
 
 ### HUD XP Bar (PlayingState)
@@ -223,11 +222,15 @@ All copy is bilingual (fr/en). French is the primary language shown below. Engli
 | Error state | N/A | Not applicable (pure client-side, no network errors) | N/A |
 | Destructive actions | N/A | None in this phase | N/A |
 
+Note: "Rejouer" (results screen CTA) is a single-word label without a noun, pre-existing from a prior phase. It is intentional for the target audience (children 5-8) where brevity aids readability.
+
 ---
 
 ## Layout Specifications
 
 ### Results Screen (GameOverState) -- Updated Layout
+
+Primary focal point: the "+{xp} XP" text at 50% acts as the visual anchor for new Phase 7 content, bridging the existing stats above with the XP bar below.
 
 Vertical flow, all elements centered on x = BASE_WIDTH / 2 = 640.
 
