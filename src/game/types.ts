@@ -2,6 +2,13 @@ import type { Application, Container } from 'pixi.js'
 import type { DifficultyParams } from './difficulty.js'
 import type { ProfileData } from '../persistence/types.js'
 import type { ProfileRepository } from '../persistence/repository.js'
+import type { XpGain, LevelUpResult } from './progression.js'
+
+export interface SessionSaveResult {
+  xpGain: XpGain
+  levelUp: LevelUpResult
+  newUnlocks: string[]
+}
 
 // Canvas constants (D-15)
 export const BASE_WIDTH = 1280
@@ -72,4 +79,6 @@ export interface GameContext {
   setActiveProfile(profile: ProfileData | null): void
   getActiveProfile(): ProfileData | null
   getProfileRepository(): ProfileRepository
+  getSessionSaveResult(): SessionSaveResult | null
+  setSessionSaveResult(result: SessionSaveResult | null): void
 }

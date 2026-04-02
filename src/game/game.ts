@@ -5,7 +5,7 @@ import {
   Graphics,
   SplitBitmapText,
 } from 'pixi.js'
-import type { GameContext, GameMode, SessionResult, StateName } from './types.js'
+import type { GameContext, GameMode, SessionResult, SessionSaveResult, StateName } from './types.js'
 import type { DifficultyParams } from './difficulty.js'
 import type { ProfileData } from '../persistence/types.js'
 import type { ProfileRepository } from '../persistence/repository.js'
@@ -43,6 +43,7 @@ export class Game implements GameContext {
   private _isPaused = false
   private _currentDifficulty: DifficultyParams | null = null
   private _activeProfile: ProfileData | null = null
+  private _sessionSaveResult: SessionSaveResult | null = null
   private readonly _profileRepo: ProfileRepository
 
   constructor() {
@@ -204,6 +205,14 @@ export class Game implements GameContext {
 
   getProfileRepository(): ProfileRepository {
     return this._profileRepo
+  }
+
+  getSessionSaveResult(): SessionSaveResult | null {
+    return this._sessionSaveResult
+  }
+
+  setSessionSaveResult(result: SessionSaveResult | null): void {
+    this._sessionSaveResult = result
   }
 
   private _showPauseOverlay(): void {
