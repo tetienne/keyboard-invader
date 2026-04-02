@@ -127,7 +127,11 @@ Plans:
   2. Accumulated XP fills a visible progress bar toward the next level
   3. Reaching a new level triggers an animated celebration moment (not just a number change)
   4. XP and level are saved to the child's profile and persist across sessions
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 07-01-PLAN.md -- Pure logic progression module (XP calculation, level thresholds), schema v2 migration, avatar unlock metadata, i18n
+- [ ] 07-02-PLAN.md -- XpBar PixiJS component, GameOverState XP display + animation, PlayingState HUD bar, saveSessionToProfile XP wiring
+- [ ] 07-03-PLAN.md -- CelebrationOverlay (particles + scale burst), ProfileState level badges + locked avatars, visual verification
 **UI hint**: yes
 
 ### Phase 8: Visual Identity
@@ -178,7 +182,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 4. Word Mode & Game Modes | 0/0 | Not started | - |
 | 5. Adaptive Difficulty | 2/2 | Complete   | 2026-03-31 |
 | 6. Profiles & Local Persistence | 0/3 | Planning complete | - |
-| 7. Progression System | 0/0 | Not started | - |
+| 7. Progression System | 0/3 | Planning complete | - |
 | 8. Visual Identity | 0/0 | Not started | - |
 | 9. Audio System | 0/0 | Not started | - |
 | 10. Responsive Layout & Cross-Browser | 0/0 | Not started | - |
