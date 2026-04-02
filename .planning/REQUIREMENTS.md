@@ -26,7 +26,7 @@
 
 - [x] **PROG-01**: L'enfant gagne de l'XP apres chaque session en fonction de sa performance
 - [x] **PROG-02**: L'enfant monte de niveau en accumulant de l'XP
-- [ ] **PROG-03**: L'enfant voit une animation de celebration quand il monte de niveau
+- [x] **PROG-03**: L'enfant voit une animation de celebration quand il monte de niveau
 
 ### Profiles & Persistence
 
@@ -99,7 +99,7 @@
 | DIFF-04 | Phase 5 | Pending |
 | PROG-01 | Phase 7 | Complete |
 | PROG-02 | Phase 7 | Complete |
-| PROG-03 | Phase 7 | Pending |
+| PROG-03 | Phase 7 | Complete |
 | PROF-01 | Phase 6 | Pending |
 | PROF-02 | Phase 6 | Pending |
 | PROF-03 | Phase 10 | Pending |

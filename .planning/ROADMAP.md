@@ -168,7 +168,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 4. Word Mode & Game Modes | 0/0 | Not started | - |
 | 5. Adaptive Difficulty | 0/0 | Not started | - |
 | 6. Profiles & Local Persistence | 0/0 | Not started | - |
-| 7. Progression System | 1/1 | Complete   | 2026-04-02 |
+| 7. Progression System | 3/3 | Complete   | 2026-04-02 |
 | 8. Visual Identity | 0/0 | Not started | - |
 | 9. Audio System | 0/0 | Not started | - |
 | 10. Responsive Layout & Cross-Browser | 0/0 | Not started | - |
@@ -179,7 +179,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 **Goal:** Permettre aux enfants de sauvegarder/restaurer leur progression via un code (alternative au cloud sync, sans compte utilisateur)
 **Requirements:** TBD
-**Plans:** 1/1 plans complete
+**Plans:** 3/3 plans complete
 
 Plans:
 - [ ] TBD (promote with /gsd:review-backlog when ready)
