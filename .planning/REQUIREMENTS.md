@@ -9,29 +9,29 @@
 
 - [x] **GAME-01**: L'enfant voit des lettres/mots tomber du haut de l'ecran et tape pour les eliminer
 - [x] **GAME-02**: L'enfant en mode lettres (pre-lecteur) voit des lettres individuelles avec gros visuels
-- [x] **GAME-03**: L'enfant en mode mots (lecteur) voit des mots courts a taper en entier
+- [ ] **GAME-03**: L'enfant en mode mots (lecteur) voit des mots courts a taper en entier
 - [x] **GAME-04**: L'enfant recoit un feedback audio et visuel immediat a chaque frappe (correct ou incorrect)
 - [x] **GAME-05**: L'enfant voit son score affiche pendant la partie
-- [x] **GAME-06**: L'enfant peut mettre le jeu en pause et reprendre
-- [x] **GAME-07**: L'enfant voit un resume de fin de session (precision, lettres/mots pratiques, temps)
+- [ ] **GAME-06**: L'enfant peut mettre le jeu en pause et reprendre
+- [ ] **GAME-07**: L'enfant voit un resume de fin de session (precision, lettres/mots pratiques, temps)
 
 ### Adaptive Difficulty
 
-- [x] **DIFF-01**: La vitesse de chute s'ajuste automatiquement selon la performance de l'enfant
-- [x] **DIFF-02**: La longueur/complexite des mots s'adapte au niveau de l'enfant
-- [x] **DIFF-03**: Le taux d'apparition des lettres/mots s'adapte a la performance en temps reel
-- [x] **DIFF-04**: Le systeme vise un taux de reussite d'environ 70% pour maintenir l'etat de flow
+- [ ] **DIFF-01**: La vitesse de chute s'ajuste automatiquement selon la performance de l'enfant
+- [ ] **DIFF-02**: La longueur/complexite des mots s'adapte au niveau de l'enfant
+- [ ] **DIFF-03**: Le taux d'apparition des lettres/mots s'adapte a la performance en temps reel
+- [ ] **DIFF-04**: Le systeme vise un taux de reussite d'environ 70% pour maintenir l'etat de flow
 
 ### Progression
 
-- [ ] **PROG-01**: L'enfant gagne de l'XP apres chaque session en fonction de sa performance
-- [ ] **PROG-02**: L'enfant monte de niveau en accumulant de l'XP
+- [x] **PROG-01**: L'enfant gagne de l'XP apres chaque session en fonction de sa performance
+- [x] **PROG-02**: L'enfant monte de niveau en accumulant de l'XP
 - [ ] **PROG-03**: L'enfant voit une animation de celebration quand il monte de niveau
 
 ### Profiles & Persistence
 
-- [x] **PROF-01**: L'enfant choisit son profil en cliquant sur son avatar (pas de mot de passe)
-- [x] **PROF-02**: La progression de chaque enfant est sauvegardee dans le navigateur (LocalStorage)
+- [ ] **PROF-01**: L'enfant choisit son profil en cliquant sur son avatar (pas de mot de passe)
+- [ ] **PROF-02**: La progression de chaque enfant est sauvegardee dans le navigateur (LocalStorage)
 - [ ] **PROF-03**: La progression peut etre synchronisee entre appareils via Firebase (optionnel)
 
 ### Audio & Visual
@@ -88,20 +88,20 @@
 |-------------|-------|--------|
 | GAME-01 | Phase 2, 3 | Complete |
 | GAME-02 | Phase 3 | Complete |
-| GAME-03 | Phase 4 | Complete |
+| GAME-03 | Phase 4 | Pending |
 | GAME-04 | Phase 3 | Complete |
 | GAME-05 | Phase 3 | Complete |
-| GAME-06 | Phase 4 | Complete |
-| GAME-07 | Phase 4 | Complete |
-| DIFF-01 | Phase 5 | Complete |
-| DIFF-02 | Phase 5 | Complete |
-| DIFF-03 | Phase 5 | Complete |
-| DIFF-04 | Phase 5 | Complete |
-| PROG-01 | Phase 7 | Pending |
-| PROG-02 | Phase 7 | Pending |
+| GAME-06 | Phase 4 | Pending |
+| GAME-07 | Phase 4 | Pending |
+| DIFF-01 | Phase 5 | Pending |
+| DIFF-02 | Phase 5 | Pending |
+| DIFF-03 | Phase 5 | Pending |
+| DIFF-04 | Phase 5 | Pending |
+| PROG-01 | Phase 7 | Complete |
+| PROG-02 | Phase 7 | Complete |
 | PROG-03 | Phase 7 | Pending |
-| PROF-01 | Phase 6 | Complete |
-| PROF-02 | Phase 6 | Complete |
+| PROF-01 | Phase 6 | Pending |
+| PROF-02 | Phase 6 | Pending |
 | PROF-03 | Phase 10 | Pending |
 | AV-01 | Phase 8 | Pending |
 | AV-02 | Phase 9 | Pending |

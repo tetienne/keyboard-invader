@@ -16,9 +16,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Game Engine Foundation** - Game loop, state machine, input handling (AZERTY-safe), and canvas rendering infrastructure (2026-03-30)
 - [x] **Phase 3: Letter Mode Gameplay** - Single-letter falling invaders with keyboard input matching and basic collision detection (2026-03-31)
 - [ ] **Phase 4: Word Mode & Game Modes** - Word-based gameplay for older children, mode selection, pause/resume, score display, and session summary
-- [x] **Phase 5: Adaptive Difficulty** - Real-time difficulty adjustment targeting 70% success rate via speed, complexity, and spawn rate (completed 2026-03-31)
+- [ ] **Phase 5: Adaptive Difficulty** - Real-time difficulty adjustment targeting 70% success rate via speed, complexity, and spawn rate
 - [ ] **Phase 6: Profiles & Local Persistence** - Avatar-based child profiles with LocalStorage saving of all progress
-- [ ] **Phase 7: Progression System** - XP earning, leveling, and level-up celebration animations
+- [x] **Phase 7: Progression System** - XP earning, leveling, and level-up celebration animations (completed 2026-04-02)
 - [ ] **Phase 8: Visual Identity** - Cartoon/SVG art style, character sprites, visual effects, and 60fps rendering validation
 - [ ] **Phase 9: Audio System** - Sound effects, background music, volume controls, and autoplay policy handling
 - [ ] **Phase 10: Responsive Layout & Cross-Browser** - Desktop-first responsive design with tablet/mobile support and browser compatibility
@@ -81,10 +81,7 @@ Plans:
   2. In word mode, complete words fall and the child types them letter-by-letter to destroy them
   3. The child can pause the game at any time and resume from where they left off
   4. At the end of a session, a summary screen shows accuracy, items practiced, and time played
-**Plans:** 2 plans
-Plans:
-- [x] 04-01-PLAN.md -- Word mode data layer: GameMode type, word list JSONs, words.ts selection/matching module
-- [ ] 04-02-PLAN.md -- PlayingState word mode integration, mode selection UI, session summary screen
+**Plans**: TBD
 **UI hint**: yes
 
 ### Phase 5: Adaptive Difficulty
@@ -97,10 +94,7 @@ Plans:
   3. Word complexity and length adapt to the child's demonstrated ability
   4. The spawn rate of new items adjusts so the screen is neither empty nor overwhelming
   5. Over a play session, the child's success rate converges toward approximately 70%
-**Plans:** 2/2 plans complete
-Plans:
-- [x] 05-01-PLAN.md -- DifficultyManager TDD: rolling window, asymmetric adjustment, complexity state machine, refactored letter/word selection
-- [x] 05-02-PLAN.md -- PlayingState integration, GameContext extension, debug overlay difficulty display
+**Plans**: TBD
 
 ### Phase 6: Profiles & Local Persistence
 **Goal**: Two children sharing the same computer each have their own profile with saved progress, selectable by clicking their avatar
@@ -111,11 +105,7 @@ Plans:
   2. Clicking an avatar loads that child's saved progress (difficulty level, scores, settings)
   3. A new profile can be created by choosing an avatar and a name
   4. Closing the browser and reopening preserves all profile data via LocalStorage
-**Plans:** 3 plans
-Plans:
-- [x] 06-01-PLAN.md -- Persistence layer: types, repository interface, LocalStorage implementation, schema migration, avatar definitions
-- [ ] 06-02-PLAN.md -- ProfileState UI, state machine integration, GameContext profile methods, i18n keys
-- [ ] 06-03-PLAN.md -- Session save wiring in GameOverState, difficulty restoration in PlayingState, browser verification
+**Plans**: TBD
 **UI hint**: yes
 
 ### Phase 7: Progression System
@@ -127,11 +117,7 @@ Plans:
   2. Accumulated XP fills a visible progress bar toward the next level
   3. Reaching a new level triggers an animated celebration moment (not just a number change)
   4. XP and level are saved to the child's profile and persist across sessions
-**Plans:** 3 plans
-Plans:
-- [ ] 07-01-PLAN.md -- Pure logic progression module (XP calculation, level thresholds), schema v2 migration, avatar unlock metadata, i18n
-- [ ] 07-02-PLAN.md -- XpBar PixiJS component, GameOverState XP display + animation, PlayingState HUD bar, saveSessionToProfile XP wiring
-- [ ] 07-03-PLAN.md -- CelebrationOverlay (particles + scale burst), ProfileState level badges + locked avatars, visual verification
+**Plans**: TBD
 **UI hint**: yes
 
 ### Phase 8: Visual Identity
@@ -180,9 +166,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 2. Game Engine Foundation | 0/2 | Planning complete | - |
 | 3. Letter Mode Gameplay | 1/2 | Executing | - |
 | 4. Word Mode & Game Modes | 0/0 | Not started | - |
-| 5. Adaptive Difficulty | 2/2 | Complete   | 2026-03-31 |
-| 6. Profiles & Local Persistence | 0/3 | Planning complete | - |
-| 7. Progression System | 0/3 | Planning complete | - |
+| 5. Adaptive Difficulty | 0/0 | Not started | - |
+| 6. Profiles & Local Persistence | 0/0 | Not started | - |
+| 7. Progression System | 1/1 | Complete   | 2026-04-02 |
 | 8. Visual Identity | 0/0 | Not started | - |
 | 9. Audio System | 0/0 | Not started | - |
 | 10. Responsive Layout & Cross-Browser | 0/0 | Not started | - |
@@ -193,7 +179,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 **Goal:** Permettre aux enfants de sauvegarder/restaurer leur progression via un code (alternative au cloud sync, sans compte utilisateur)
 **Requirements:** TBD
-**Plans:** 0 plans
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] TBD (promote with /gsd:review-backlog when ready)
