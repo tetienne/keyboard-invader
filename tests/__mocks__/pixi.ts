@@ -49,6 +49,8 @@ export class MockBitmapText {
 export class MockGraphics {
   x = 0
   y = 0
+  alpha = 1
+  tint = 0xffffff
   visible = true
   emit: Fn = vi.fn()
   destroy: Fn = vi.fn()
@@ -60,6 +62,8 @@ export class MockGraphics {
   closePath: Fn = vi.fn().mockReturnThis()
   roundRect: Fn = vi.fn().mockReturnThis()
   fill: Fn = vi.fn().mockReturnThis()
+  stroke: Fn = vi.fn().mockReturnThis()
+  arc: Fn = vi.fn().mockReturnThis()
 }
 
 export function createPixiMocks(): Record<string, unknown> {
