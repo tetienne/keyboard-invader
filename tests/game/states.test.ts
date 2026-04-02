@@ -5,6 +5,7 @@ import type {
   GameMode,
   StateName,
   SessionResult,
+  SessionSaveResult,
 } from '@/game/types.js'
 import {
   StateMachine,
@@ -114,6 +115,7 @@ function createMockGameContext(
   const transitions: StateName[] = []
   const inputBuffer: string[] = []
   let sessionResult: SessionResult | null = null
+  let sessionSaveResult: SessionSaveResult | null = null
   let gameMode: GameMode = mode
   let letterItemCount = 0
   let wordItemCount = 0
@@ -188,6 +190,10 @@ function createMockGameContext(
       loadAll: vi.fn(() => []),
       saveAll: vi.fn(),
     })),
+    getSessionSaveResult: vi.fn(() => sessionSaveResult),
+    setSessionSaveResult: vi.fn((r: SessionSaveResult | null) => {
+      sessionSaveResult = r
+    }),
     transitions,
     inputBuffer,
   }
@@ -479,6 +485,9 @@ describe('GameOverState profile saving', () => {
       preferredGameMode: null,
       sessionHistory: [] as Array<{ hits: number; misses: number; accuracy: number; mode: string; date: string }>,
       createdAt: '2026-01-01T00:00:00Z',
+      xp: 0,
+      level: 1,
+      unlockedAvatarIds: ['avatar-red', 'avatar-blue', 'avatar-green'],
     }
     vi.mocked(ctx.getActiveProfile).mockReturnValue(profile as never)
     vi.mocked(ctx.getProfileRepository).mockReturnValue({
@@ -513,6 +522,56 @@ describe('GameOverState profile saving', () => {
       complexityLevel: 1,
     })
     expect(profile.preferredGameMode).toBe('letters')
+  })
+
+  it('calculates XP and updates profile level after session', () => {
+    const ctx = createMockGameContext()
+    const saveAllFn = vi.fn()
+    const profile = {
+      id: 'test-2',
+      name: 'Hugo',
+      avatarId: 'circle',
+      cumulativeStats: { totalSessions: 0, totalHits: 0, totalMisses: 0, bestAccuracy: 0 },
+      lastDifficultyParams: null,
+      preferredGameMode: null,
+      sessionHistory: [] as Array<{ hits: number; misses: number; accuracy: number; mode: string; date: string }>,
+      createdAt: '2026-01-01T00:00:00Z',
+      xp: 40,
+      level: 1,
+      unlockedAvatarIds: ['avatar-red', 'avatar-blue', 'avatar-green'],
+    }
+    vi.mocked(ctx.getActiveProfile).mockReturnValue(profile as never)
+    vi.mocked(ctx.getProfileRepository).mockReturnValue({
+      loadAll: vi.fn(() => [profile] as never),
+      saveAll: saveAllFn,
+    })
+    // 15 hits / 20 total = 75% accuracy in letters mode
+    // baseXp = 30, accuracyBonus = round(30 * 0.75 * 0.5) = 11, total = 41 XP
+    // Starting at 40 XP: 40 + 41 = 81 XP -> level 2 (threshold 50)
+    ctx.setSessionResult({
+      hits: 15,
+      misses: 5,
+      total: 20,
+      timePlayed: 30000,
+      mode: 'letters',
+    })
+    vi.mocked(ctx.getDifficulty).mockReturnValue({
+      fallSpeed: 90,
+      spawnInterval: 1200,
+      complexityLevel: 1,
+    })
+
+    const state = new GameOverState()
+    state.enter(ctx)
+
+    expect(profile.xp).toBe(81) // 40 + 41
+    expect(profile.level).toBe(2) // crossed 50 threshold
+    expect(ctx.setSessionSaveResult).toHaveBeenCalled()
+    const saveResult = (ctx.setSessionSaveResult as ReturnType<typeof vi.fn>).mock.calls[0]?.[0] as SessionSaveResult
+    expect(saveResult.xpGain.totalXp).toBe(41)
+    expect(saveResult.levelUp.previousLevel).toBe(1)
+    expect(saveResult.levelUp.newLevel).toBe(2)
+    expect(saveResult.levelUp.levelsGained).toBe(1)
   })
 
   it('does not crash when no active profile exists', () => {

@@ -1,6 +1,12 @@
 import { BitmapFont, BitmapText, Container, Graphics } from 'pixi.js'
 import type { SplitBitmapText } from 'pixi.js'
-import type { GameState, StateName, GameContext, GameMode } from './types.js'
+import type {
+  GameState,
+  StateName,
+  GameContext,
+  GameMode,
+  SessionSaveResult,
+} from './types.js'
 import { TRANSITIONS, BASE_WIDTH, BASE_HEIGHT } from './types.js'
 import {
   getAvailableLetters,
@@ -27,13 +33,16 @@ import {
   LETTER_DIFFICULTY_CONFIG,
   WORD_DIFFICULTY_CONFIG,
 } from './difficulty.js'
+import { calculateXpGain, applyXp, xpForCurrentLevel } from './progression.js'
+import { XpBar } from './xp-bar.js'
+import { AVATARS } from '../avatars/definitions.js'
 import { getLocale, t } from '../shared/i18n/index.js'
 import { MAX_SESSION_HISTORY } from '../persistence/types.js'
 
-function saveSessionToProfile(ctx: GameContext): void {
+function saveSessionToProfile(ctx: GameContext): SessionSaveResult | null {
   const profile = ctx.getActiveProfile()
   const result = ctx.getSessionResult()
-  if (!profile || !result) return
+  if (!profile || !result) return null
 
   const accuracy =
     result.total > 0 ? Math.round((result.hits / result.total) * 100) : 0
@@ -65,6 +74,26 @@ function saveSessionToProfile(ctx: GameContext): void {
   // Save preferred game mode
   profile.preferredGameMode = ctx.getGameMode()
 
+  // Calculate XP gain and apply to profile
+  const xpGain = calculateXpGain(result.hits, result.total, result.mode)
+  const levelUp = applyXp(profile.xp, profile.level, xpGain.totalXp)
+
+  profile.xp = levelUp.remainingXp
+  profile.level = levelUp.newLevel
+
+  // Check for new avatar unlocks
+  const newUnlocks: string[] = []
+  for (const avatar of AVATARS) {
+    if (
+      avatar.unlockLevel &&
+      avatar.unlockLevel <= levelUp.newLevel &&
+      !profile.unlockedAvatarIds.includes(avatar.id)
+    ) {
+      profile.unlockedAvatarIds.push(avatar.id)
+      newUnlocks.push(avatar.id)
+    }
+  }
+
   // Persist all profiles
   const repo = ctx.getProfileRepository()
   const allProfiles = repo.loadAll()
@@ -73,6 +102,10 @@ function saveSessionToProfile(ctx: GameContext): void {
     allProfiles[idx] = profile
   }
   repo.saveAll(allProfiles)
+
+  const saveResult: SessionSaveResult = { xpGain, levelUp, newUnlocks }
+  ctx.setSessionSaveResult(saveResult)
+  return saveResult
 }
 
 export class StateMachine {
@@ -312,6 +345,8 @@ export class PlayingState implements GameState {
   private mode: GameMode = 'letters'
   private scoreText: BitmapText | null = null
   private difficulty!: DifficultyManager
+  private hudXpBar: XpBar | null = null
+  private hudLevelLabel: BitmapText | null = null
 
   // Session lengths stay fixed (D-14)
   private readonly SESSION_LENGTH = 20
@@ -345,6 +380,35 @@ export class PlayingState implements GameState {
     this.scoreText.x = BASE_WIDTH - 200
     this.scoreText.y = 20
     ctx.gameRoot.addChild(this.scoreText)
+
+    // HUD XP bar (top-left)
+    if (profile) {
+      this.hudLevelLabel = new BitmapText({
+        text: `Niv. ${String(profile.level)}`,
+        style: { fontFamily: 'GameFont', fontSize: 18 },
+      })
+      this.hudLevelLabel.x = 16
+      this.hudLevelLabel.y = 4
+      ctx.gameRoot.addChild(this.hudLevelLabel)
+
+      this.hudXpBar = new XpBar({
+        width: 140,
+        height: 10,
+        showXpText: false,
+        showEarnedText: false,
+        fontSize: 18,
+      })
+      this.hudXpBar.container.x = 16
+      this.hudXpBar.container.y = 24
+      const progress = xpForCurrentLevel(profile.xp, profile.level)
+      this.hudXpBar.setProgress(
+        profile.level,
+        progress.current,
+        progress.required > 0 ? progress.required : 1,
+      )
+      // Hide the built-in level text of XpBar (we use our own label above)
+      ctx.gameRoot.addChild(this.hudXpBar.container)
+    }
   }
 
   update(ctx: GameContext, dt: number): void {
@@ -496,6 +560,18 @@ export class PlayingState implements GameState {
       ctx.gameRoot.removeChild(this.scoreText)
       this.scoreText.destroy()
       this.scoreText = null
+    }
+
+    // Remove HUD XP bar
+    if (this.hudXpBar) {
+      ctx.gameRoot.removeChild(this.hudXpBar.container)
+      this.hudXpBar.destroy()
+      this.hudXpBar = null
+    }
+    if (this.hudLevelLabel) {
+      ctx.gameRoot.removeChild(this.hudLevelLabel)
+      this.hudLevelLabel.destroy()
+      this.hudLevelLabel = null
     }
 
     this.spawnTimer = 0
@@ -677,15 +753,27 @@ export class PlayingState implements GameState {
   }
 }
 
+type ResultsPhase = 'stats' | 'xp-filling' | 'celebrating' | 'xp-resetting' | 'done'
+
 /**
- * Game over / results state: shows session summary with accuracy, items, and time.
+ * Game over / results state: shows session summary with accuracy, items, time,
+ * XP earned, and animated XP bar.
  */
 export class GameOverState implements GameState {
   private container: Container | null = null
+  private xpBar: XpBar | null = null
+  private resultsPhase: ResultsPhase = 'stats'
+  private phaseTimer = 0
+  private pendingLevelUps = 0
+  private currentDisplayLevel = 1
+  private saveResult: SessionSaveResult | null = null
+  private targetProgress = 0
+  private targetXpCurrent = 0
+  private targetXpRequired = 0
 
   enter(ctx: GameContext): void {
     const result = ctx.getSessionResult()
-    saveSessionToProfile(ctx)
+    this.saveResult = saveSessionToProfile(ctx)
     this.container = new Container()
 
     // Title
@@ -712,41 +800,102 @@ export class GameOverState implements GameState {
 
     const itemLabel = mode === 'words' ? 'mots' : 'lettres'
 
-    // Accuracy line
+    // Accuracy line (shifted up per UI-SPEC: 0.30)
     const accuracyText = new BitmapText({
       text: `${String(accuracy)}% precision`,
       style: { fontFamily: 'GameFont', fontSize: 22 },
     })
     accuracyText.anchor.set(0.5)
     accuracyText.x = BASE_WIDTH / 2
-    accuracyText.y = BASE_HEIGHT * 0.35
+    accuracyText.y = BASE_HEIGHT * 0.30
 
-    // Items line
+    // Items line (shifted up: 0.36)
     const itemsText = new BitmapText({
       text: `${String(total)} ${itemLabel} pratiques`,
       style: { fontFamily: 'GameFont', fontSize: 22 },
     })
     itemsText.anchor.set(0.5)
     itemsText.x = BASE_WIDTH / 2
-    itemsText.y = BASE_HEIGHT * 0.42
+    itemsText.y = BASE_HEIGHT * 0.36
 
-    // Time line
+    // Time line (shifted up: 0.42)
     const timeText = new BitmapText({
       text: `Temps: ${timeStr}`,
       style: { fontFamily: 'GameFont', fontSize: 22 },
     })
     timeText.anchor.set(0.5)
     timeText.x = BASE_WIDTH / 2
-    timeText.y = BASE_HEIGHT * 0.49
+    timeText.y = BASE_HEIGHT * 0.42
 
-    // "Rejouer" button
+    // XP earned text at 0.50 (accent color)
+    if (this.saveResult) {
+      const xpEarnedText = new BitmapText({
+        text: `+${String(this.saveResult.xpGain.totalXp)} XP`,
+        style: { fontFamily: 'GameFont', fontSize: 28 },
+      })
+      xpEarnedText.tint = 0xe94560
+      xpEarnedText.anchor.set(0.5)
+      xpEarnedText.x = BASE_WIDTH / 2
+      xpEarnedText.y = BASE_HEIGHT * 0.50
+      this.container.addChild(xpEarnedText)
+    }
+
+    // XP bar at 0.56 (results variant, centered)
+    this.xpBar = new XpBar({
+      width: 320,
+      height: 20,
+      showXpText: true,
+      showEarnedText: false,
+      fontSize: 22,
+    })
+    this.xpBar.container.x = BASE_WIDTH / 2 - 160
+    this.xpBar.container.y = BASE_HEIGHT * 0.56
+
+    // Calculate initial bar state (before XP was added)
+    if (this.saveResult) {
+      const prevLevel = this.saveResult.levelUp.previousLevel
+      const prevTotalXp = this.saveResult.levelUp.remainingXp - this.saveResult.xpGain.totalXp
+      const prevProgress = xpForCurrentLevel(prevTotalXp, prevLevel)
+      this.xpBar.setProgress(
+        prevLevel,
+        Math.max(0, prevProgress.current),
+        prevProgress.required > 0 ? prevProgress.required : 1,
+      )
+      this.pendingLevelUps = this.saveResult.levelUp.levelsGained
+      this.currentDisplayLevel = prevLevel
+
+      // Pre-compute target for the fill animation
+      if (this.pendingLevelUps > 0) {
+        // First fill goes to 100% at current level
+        this.targetProgress = 1.0
+      } else {
+        // Fill to new position at same level
+        const newProgress = xpForCurrentLevel(
+          this.saveResult.levelUp.remainingXp,
+          this.saveResult.levelUp.newLevel,
+        )
+        this.targetProgress = newProgress.required > 0
+          ? newProgress.current / newProgress.required
+          : 0
+        this.targetXpCurrent = newProgress.current
+        this.targetXpRequired = newProgress.required
+      }
+    } else {
+      this.xpBar.setProgress(1, 0, 1)
+      this.pendingLevelUps = 0
+      this.currentDisplayLevel = 1
+    }
+
+    this.container.addChild(this.xpBar.container)
+
+    // "Rejouer" button (shifted down: 0.70)
     const replayBtn = new BitmapText({
       text: 'Rejouer',
       style: { fontFamily: 'GameFont', fontSize: 28 },
     })
     replayBtn.anchor.set(0.5)
     replayBtn.x = BASE_WIDTH / 2
-    replayBtn.y = BASE_HEIGHT * 0.65
+    replayBtn.y = BASE_HEIGHT * 0.70
     replayBtn.eventMode = 'static'
     replayBtn.cursor = 'pointer'
     replayBtn.on('pointerover', () => {
@@ -759,14 +908,14 @@ export class GameOverState implements GameState {
       ctx.transitionTo('playing')
     })
 
-    // "Menu" button
+    // "Menu" button (shifted down: 0.80)
     const menuBtn = new BitmapText({
       text: 'Menu',
       style: { fontFamily: 'GameFont', fontSize: 20 },
     })
     menuBtn.anchor.set(0.5)
     menuBtn.x = BASE_WIDTH / 2
-    menuBtn.y = BASE_HEIGHT * 0.78
+    menuBtn.y = BASE_HEIGHT * 0.80
     menuBtn.eventMode = 'static'
     menuBtn.cursor = 'pointer'
     menuBtn.on('pointerover', () => {
@@ -788,18 +937,108 @@ export class GameOverState implements GameState {
       menuBtn,
     )
     ctx.gameRoot.addChild(this.container)
+
+    // Initialize animation phase
+    this.resultsPhase = 'stats'
+    this.phaseTimer = 0
   }
 
   exit(ctx: GameContext): void {
+    if (this.xpBar) {
+      this.xpBar.destroy()
+      this.xpBar = null
+    }
     if (this.container) {
       ctx.gameRoot.removeChild(this.container)
       this.container.destroy({ children: true })
       this.container = null
     }
+    this.saveResult = null
+    this.resultsPhase = 'stats'
+    this.phaseTimer = 0
+    this.pendingLevelUps = 0
   }
 
-  update(): void {
-    /* static screen */
+  update(_ctx: GameContext, dt: number): void {
+    if (!this.xpBar) return
+
+    switch (this.resultsPhase) {
+      case 'stats': {
+        // Wait 300ms before starting fill animation
+        this.phaseTimer += dt
+        if (this.phaseTimer >= 300 && this.saveResult) {
+          const prevTotalXp = this.saveResult.levelUp.remainingXp - this.saveResult.xpGain.totalXp
+          const prevProgress = xpForCurrentLevel(prevTotalXp, this.currentDisplayLevel)
+          const fromProgress = prevProgress.required > 0
+            ? Math.max(0, prevProgress.current) / prevProgress.required
+            : 0
+          const toProgress = this.targetProgress
+          const duration = Math.max(200, 800 * Math.abs(toProgress - fromProgress))
+          this.xpBar.animateFill(fromProgress, toProgress, duration)
+          this.resultsPhase = 'xp-filling'
+        }
+        break
+      }
+      case 'xp-filling': {
+        const done = this.xpBar.update(dt)
+        if (done) {
+          if (this.pendingLevelUps > 0) {
+            // Level up: show celebration (placeholder: 2500ms pause)
+            this.phaseTimer = 0
+            this.resultsPhase = 'celebrating'
+          } else {
+            // Update final XP text
+            this.xpBar.setXpText(this.targetXpCurrent, this.targetXpRequired)
+            this.resultsPhase = 'done'
+          }
+        }
+        break
+      }
+      case 'celebrating': {
+        // Placeholder for celebration overlay (Plan 03 adds particles)
+        this.phaseTimer += dt
+        if (this.phaseTimer >= 2500) {
+          this.pendingLevelUps--
+          this.currentDisplayLevel++
+          this.xpBar.resetFill()
+          this.xpBar.setLevel(this.currentDisplayLevel)
+
+          // Compute the target for remaining XP at new level
+          if (this.pendingLevelUps > 0) {
+            // More level-ups: fill to 100% again
+            this.targetProgress = 1.0
+          } else {
+            // Final level: fill to actual remaining progress
+            const newProgress = xpForCurrentLevel(
+              this.saveResult!.levelUp.remainingXp,
+              this.saveResult!.levelUp.newLevel,
+            )
+            this.targetProgress = newProgress.required > 0
+              ? newProgress.current / newProgress.required
+              : 0
+            this.targetXpCurrent = newProgress.current
+            this.targetXpRequired = newProgress.required
+          }
+          this.resultsPhase = 'xp-resetting'
+          this.phaseTimer = 0
+        }
+        break
+      }
+      case 'xp-resetting': {
+        // Brief pause then start fill for remaining XP
+        this.phaseTimer += dt
+        if (this.phaseTimer >= 200) {
+          const toProgress = this.targetProgress
+          const duration = Math.max(200, 800 * toProgress)
+          this.xpBar.animateFill(0, toProgress, duration)
+          this.resultsPhase = 'xp-filling'
+        }
+        break
+      }
+      case 'done':
+        // Buttons already active
+        break
+    }
   }
 
   render(): void {
