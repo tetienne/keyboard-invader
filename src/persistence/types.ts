@@ -1,9 +1,15 @@
 import type { DifficultyParams } from '../game/difficulty.js'
 import type { GameMode } from '../game/types.js'
 
-export const CURRENT_SCHEMA_VERSION = 1
+export const CURRENT_SCHEMA_VERSION = 2
 export const MAX_PROFILES = 4
 export const MAX_SESSION_HISTORY = 10
+
+export const DEFAULT_UNLOCKED_AVATARS: readonly string[] = [
+  'avatar-red',
+  'avatar-blue',
+  'avatar-green',
+]
 
 export interface StorageEnvelope {
   schemaVersion: number
@@ -19,6 +25,9 @@ export interface ProfileData {
   preferredGameMode: GameMode | null
   sessionHistory: SessionSummary[] // max 10, FIFO
   createdAt: string // ISO date string
+  xp: number // cumulative total XP
+  level: number // current level 1-10
+  unlockedAvatarIds: string[] // avatar IDs the player has access to
 }
 
 export interface CumulativeStats {
