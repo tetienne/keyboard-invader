@@ -21,7 +21,6 @@ import {
   getAvailableLetters,
   findLowestMatch,
   findLowestEntity,
-  LETTER_COLORS,
 } from './letters.js'
 import type { LetterEntity } from './letters.js'
 import type { WordEntity, WordLists } from './words.js'
@@ -34,8 +33,8 @@ import {
 import {
   updateTween,
   createHitTween,
-  createMissTween,
-  createBottomTween,
+  createDodgeTween,
+  createEscapeTween,
 } from './tween.js'
 import {
   DifficultyManager,
@@ -48,13 +47,27 @@ import { CelebrationOverlay } from './celebration.js'
 import { AVATARS } from '../avatars/definitions.js'
 import { getLocale, t } from '../shared/i18n/index.js'
 import {
+  LETTER_COLORS,
+  SPACE_PALETTE,
+  UI_CONSTANTS,
   ALIEN_TEXTURES_PATHS,
   WORD_ALIEN_TEXTURE_PATHS,
   SPACESHIP_PATH,
   STAR_PARTICLE_PATH,
   AVATAR_SVG_PATHS,
+  getLevelTitle,
 } from './theme.js'
 import { MAX_SESSION_HISTORY } from '../persistence/types.js'
+import { Starfield } from './starfield.js'
+import { DestructionEffect, LaserBolt } from './effects.js'
+import { Defender } from './defender.js'
+
+function drawSpacePanel(g: Graphics, x: number, y: number, w: number, h: number): void {
+  g.roundRect(x, y, w, h, UI_CONSTANTS.panelCornerRadius)
+  g.fill({ color: SPACE_PALETTE.secondary, alpha: UI_CONSTANTS.panelBgAlpha })
+  g.roundRect(x, y, w, h, UI_CONSTANTS.panelCornerRadius)
+  g.stroke({ color: SPACE_PALETTE.glow, width: UI_CONSTANTS.panelBorderWidth, alpha: UI_CONSTANTS.panelBorderAlpha })
+}
 
 function saveSessionToProfile(ctx: GameContext): SessionSaveResult | null {
   const profile = ctx.getActiveProfile()
@@ -243,132 +256,130 @@ export class BootState implements GameState {
  * Menu state: shows game title and two mode selection buttons.
  */
 export class MenuState implements GameState {
-  private title: BitmapText | null = null
-  private letterBtn: BitmapText | null = null
-  private letterLabel: BitmapText | null = null
-  private wordBtn: BitmapText | null = null
-  private wordLabel: BitmapText | null = null
-  private profileBtn: BitmapText | null = null
+  private menuContainer: Container | null = null
+  private starfield: Starfield | null = null
+  private bgContainer: Container | null = null
 
   enter(ctx: GameContext): void {
-    this.title = new BitmapText({
+    // Background layer with starfield
+    this.bgContainer = new Container()
+    ctx.gameRoot.addChild(this.bgContainer)
+    this.starfield = new Starfield(this.bgContainer)
+
+    // Menu UI container
+    this.menuContainer = new Container()
+    ctx.gameRoot.addChild(this.menuContainer)
+
+    const title = new BitmapText({
       text: 'Keyboard Invader',
       style: { fontFamily: 'GameFont', fontSize: 48 },
     })
-    this.title.x = BASE_WIDTH / 2 - this.title.width / 2
-    this.title.y = BASE_HEIGHT * 0.2
+    title.anchor.set(0.5)
+    title.x = BASE_WIDTH / 2
+    title.y = BASE_HEIGHT * 0.2
+    this.menuContainer.addChild(title)
 
-    // Letter mode button
-    this.letterBtn = new BitmapText({
-      text: 'A B C',
-      style: { fontFamily: 'GameFont', fontSize: 36 },
-    })
-    this.letterBtn.anchor.set(0.5)
-    this.letterBtn.x = BASE_WIDTH / 2
-    this.letterBtn.y = BASE_HEIGHT * 0.45
-    this.letterBtn.eventMode = 'static'
-    this.letterBtn.cursor = 'pointer'
-    this.letterBtn.on('pointerover', () => {
-      this.letterBtn?.scale.set(1.1)
-    })
-    this.letterBtn.on('pointerout', () => {
-      this.letterBtn?.scale.set(1.0)
-    })
-    this.letterBtn.on('pointertap', () => {
+    // Letter mode button with space panel
+    const letterPanelW = 200
+    const letterPanelH = 70
+    const letterPanel = new Graphics()
+    drawSpacePanel(letterPanel, -letterPanelW / 2, -letterPanelH / 2, letterPanelW, letterPanelH)
+    letterPanel.x = BASE_WIDTH / 2
+    letterPanel.y = BASE_HEIGHT * 0.45
+    letterPanel.eventMode = 'static'
+    letterPanel.cursor = 'pointer'
+    letterPanel.on('pointerover', () => letterPanel.scale.set(1.1))
+    letterPanel.on('pointerout', () => letterPanel.scale.set(1.0))
+    letterPanel.on('pointertap', () => {
       ctx.setGameMode('letters')
       ctx.transitionTo('playing')
     })
+    this.menuContainer.addChild(letterPanel)
 
-    this.letterLabel = new BitmapText({
-      text: 'Lettres',
-      style: { fontFamily: 'GameFont', fontSize: 18 },
-    })
-    this.letterLabel.anchor.set(0.5)
-    this.letterLabel.x = BASE_WIDTH / 2
-    this.letterLabel.y = BASE_HEIGHT * 0.45 + 35
-
-    // Word mode button
-    this.wordBtn = new BitmapText({
-      text: 'MOT',
+    const letterBtnText = new BitmapText({
+      text: 'A B C',
       style: { fontFamily: 'GameFont', fontSize: 36 },
     })
-    this.wordBtn.anchor.set(0.5)
-    this.wordBtn.x = BASE_WIDTH / 2
-    this.wordBtn.y = BASE_HEIGHT * 0.62
-    this.wordBtn.eventMode = 'static'
-    this.wordBtn.cursor = 'pointer'
-    this.wordBtn.on('pointerover', () => {
-      this.wordBtn?.scale.set(1.1)
+    letterBtnText.anchor.set(0.5)
+    letterBtnText.y = -6
+    letterPanel.addChild(letterBtnText)
+
+    const letterLabel = new BitmapText({
+      text: 'Lettres',
+      style: { fontFamily: 'GameFont', fontSize: 14 },
     })
-    this.wordBtn.on('pointerout', () => {
-      this.wordBtn?.scale.set(1.0)
-    })
-    this.wordBtn.on('pointertap', () => {
+    letterLabel.anchor.set(0.5)
+    letterLabel.y = 18
+    letterPanel.addChild(letterLabel)
+
+    // Word mode button with space panel
+    const wordPanel = new Graphics()
+    drawSpacePanel(wordPanel, -letterPanelW / 2, -letterPanelH / 2, letterPanelW, letterPanelH)
+    wordPanel.x = BASE_WIDTH / 2
+    wordPanel.y = BASE_HEIGHT * 0.62
+    wordPanel.eventMode = 'static'
+    wordPanel.cursor = 'pointer'
+    wordPanel.on('pointerover', () => wordPanel.scale.set(1.1))
+    wordPanel.on('pointerout', () => wordPanel.scale.set(1.0))
+    wordPanel.on('pointertap', () => {
       ctx.setGameMode('words')
       ctx.transitionTo('playing')
     })
+    this.menuContainer.addChild(wordPanel)
 
-    this.wordLabel = new BitmapText({
-      text: 'Mots',
-      style: { fontFamily: 'GameFont', fontSize: 18 },
+    const wordBtnText = new BitmapText({
+      text: 'MOT',
+      style: { fontFamily: 'GameFont', fontSize: 36 },
     })
-    this.wordLabel.anchor.set(0.5)
-    this.wordLabel.x = BASE_WIDTH / 2
-    this.wordLabel.y = BASE_HEIGHT * 0.62 + 35
+    wordBtnText.anchor.set(0.5)
+    wordBtnText.y = -6
+    wordPanel.addChild(wordBtnText)
 
-    // "Change player" back-link (D-14)
-    this.profileBtn = new BitmapText({
+    const wordLabel = new BitmapText({
+      text: 'Mots',
+      style: { fontFamily: 'GameFont', fontSize: 14 },
+    })
+    wordLabel.anchor.set(0.5)
+    wordLabel.y = 18
+    wordPanel.addChild(wordLabel)
+
+    // "Change player" back-link
+    const profileBtn = new BitmapText({
       text: t('profiles.back'),
       style: { fontFamily: 'GameFont', fontSize: 18 },
     })
-    this.profileBtn.anchor.set(0.5)
-    this.profileBtn.x = BASE_WIDTH / 2
-    this.profileBtn.y = BASE_HEIGHT * 0.85
-    this.profileBtn.eventMode = 'static'
-    this.profileBtn.cursor = 'pointer'
-    this.profileBtn.on('pointerover', () => {
-      this.profileBtn?.scale.set(1.1)
-    })
-    this.profileBtn.on('pointerout', () => {
-      this.profileBtn?.scale.set(1.0)
-    })
-    this.profileBtn.on('pointertap', () => {
+    profileBtn.anchor.set(0.5)
+    profileBtn.x = BASE_WIDTH / 2
+    profileBtn.y = BASE_HEIGHT * 0.85
+    profileBtn.eventMode = 'static'
+    profileBtn.cursor = 'pointer'
+    profileBtn.on('pointerover', () => profileBtn.scale.set(1.1))
+    profileBtn.on('pointerout', () => profileBtn.scale.set(1.0))
+    profileBtn.on('pointertap', () => {
       ctx.transitionTo('profiles')
     })
-
-    ctx.gameRoot.addChild(this.title)
-    ctx.gameRoot.addChild(this.letterBtn)
-    ctx.gameRoot.addChild(this.letterLabel)
-    ctx.gameRoot.addChild(this.wordBtn)
-    ctx.gameRoot.addChild(this.wordLabel)
-    ctx.gameRoot.addChild(this.profileBtn)
+    this.menuContainer.addChild(profileBtn)
   }
 
   exit(ctx: GameContext): void {
-    const items = [
-      this.title,
-      this.letterBtn,
-      this.letterLabel,
-      this.wordBtn,
-      this.wordLabel,
-      this.profileBtn,
-    ]
-    for (const item of items) {
-      if (item) {
-        ctx.gameRoot.removeChild(item)
-        item.destroy()
-      }
+    if (this.starfield) {
+      this.starfield.destroy()
+      this.starfield = null
     }
-    this.title = null
-    this.letterBtn = null
-    this.letterLabel = null
-    this.wordBtn = null
-    this.wordLabel = null
-    this.profileBtn = null
+    if (this.bgContainer) {
+      ctx.gameRoot.removeChild(this.bgContainer)
+      this.bgContainer.destroy({ children: true })
+      this.bgContainer = null
+    }
+    if (this.menuContainer) {
+      ctx.gameRoot.removeChild(this.menuContainer)
+      this.menuContainer.destroy({ children: true })
+      this.menuContainer = null
+    }
   }
 
-  update(): void {
-    // Menu is static
+  update(_ctx: GameContext, dt: number): void {
+    this.starfield?.update(dt)
   }
 
   render(): void {
@@ -394,6 +405,17 @@ export class PlayingState implements GameState {
   private hudXpBar: XpBar | null = null
   private hudLevelLabel: BitmapText | null = null
 
+  // Visual modules
+  private starfield: Starfield | null = null
+  private effects: DestructionEffect | null = null
+  private laser: LaserBolt | null = null
+  private defender: Defender | null = null
+  private bgContainer: Container | null = null
+  private entitiesContainer: Container | null = null
+  private effectsContainer: Container | null = null
+  private defenderContainer: Container | null = null
+  private hudContainer: Container | null = null
+
   // Session lengths stay fixed (D-14)
   private readonly SESSION_LENGTH = 20
   private readonly WORD_SESSION_LENGTH = 15
@@ -418,6 +440,24 @@ export class PlayingState implements GameState {
       this.wordLists = loadWordLists(getLocale())
     }
 
+    // Z-layer containers (back to front)
+    this.bgContainer = new Container()
+    this.entitiesContainer = new Container()
+    this.effectsContainer = new Container()
+    this.defenderContainer = new Container()
+    this.hudContainer = new Container()
+    ctx.gameRoot.addChild(this.bgContainer)
+    ctx.gameRoot.addChild(this.entitiesContainer)
+    ctx.gameRoot.addChild(this.effectsContainer)
+    ctx.gameRoot.addChild(this.defenderContainer)
+    ctx.gameRoot.addChild(this.hudContainer)
+
+    // Visual modules
+    this.starfield = new Starfield(this.bgContainer)
+    this.effects = new DestructionEffect(this.effectsContainer)
+    this.laser = new LaserBolt(this.effectsContainer)
+    this.defender = new Defender(this.defenderContainer)
+
     // Score counter at top-right
     this.scoreText = new BitmapText({
       text: 'Score: 0',
@@ -425,7 +465,7 @@ export class PlayingState implements GameState {
     })
     this.scoreText.x = BASE_WIDTH - 200
     this.scoreText.y = 20
-    ctx.gameRoot.addChild(this.scoreText)
+    this.hudContainer.addChild(this.scoreText)
 
     // HUD XP bar (top-left)
     if (profile) {
@@ -435,7 +475,7 @@ export class PlayingState implements GameState {
       })
       this.hudLevelLabel.x = 16
       this.hudLevelLabel.y = 4
-      ctx.gameRoot.addChild(this.hudLevelLabel)
+      this.hudContainer.addChild(this.hudLevelLabel)
 
       this.hudXpBar = new XpBar({
         width: 140,
@@ -452,17 +492,25 @@ export class PlayingState implements GameState {
         progress.current,
         progress.required > 0 ? progress.required : 1,
       )
-      // Hide the built-in level text of XpBar (we use our own label above)
-      ctx.gameRoot.addChild(this.hudXpBar.container)
+      this.hudContainer.addChild(this.hudXpBar.container)
     }
   }
 
   update(ctx: GameContext, dt: number): void {
     this.timePlayedMs += dt
 
+    // Update visual modules
+    this.starfield?.update(dt)
+    this.effects?.update(dt)
+    this.laser?.update(dt)
+    this.defender?.update(dt)
+
     const sessionLength =
       this.mode === 'words' ? this.WORD_SESSION_LENGTH : this.SESSION_LENGTH
     const { fallSpeed, spawnInterval } = this.difficulty.params
+
+    // Update starfield intensity based on difficulty
+    this.starfield?.setIntensity(this.difficulty.params.complexityLevel)
 
     // --- Spawn logic ---
     this.spawnTimer += dt
@@ -510,7 +558,7 @@ export class PlayingState implements GameState {
     this._updateTweens(this.activeEntities, dt)
     this._updateWordTweens(this.activeWordEntities, dt)
 
-    // --- Bottom detection (Pitfall 5: items reaching bottom count as misses) ---
+    // --- Bottom detection: use escape tween instead of bottom tween ---
     for (const entity of this.activeEntities) {
       if (
         entity.tween === null &&
@@ -519,7 +567,7 @@ export class PlayingState implements GameState {
       ) {
         this.misses++
         this.difficulty.recordResult(false)
-        entity.tween = createBottomTween()
+        entity.tween = createEscapeTween()
         entity.markedForRemoval = true
       }
     }
@@ -531,7 +579,7 @@ export class PlayingState implements GameState {
       ) {
         this.misses++
         this.difficulty.recordResult(false)
-        entity.tween = createBottomTween()
+        entity.tween = createEscapeTween()
         entity.markedForRemoval = true
       }
     }
@@ -541,7 +589,11 @@ export class PlayingState implements GameState {
       const entity = this.activeEntities[i]
       if (entity?.markedForRemoval && entity.tween === null) {
         entity.text.visible = false
-        ctx.gameRoot.removeChild(entity.text)
+        if (this.entitiesContainer) {
+          this.entitiesContainer.removeChild(entity.text)
+        } else {
+          ctx.gameRoot.removeChild(entity.text)
+        }
         ctx.releasePoolItem(entity.poolIndex)
         this.activeEntities.splice(i, 1)
       }
@@ -551,7 +603,11 @@ export class PlayingState implements GameState {
       if (entity?.markedForRemoval && entity.tween === null) {
         const sbt = entity.text as unknown as SplitBitmapText
         sbt.visible = false
-        ctx.gameRoot.removeChild(sbt)
+        if (this.entitiesContainer) {
+          this.entitiesContainer.removeChild(sbt)
+        } else {
+          ctx.gameRoot.removeChild(sbt)
+        }
         ctx.releaseWordPoolItem(entity.poolIndex)
         this.activeWordEntities.splice(i, 1)
       }
@@ -587,7 +643,9 @@ export class PlayingState implements GameState {
     // Release letter entities
     for (const entity of this.activeEntities) {
       entity.text.visible = false
-      ctx.gameRoot.removeChild(entity.text)
+      if (this.entitiesContainer) {
+        this.entitiesContainer.removeChild(entity.text)
+      }
       ctx.releasePoolItem(entity.poolIndex)
     }
     this.activeEntities = []
@@ -596,29 +654,38 @@ export class PlayingState implements GameState {
     for (const entity of this.activeWordEntities) {
       const sbt = entity.text as unknown as SplitBitmapText
       sbt.visible = false
-      ctx.gameRoot.removeChild(sbt)
+      if (this.entitiesContainer) {
+        this.entitiesContainer.removeChild(sbt)
+      }
       ctx.releaseWordPoolItem(entity.poolIndex)
     }
     this.activeWordEntities = []
 
-    // Remove score text
-    if (this.scoreText) {
-      ctx.gameRoot.removeChild(this.scoreText)
-      this.scoreText.destroy()
-      this.scoreText = null
-    }
+    // Destroy visual modules
+    if (this.starfield) { this.starfield.destroy(); this.starfield = null }
+    if (this.effects) { this.effects.clear(); this.effects = null }
+    if (this.laser) { this.laser = null }
+    if (this.defender) { this.defender.destroy(); this.defender = null }
 
-    // Remove HUD XP bar
-    if (this.hudXpBar) {
-      ctx.gameRoot.removeChild(this.hudXpBar.container)
-      this.hudXpBar.destroy()
-      this.hudXpBar = null
+    // Remove score/HUD (already children of containers that will be destroyed)
+    this.scoreText = null
+    this.hudXpBar?.destroy()
+    this.hudXpBar = null
+    this.hudLevelLabel = null
+
+    // Destroy z-layer containers
+    const containers = [this.bgContainer, this.entitiesContainer, this.effectsContainer, this.defenderContainer, this.hudContainer]
+    for (const c of containers) {
+      if (c) {
+        ctx.gameRoot.removeChild(c)
+        c.destroy({ children: true })
+      }
     }
-    if (this.hudLevelLabel) {
-      ctx.gameRoot.removeChild(this.hudLevelLabel)
-      this.hudLevelLabel.destroy()
-      this.hudLevelLabel = null
-    }
+    this.bgContainer = null
+    this.entitiesContainer = null
+    this.effectsContainer = null
+    this.defenderContainer = null
+    this.hudContainer = null
 
     this.spawnTimer = 0
     this.totalSpawned = 0
@@ -648,7 +715,8 @@ export class PlayingState implements GameState {
     bt.y = -40
     bt.visible = true
 
-    ctx.gameRoot.addChild(bt)
+    const parent = this.entitiesContainer ?? ctx.gameRoot
+    parent.addChild(bt)
     this.activeEntities.push({
       text: bt,
       poolIndex: index,
@@ -697,7 +765,8 @@ export class PlayingState implements GameState {
     sbt.y = -40
     sbt.visible = true
 
-    ctx.gameRoot.addChild(sbt)
+    const wordParent = this.entitiesContainer ?? ctx.gameRoot
+    wordParent.addChild(sbt)
     this.activeWordEntities.push({
       text: sbt as unknown as WordEntity['text'],
       poolIndex: index,
@@ -716,6 +785,15 @@ export class PlayingState implements GameState {
       if (match) {
         this.hits++
         this.difficulty.recordResult(true)
+
+        // Fire laser from defender to target
+        if (this.defender && this.laser) {
+          const defPos = this.defender.getPosition()
+          this.laser.fire(defPos.x, defPos.y, match.text.x, match.text.y)
+        }
+        // Destruction burst at alien position
+        this.effects?.burst(match.text.x, match.text.y, match.originalTint)
+
         match.tween = createHitTween()
         match.markedForRemoval = true
       } else {
@@ -723,7 +801,7 @@ export class PlayingState implements GameState {
         this.difficulty.recordResult(false)
         const lowest = findLowestEntity(this.activeEntities)
         if (lowest?.tween === null) {
-          lowest.tween = createMissTween()
+          lowest.tween = createDodgeTween()
         }
       }
     }
@@ -748,13 +826,22 @@ export class PlayingState implements GameState {
         activeWord.cursorIndex++
         this.hits++
         this.difficulty.recordResult(true)
+
+        // Fire laser from defender to target
+        if (this.defender && this.laser) {
+          const defPos = this.defender.getPosition()
+          this.laser.fire(defPos.x, defPos.y, activeWord.text.x, activeWord.text.y)
+        }
+        // Destruction burst
+        this.effects?.burst(activeWord.text.x, activeWord.text.y, activeWord.originalTint)
+
         activeWord.tween = createHitTween()
         activeWord.markedForRemoval = true
       } else {
-        // Wrong key: red flash + shake, no cursor reset
+        // Wrong key: dodge animation, no cursor reset
         this.misses++
         if (activeWord.tween === null) {
-          activeWord.tween = createMissTween()
+          activeWord.tween = createDodgeTween()
         }
       }
     }
@@ -765,7 +852,7 @@ export class PlayingState implements GameState {
       if (entity.tween !== null) {
         const done = updateTween(entity, dt)
         if (done) {
-          if (entity.tween.type === 'miss') {
+          if (entity.tween.type === 'miss' || entity.tween.type === 'dodge') {
             entity.text.tint = entity.originalTint
             entity.text.x = entity.baseX
             entity.tween = null
@@ -782,8 +869,8 @@ export class PlayingState implements GameState {
       if (entity.tween !== null) {
         const done = updateTween(entity, dt)
         if (done) {
-          if (entity.tween.type === 'miss') {
-            // Restore char tints after miss
+          if (entity.tween.type === 'miss' || entity.tween.type === 'dodge') {
+            // Restore char tints after miss/dodge
             for (let i = entity.cursorIndex; i < entity.text.chars.length; i++) {
               const c = entity.text.chars[i]
               if (c) c.tint = entity.originalTint
@@ -807,6 +894,8 @@ type ResultsPhase = 'stats' | 'xp-filling' | 'celebrating' | 'xp-resetting' | 'd
  */
 export class GameOverState implements GameState {
   private container: Container | null = null
+  private bgContainer: Container | null = null
+  private starfield: Starfield | null = null
   private xpBar: XpBar | null = null
   private resultsPhase: ResultsPhase = 'stats'
   private phaseTimer = 0
@@ -821,6 +910,12 @@ export class GameOverState implements GameState {
   enter(ctx: GameContext): void {
     const result = ctx.getSessionResult()
     this.saveResult = saveSessionToProfile(ctx)
+
+    // Starfield background
+    this.bgContainer = new Container()
+    ctx.gameRoot.addChild(this.bgContainer)
+    this.starfield = new Starfield(this.bgContainer)
+
     this.container = new Container()
 
     // Title
@@ -831,6 +926,21 @@ export class GameOverState implements GameState {
     title.anchor.set(0.5)
     title.x = BASE_WIDTH / 2
     title.y = BASE_HEIGHT * 0.15
+
+    // Level title under title
+    const profile = ctx.getActiveProfile()
+    if (profile) {
+      const levelTitle = getLevelTitle(profile.level, getLocale())
+      const levelTitleText = new BitmapText({
+        text: `${levelTitle} - Niv. ${String(profile.level)}`,
+        style: { fontFamily: 'GameFont', fontSize: 18 },
+      })
+      levelTitleText.tint = SPACE_PALETTE.glow
+      levelTitleText.anchor.set(0.5)
+      levelTitleText.x = BASE_WIDTH / 2
+      levelTitleText.y = BASE_HEIGHT * 0.22
+      this.container.addChild(levelTitleText)
+    }
 
     // Stats
     const hits = result?.hits ?? 0
@@ -991,6 +1101,15 @@ export class GameOverState implements GameState {
   }
 
   exit(ctx: GameContext): void {
+    if (this.starfield) {
+      this.starfield.destroy()
+      this.starfield = null
+    }
+    if (this.bgContainer) {
+      ctx.gameRoot.removeChild(this.bgContainer)
+      this.bgContainer.destroy({ children: true })
+      this.bgContainer = null
+    }
     if (this.xpBar) {
       this.xpBar.destroy()
       this.xpBar = null
@@ -1011,6 +1130,7 @@ export class GameOverState implements GameState {
   }
 
   update(_ctx: GameContext, dt: number): void {
+    this.starfield?.update(dt)
     if (!this.xpBar) return
 
     switch (this.resultsPhase) {

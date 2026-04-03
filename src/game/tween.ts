@@ -2,7 +2,7 @@
 export interface LetterTween {
   elapsed: number
   duration: number
-  type: 'hit' | 'miss' | 'bottom'
+  type: 'hit' | 'miss' | 'bottom' | 'dodge' | 'escape'
 }
 
 /** Minimal interface for tween target to avoid circular deps. */
@@ -33,6 +33,16 @@ export function createBottomTween(): LetterTween {
   return { elapsed: 0, duration: 400, type: 'bottom' }
 }
 
+/** Factory: creates a dodge tween (D-13: alien dodges sideways on miss). */
+export function createDodgeTween(): LetterTween {
+  return { elapsed: 0, duration: 400, type: 'dodge' }
+}
+
+/** Factory: creates an escape tween (D-14: alien zips off when reaching bottom). */
+export function createEscapeTween(): LetterTween {
+  return { elapsed: 0, duration: 600, type: 'escape' }
+}
+
 /**
  * Advances tween animation by dt milliseconds.
  * Returns true if tween completed, false if still running or no tween.
@@ -57,6 +67,17 @@ export function updateTween(target: TweenTarget, dt: number): boolean {
     case 'bottom':
       // D-09: simple fade out
       target.text.alpha = 1 - t
+      break
+    case 'dodge':
+      // D-13: alien dodges sideways
+      target.text.tint = 0xef4444
+      target.text.x = target.baseX + Math.sin(t * Math.PI * 4) * 8 * (1 - t)
+      break
+    case 'escape':
+      // D-14: alien zips off with trail effect
+      target.text.alpha = 1 - t
+      target.text.scale.set(1 - t * 0.5)
+      target.text.x = target.baseX + Math.sin(t * Math.PI * 2) * 15 * t
       break
   }
   return t >= 1

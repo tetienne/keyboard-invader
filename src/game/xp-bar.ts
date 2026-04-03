@@ -1,4 +1,5 @@
 import { BitmapText, Container, Graphics } from 'pixi.js'
+import { SPACE_PALETTE } from './theme.js'
 
 export interface XpBarConfig {
   width: number
@@ -8,9 +9,9 @@ export interface XpBarConfig {
   fontSize: number
 }
 
-const FILL_COLOR = 0x6b8bf5
-const BG_COLOR = 0x2d2d4a
-const ACCENT_COLOR = 0xe94560
+const FILL_COLOR = SPACE_PALETTE.accent
+const BG_COLOR = SPACE_PALETTE.secondary
+const ACCENT_COLOR = SPACE_PALETTE.accent
 
 export class XpBar {
   readonly container: Container
@@ -37,10 +38,12 @@ export class XpBar {
 
     const cornerRadius = config.height / 2
 
-    // Background pill
+    // Background pill with glow border
     this.bg = new Graphics()
     this.bg.roundRect(0, 0, config.width, config.height, cornerRadius)
     this.bg.fill(BG_COLOR)
+    this.bg.roundRect(0, 0, config.width, config.height, cornerRadius)
+    this.bg.stroke({ color: SPACE_PALETTE.glow, width: 1, alpha: 0.4 })
     this.container.addChild(this.bg)
 
     // Fill pill (initially empty)

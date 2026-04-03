@@ -1,0 +1,73 @@
+import { Container, Sprite, Assets, BitmapText } from 'pixi.js'
+import type { Texture } from 'pixi.js'
+import { ALIEN_TEXTURES_PATHS, WORD_ALIEN_TEXTURE_PATHS } from './theme.js'
+
+export class AlienContainer extends Container {
+  readonly sprite: Sprite
+  readonly letterLabel: BitmapText
+  private bobPhase = 0
+  private blinkTimer = 0
+
+  constructor(texture: Texture, letter: string, tint: number) {
+    super()
+
+    this.sprite = new Sprite(texture)
+    this.sprite.width = 52
+    this.sprite.height = 52
+    this.sprite.anchor.set(0.5)
+    this.addChild(this.sprite)
+
+    this.letterLabel = new BitmapText({
+      text: letter,
+      style: { fontFamily: 'GameFont', fontSize: 32 },
+    })
+    this.letterLabel.anchor.set(0.5)
+    this.letterLabel.tint = tint
+    this.letterLabel.y = 2
+    this.addChild(this.letterLabel)
+  }
+
+  updateIdle(dt: number): void {
+    const ds = dt / 1000
+    // Bobbing
+    this.bobPhase += ds * 3
+    this.sprite.y = Math.sin(this.bobPhase) * 3
+
+    // Blinking (briefly squeeze y-scale)
+    this.blinkTimer += ds
+    if (this.blinkTimer > 3 + Math.random() * 2) {
+      this.sprite.scale.y = 0.85
+      this.blinkTimer = 0
+      setTimeout(() => {
+        if (!this.destroyed) this.sprite.scale.y = 1
+      }, 120)
+    }
+  }
+
+  setLetter(letter: string, tint: number): void {
+    this.letterLabel.text = letter
+    this.letterLabel.tint = tint
+  }
+
+  setTexture(texture: Texture): void {
+    this.sprite.texture = texture
+  }
+
+  static getRandomAlienTexture(wordMode: boolean): Texture {
+    const paths = wordMode ? WORD_ALIEN_TEXTURE_PATHS : ALIEN_TEXTURES_PATHS
+    const idx = Math.floor(Math.random() * paths.length)
+    const path = paths[idx]!
+    return Assets.get<Texture>(path)
+  }
+
+  reset(): void {
+    this.bobPhase = 0
+    this.blinkTimer = 0
+    this.sprite.scale.set(1)
+    this.sprite.alpha = 1
+    this.letterLabel.alpha = 1
+    this.alpha = 1
+    this.scale.set(1)
+    this.visible = false
+  }
+}
