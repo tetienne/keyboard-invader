@@ -87,7 +87,7 @@ export class Game implements GameContext {
   async start(): Promise<void> {
     // PixiJS v8 async init (Pitfall 4 from RESEARCH)
     await this.app.init({
-      background: '#1a1a2e',
+      background: '#1a1a3e',
       width: window.innerWidth,
       height: window.innerHeight,
       // Do NOT use resizeTo: window (breaks letterboxing)

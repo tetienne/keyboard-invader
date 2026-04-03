@@ -66,11 +66,33 @@ export class MockGraphics {
   arc: Fn = vi.fn().mockReturnThis()
 }
 
+export class MockSplitBitmapText {
+  x = 0
+  y = 0
+  width = 200
+  height = 40
+  text = ''
+  tint = 0xffffff
+  alpha = 1
+  visible = true
+  chars: Array<{ tint: number }> = []
+  scale: { set: Fn } = { set: vi.fn() }
+  split: Fn = vi.fn()
+  destroy: Fn = vi.fn()
+
+  constructor(opts?: { text?: string }) {
+    if (opts?.text) this.text = opts.text
+  }
+}
+
 export function createPixiMocks(): Record<string, unknown> {
   return {
     Container: MockContainer,
     BitmapText: MockBitmapText,
+    SplitBitmapText: MockSplitBitmapText,
     Graphics: MockGraphics,
     BitmapFont: { install: vi.fn() },
+    BitmapFontManager: { install: vi.fn(), ASCII: [[' ', '~']] },
+    Assets: { load: vi.fn(() => Promise.resolve()) },
   }
 }

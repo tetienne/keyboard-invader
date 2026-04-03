@@ -1,4 +1,13 @@
-import { BitmapFont, BitmapText, Container, Graphics } from 'pixi.js'
+import '@fontsource/fredoka/400.css'
+import '@fontsource/fredoka/700.css'
+import {
+  Assets,
+  BitmapFont,
+  BitmapFontManager,
+  BitmapText,
+  Container,
+  Graphics,
+} from 'pixi.js'
 import type { SplitBitmapText } from 'pixi.js'
 import type {
   GameState,
@@ -38,6 +47,13 @@ import { XpBar } from './xp-bar.js'
 import { CelebrationOverlay } from './celebration.js'
 import { AVATARS } from '../avatars/definitions.js'
 import { getLocale, t } from '../shared/i18n/index.js'
+import {
+  ALIEN_TEXTURES_PATHS,
+  WORD_ALIEN_TEXTURE_PATHS,
+  SPACESHIP_PATH,
+  STAR_PARTICLE_PATH,
+  AVATAR_SVG_PATHS,
+} from './theme.js'
 import { MAX_SESSION_HISTORY } from '../persistence/types.js'
 
 function saveSessionToProfile(ctx: GameContext): SessionSaveResult | null {
@@ -166,19 +182,48 @@ export class StateMachine {
  */
 export class BootState implements GameState {
   enter(ctx: GameContext): void {
-    try {
-      BitmapFont.install({
-        name: 'GameFont',
-        style: {
-          fontFamily: 'Arial',
-          fontSize: 48,
-          fill: '#ffffff',
-        },
-      })
-    } catch {
-      // Font install may fail in test environments without canvas
-    }
-    ctx.transitionTo('profiles')
+    void (async () => {
+      try {
+        await document.fonts.load('400 80px Fredoka')
+        await document.fonts.load('700 48px Fredoka')
+
+        BitmapFont.install({
+          name: 'GameFont',
+          style: {
+            fontFamily: 'Fredoka',
+            fontSize: 80,
+            fill: '#ffffff',
+          },
+          chars: BitmapFontManager.ASCII,
+          resolution: 2,
+        })
+
+        BitmapFont.install({
+          name: 'GameFontBold',
+          style: {
+            fontFamily: 'Fredoka',
+            fontWeight: '700',
+            fontSize: 48,
+            fill: '#ffffff',
+          },
+          chars: BitmapFontManager.ASCII,
+          resolution: 2,
+        })
+
+        const assetPaths: string[] = [
+          ...ALIEN_TEXTURES_PATHS,
+          ...WORD_ALIEN_TEXTURE_PATHS,
+          SPACESHIP_PATH,
+          STAR_PARTICLE_PATH,
+          ...Object.values(AVATAR_SVG_PATHS),
+        ]
+        await Assets.load(assetPaths)
+
+        ctx.transitionTo('profiles')
+      } catch (err) {
+        console.error('BootState: failed to load assets', err)
+      }
+    })()
   }
 
   exit(): void {

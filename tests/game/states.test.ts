@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type {
   GameState,
   GameContext,
@@ -199,12 +199,72 @@ function createMockGameContext(
   }
 }
 
+// Mock document.fonts for Node test environment
+const mockFontsLoad = vi.fn(() => Promise.resolve([]))
+vi.stubGlobal('document', {
+  ...((typeof document !== 'undefined' ? document : {}) as object),
+  fonts: { load: mockFontsLoad },
+})
+
 describe('BootState', () => {
-  it('enter calls transitionTo profiles', () => {
+  beforeEach(() => {
+    mockFontsLoad.mockClear()
+    mockFontsLoad.mockResolvedValue([])
+  })
+
+  it('calls document.fonts.load with Fredoka font strings', async () => {
     const ctx = createMockGameContext()
     const state = new BootState()
     state.enter(ctx)
-    expect(ctx.transitions).toContain('profiles')
+
+    await vi.waitFor(() => {
+      expect(mockFontsLoad).toHaveBeenCalledWith('400 80px Fredoka')
+      expect(mockFontsLoad).toHaveBeenCalledWith('700 48px Fredoka')
+    })
+  })
+
+  it('calls Assets.load with all asset paths', async () => {
+    const { Assets } = await import('pixi.js')
+    const ctx = createMockGameContext()
+    const state = new BootState()
+    state.enter(ctx)
+
+    await vi.waitFor(() => {
+      expect(Assets.load).toHaveBeenCalled()
+    })
+    const loadCall = vi.mocked(Assets.load).mock.calls[0]?.[0] as string[]
+    expect(loadCall).toEqual(expect.arrayContaining([
+      '/assets/aliens/alien-01.svg',
+      '/assets/aliens/word-alien-01.svg',
+      '/assets/spaceship.svg',
+      '/assets/star.svg',
+      '/assets/avatars/kid-01.svg',
+    ]))
+  })
+
+  it('transitions to profiles after all assets resolve', async () => {
+    const ctx = createMockGameContext()
+    const state = new BootState()
+    state.enter(ctx)
+
+    await vi.waitFor(() => {
+      expect(ctx.transitions).toContain('profiles')
+    })
+  })
+
+  it('does not transition if Assets.load rejects', async () => {
+    const { Assets } = await import('pixi.js')
+    vi.mocked(Assets.load).mockRejectedValueOnce(new Error('load failed'))
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const ctx = createMockGameContext()
+    const state = new BootState()
+    state.enter(ctx)
+
+    await vi.waitFor(() => {
+      expect(errorSpy).toHaveBeenCalled()
+    })
+    expect(ctx.transitions).not.toContain('profiles')
+    errorSpy.mockRestore()
   })
 })
 
