@@ -25,11 +25,11 @@ export {
   HOME_ROW,
   TOP_ROW,
   BOTTOM_ROW,
-  LETTER_COLORS,
   getAvailableLetters,
   findLowestMatch,
   findLowestEntity,
 } from './letters.js'
+export { LETTER_COLORS } from './theme.js'
 export type { LetterEntity } from './letters.js'
 export {
   createHitTween,

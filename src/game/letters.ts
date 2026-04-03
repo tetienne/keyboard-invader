@@ -1,22 +1,10 @@
-import type { BitmapText } from 'pixi.js'
+import type { AlienContainer } from './alien-container.js'
 import type { LetterTween } from './tween.js'
 
 // Keyboard row constants (D-04)
 export const HOME_ROW = ['a', 's', 'd', 'f', 'j', 'k', 'l'] as const
 export const TOP_ROW = ['q', 'w', 'e', 'r', 'u', 'i', 'o', 'p'] as const
 export const BOTTOM_ROW = ['z', 'x', 'c', 'v', 'b', 'n', 'm'] as const
-
-// Kid-friendly color palette (D-03)
-export const LETTER_COLORS = [
-  0xff6b6b, // coral red
-  0x4ecdc4, // teal
-  0xffe66d, // sunny yellow
-  0xa78bfa, // soft purple
-  0x67e8f9, // sky cyan
-  0xfb923c, // warm orange
-  0x86efac, // mint green
-  0xf9a8d4, // bubblegum pink
-] as const
 
 /**
  * Returns available letters based on complexity level.
@@ -32,7 +20,7 @@ export function getAvailableLetters(
 
 /** A falling letter entity managed by PlayingState. */
 export interface LetterEntity {
-  readonly text: BitmapText
+  readonly container: AlienContainer
   readonly poolIndex: number
   letter: string
   baseX: number
@@ -56,7 +44,7 @@ export function findLowestMatch(
       entity.tween === null &&
       !entity.markedForRemoval
     ) {
-      if (!best || entity.text.y > best.text.y) {
+      if (!best || entity.container.y > best.container.y) {
         best = entity
       }
     }
@@ -74,7 +62,7 @@ export function findLowestEntity(
   let best: LetterEntity | null = null
   for (const entity of active) {
     if (entity.tween === null && !entity.markedForRemoval) {
-      if (!best || entity.text.y > best.text.y) {
+      if (!best || entity.container.y > best.container.y) {
         best = entity
       }
     }

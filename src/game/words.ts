@@ -1,3 +1,5 @@
+import type { SplitBitmapText } from 'pixi.js'
+import type { AlienContainer } from './alien-container.js'
 import type { LetterTween } from './tween.js'
 import frWords from '../shared/i18n/fr.words.json'
 import enWords from '../shared/i18n/en.words.json'
@@ -26,14 +28,8 @@ export function getAvailableWords(
 
 /** A falling word entity managed by PlayingState in word mode. */
 export interface WordEntity {
-  readonly text: {
-    y: number
-    readonly scale: { set(x: number, y?: number): void }
-    tint: number
-    alpha: number
-    x: number
-    chars: Array<{ tint: number }>
-  }
+  readonly container: AlienContainer
+  readonly splitText: SplitBitmapText
   readonly poolIndex: number
   word: string
   cursorIndex: number
@@ -53,7 +49,7 @@ export function findActiveWord(
   let best: WordEntity | null = null
   for (const entity of active) {
     if (entity.tween === null && !entity.markedForRemoval) {
-      if (!best || entity.text.y > best.text.y) {
+      if (!best || entity.container.y > best.container.y) {
         best = entity
       }
     }

@@ -3,12 +3,12 @@ import {
   HOME_ROW,
   TOP_ROW,
   BOTTOM_ROW,
-  LETTER_COLORS,
   getAvailableLetters,
   findLowestMatch,
   findLowestEntity,
 } from '@/game/letters.js'
 import type { LetterEntity } from '@/game/letters.js'
+import { LETTER_COLORS } from '@/game/theme.js'
 
 function createMockEntity(
   letter: string,
@@ -17,7 +17,7 @@ function createMockEntity(
   markedForRemoval = false,
 ): LetterEntity {
   return {
-    text: { y } as unknown as LetterEntity['text'],
+    container: { y } as unknown as LetterEntity['container'],
     poolIndex: 0,
     letter,
     baseX: 100,

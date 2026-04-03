@@ -7,7 +7,7 @@ import { ALIEN_TEXTURES_PATHS, WORD_ALIEN_TEXTURE_PATHS } from './theme.js'
  */
 export class AlienContainer extends Container {
   readonly sprite: Sprite
-  readonly label: BitmapText
+  readonly letterLabel: BitmapText
   bobPhase: number
   blinkTimer: number
   private _blinkActive = false
@@ -19,13 +19,13 @@ export class AlienContainer extends Container {
     this.sprite.anchor.set(0.5)
     this.addChild(this.sprite)
 
-    this.label = new BitmapText({
+    this.letterLabel = new BitmapText({
       text: letter,
       style: { fontFamily: 'GameFont', fontSize: 48 },
     })
-    this.label.anchor.set(0.5)
-    this.label.tint = tint
-    this.addChild(this.label)
+    this.letterLabel.anchor.set(0.5)
+    this.letterLabel.tint = tint
+    this.addChild(this.letterLabel)
 
     this.bobPhase = Math.random() * Math.PI * 2
     this.blinkTimer = 2000 + Math.random() * 3000
@@ -55,8 +55,8 @@ export class AlienContainer extends Container {
 
   /** Update label text and tint. */
   setLetter(letter: string, tint: number): void {
-    this.label.text = letter
-    this.label.tint = tint
+    this.letterLabel.text = letter
+    this.letterLabel.tint = tint
   }
 
   /** Update sprite texture. */
@@ -79,7 +79,7 @@ export class AlienContainer extends Container {
     this._blinkElapsed = 0
     this.sprite.scale.set(1, 1)
     this.sprite.y = 0
-    this.label.text = ''
+    this.letterLabel.text = ''
     this.visible = false
   }
 }

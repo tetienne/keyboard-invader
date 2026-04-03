@@ -1,9 +1,11 @@
 import {
   Application,
+  Assets,
   BitmapText,
   Container,
   Graphics,
   SplitBitmapText,
+  Texture,
 } from 'pixi.js'
 import type { GameContext, GameMode, SessionResult, SessionSaveResult, StateName } from './types.js'
 import type { DifficultyParams } from './difficulty.js'
@@ -25,6 +27,8 @@ import { InputManager } from './input.js'
 import { ObjectPool } from './pool.js'
 import { setupCanvas } from './canvas.js'
 import { DebugOverlay } from './debug.js'
+import { AlienContainer } from './alien-container.js'
+import { ALIEN_TEXTURES_PATHS, WORD_ALIEN_TEXTURE_PATHS } from './theme.js'
 
 export class Game implements GameContext {
   readonly app: Application
@@ -32,8 +36,8 @@ export class Game implements GameContext {
   private readonly _stateMachine: StateMachine
   private readonly _loop: GameLoop
   private readonly _input: InputManager
-  private readonly _pool: ObjectPool<BitmapText>
-  private readonly _wordPool: ObjectPool<SplitBitmapText>
+  private readonly _pool: ObjectPool<AlienContainer>
+  private readonly _wordPool: ObjectPool<AlienContainer>
   private readonly _debug: DebugOverlay
   private _cleanupCanvas: (() => void) | null = null
   private _cleanupVisibility: (() => void) | null = null
@@ -50,24 +54,31 @@ export class Game implements GameContext {
     this.app = new Application()
     this.gameRoot = new Container()
 
-    // BitmapText pool for falling letters (D-01, D-02)
+    // AlienContainer pool for falling letters (alien sprite + label)
     this._pool = new ObjectPool(() => {
-      const bt = new BitmapText({
-        text: 'A',
-        style: { fontFamily: 'GameFont', fontSize: 80 },
-      })
-      bt.anchor.set(0.5)
-      bt.visible = false
-      return bt
+      const paths = ALIEN_TEXTURES_PATHS
+      const path = paths[Math.floor(Math.random() * paths.length)]!
+      const texture = Assets.get<Texture>(path)
+      const alien = new AlienContainer(texture, 'A', 0xffffff)
+      alien.visible = false
+      return alien
     }, 20)
-    // SplitBitmapText pool for falling words (word mode)
+    // AlienContainer pool for falling words (alien sprite + SplitBitmapText)
     this._wordPool = new ObjectPool(() => {
-      const sbt = new SplitBitmapText({
-        text: 'MOT',
-        style: { fontFamily: 'GameFont', fontSize: 64 },
+      const paths = WORD_ALIEN_TEXTURE_PATHS
+      const path = paths[Math.floor(Math.random() * paths.length)]!
+      const texture = Assets.get<Texture>(path)
+      const alien = new AlienContainer(texture, '', 0xffffff)
+      alien.letterLabel.visible = false // Hide the BitmapText label
+      // Create SplitBitmapText as a child for per-character tinting
+      const splitText = new SplitBitmapText({
+        text: '',
+        style: { fontFamily: 'GameFont', fontSize: 48 },
       })
-      sbt.visible = false
-      return sbt
+      // SplitBitmapText uses pivot for centering (no anchor property)
+      alien.addChild(splitText)
+      alien.visible = false
+      return alien
     }, 10)
     this._input = new InputManager()
     this._debug = new DebugOverlay()
@@ -143,7 +154,7 @@ export class Game implements GameContext {
     return this._input.drain()
   }
 
-  acquirePoolItem(): { item: BitmapText; index: number } {
+  acquirePoolItem(): { item: AlienContainer; index: number } {
     return this._pool.acquire()
   }
 
@@ -179,7 +190,7 @@ export class Game implements GameContext {
     return this._gameMode
   }
 
-  acquireWordPoolItem(): { item: SplitBitmapText; index: number } {
+  acquireWordPoolItem(): { item: AlienContainer; index: number } {
     return this._wordPool.acquire()
   }
 

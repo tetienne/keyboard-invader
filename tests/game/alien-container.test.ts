@@ -20,9 +20,9 @@ describe('AlienContainer', () => {
     const alien = new AlienContainer(texture as never, 'A', 0xff0000)
     // Container mock stores children
     expect(alien.sprite).toBeDefined()
-    expect(alien.label).toBeDefined()
-    expect(alien.label.text).toBe('A')
-    expect(alien.label.tint).toBe(0xff0000)
+    expect(alien.letterLabel).toBeDefined()
+    expect(alien.letterLabel.text).toBe('A')
+    expect(alien.letterLabel.tint).toBe(0xff0000)
   })
 
   it('updateIdle changes bobPhase', () => {
@@ -44,8 +44,8 @@ describe('AlienContainer', () => {
   it('setLetter updates label text and tint', () => {
     const alien = new AlienContainer(texture as never, 'A', 0xffffff)
     alien.setLetter('B', 0x00ff00)
-    expect(alien.label.text).toBe('B')
-    expect(alien.label.tint).toBe(0x00ff00)
+    expect(alien.letterLabel.text).toBe('B')
+    expect(alien.letterLabel.tint).toBe(0x00ff00)
   })
 
   it('setTexture updates sprite texture', () => {
@@ -58,13 +58,13 @@ describe('AlienContainer', () => {
   it('reset restores initial state', () => {
     const alien = new AlienContainer(texture as never, 'A', 0xffffff)
     alien.bobPhase = 5
-    alien.label.text = 'Z'
+    alien.letterLabel.text = 'Z'
     alien.visible = true
 
     alien.reset()
 
     expect(alien.bobPhase).toBe(0)
-    expect(alien.label.text).toBe('')
+    expect(alien.letterLabel.text).toBe('')
     expect(alien.visible).toBe(false)
   })
 

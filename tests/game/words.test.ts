@@ -15,14 +15,10 @@ function createMockWordEntity(
   markedForRemoval = false,
 ): WordEntity {
   return {
-    text: {
-      y,
-      scale: { set: () => {} },
-      tint: 0xffffff,
-      alpha: 1,
-      x: 100,
+    container: { y } as unknown as WordEntity['container'],
+    splitText: {
       chars: word.split('').map(() => ({ tint: 0xffffff })),
-    },
+    } as unknown as WordEntity['splitText'],
     poolIndex: 0,
     word,
     cursorIndex,
@@ -148,6 +144,6 @@ describe('matchWordKey', () => {
 
   it('returns wrong when key does not match current cursor position', () => {
     const entity = createMockWordEntity('cat', 100, 1)
-    expect(matchWordKey(entity, 'c')).toBe('wrong') // 'c' is at index 0, cursor is at 1
+    expect(matchWordKey(entity, 'c')).toBe('wrong')
   })
 })

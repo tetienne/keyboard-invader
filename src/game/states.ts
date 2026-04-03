@@ -21,8 +21,8 @@ import {
   getAvailableLetters,
   findLowestMatch,
   findLowestEntity,
-  LETTER_COLORS,
 } from './letters.js'
+import { LETTER_COLORS } from './theme.js'
 import type { LetterEntity } from './letters.js'
 import type { WordEntity, WordLists } from './words.js'
 import {
@@ -45,6 +45,7 @@ import {
 import { calculateXpGain, applyXp, xpForCurrentLevel } from './progression.js'
 import { XpBar } from './xp-bar.js'
 import { CelebrationOverlay } from './celebration.js'
+import { AlienContainer } from './alien-container.js'
 import { AVATARS } from '../avatars/definitions.js'
 import { getLocale, t } from '../shared/i18n/index.js'
 import {
@@ -484,12 +485,12 @@ export class PlayingState implements GameState {
     const dtSec = dt / 1000
     for (const entity of this.activeEntities) {
       if (entity.tween === null && !entity.markedForRemoval) {
-        entity.text.y += fallSpeed * dtSec
+        entity.container.y += fallSpeed * dtSec
       }
     }
     for (const entity of this.activeWordEntities) {
       if (entity.tween === null && !entity.markedForRemoval) {
-        entity.text.y += fallSpeed * dtSec
+        entity.container.y += fallSpeed * dtSec
       }
     }
 
@@ -515,7 +516,7 @@ export class PlayingState implements GameState {
       if (
         entity.tween === null &&
         !entity.markedForRemoval &&
-        entity.text.y > BASE_HEIGHT + 40
+        entity.container.y > BASE_HEIGHT + 40
       ) {
         this.misses++
         this.difficulty.recordResult(false)
@@ -527,7 +528,7 @@ export class PlayingState implements GameState {
       if (
         entity.tween === null &&
         !entity.markedForRemoval &&
-        entity.text.y > BASE_HEIGHT + 40
+        entity.container.y > BASE_HEIGHT + 40
       ) {
         this.misses++
         this.difficulty.recordResult(false)
@@ -540,8 +541,8 @@ export class PlayingState implements GameState {
     for (let i = this.activeEntities.length - 1; i >= 0; i--) {
       const entity = this.activeEntities[i]
       if (entity?.markedForRemoval && entity.tween === null) {
-        entity.text.visible = false
-        ctx.gameRoot.removeChild(entity.text)
+        entity.container.visible = false
+        ctx.gameRoot.removeChild(entity.container)
         ctx.releasePoolItem(entity.poolIndex)
         this.activeEntities.splice(i, 1)
       }
@@ -549,9 +550,8 @@ export class PlayingState implements GameState {
     for (let i = this.activeWordEntities.length - 1; i >= 0; i--) {
       const entity = this.activeWordEntities[i]
       if (entity?.markedForRemoval && entity.tween === null) {
-        const sbt = entity.text as unknown as SplitBitmapText
-        sbt.visible = false
-        ctx.gameRoot.removeChild(sbt)
+        entity.container.visible = false
+        ctx.gameRoot.removeChild(entity.container)
         ctx.releaseWordPoolItem(entity.poolIndex)
         this.activeWordEntities.splice(i, 1)
       }
@@ -586,17 +586,16 @@ export class PlayingState implements GameState {
 
     // Release letter entities
     for (const entity of this.activeEntities) {
-      entity.text.visible = false
-      ctx.gameRoot.removeChild(entity.text)
+      entity.container.visible = false
+      ctx.gameRoot.removeChild(entity.container)
       ctx.releasePoolItem(entity.poolIndex)
     }
     this.activeEntities = []
 
     // Release word entities
     for (const entity of this.activeWordEntities) {
-      const sbt = entity.text as unknown as SplitBitmapText
-      sbt.visible = false
-      ctx.gameRoot.removeChild(sbt)
+      entity.container.visible = false
+      ctx.gameRoot.removeChild(entity.container)
       ctx.releaseWordPoolItem(entity.poolIndex)
     }
     this.activeWordEntities = []
@@ -636,25 +635,24 @@ export class PlayingState implements GameState {
       available[Math.floor(Math.random() * available.length)] ?? 'a'
 
     const { item, index } = ctx.acquirePoolItem()
-    const bt = item as BitmapText
+    const alien = item as AlienContainer
 
-    bt.text = letter.toUpperCase()
     const colorIdx = Math.floor(Math.random() * LETTER_COLORS.length)
-    bt.tint = LETTER_COLORS[colorIdx] ?? 0xffffff
-    bt.scale.set(1)
-    bt.alpha = 1
-    bt.anchor.set(0.5)
-    bt.x = 80 + Math.random() * (BASE_WIDTH - 160)
-    bt.y = -40
-    bt.visible = true
+    const tint = LETTER_COLORS[colorIdx] ?? 0xffffff
+    alien.setLetter(letter.toUpperCase(), tint)
+    alien.scale.set(1)
+    alien.alpha = 1
+    alien.x = 80 + Math.random() * (BASE_WIDTH - 160)
+    alien.y = -40
+    alien.visible = true
 
-    ctx.gameRoot.addChild(bt)
+    ctx.gameRoot.addChild(alien)
     this.activeEntities.push({
-      text: bt,
+      container: alien,
       poolIndex: index,
       letter,
-      baseX: bt.x,
-      originalTint: bt.tint,
+      baseX: alien.x,
+      originalTint: tint,
       tween: null,
       markedForRemoval: false,
     })
@@ -671,7 +669,12 @@ export class PlayingState implements GameState {
       available[Math.floor(Math.random() * available.length)] ?? 'mot'
 
     const { item, index } = ctx.acquireWordPoolItem()
-    const sbt = item as SplitBitmapText
+    const alien = item as AlienContainer
+
+    // Find the SplitBitmapText child
+    const sbt = alien.children.find(
+      (c): c is SplitBitmapText => 'chars' in c && 'split' in c,
+    ) as SplitBitmapText
 
     sbt.text = word.toUpperCase()
     // Ensure chars are populated after text change
@@ -685,25 +688,25 @@ export class PlayingState implements GameState {
       char.tint = tint
     }
 
-    sbt.tint = 0xffffff // Container tint neutral so char tints show
-    sbt.scale.set(1)
-    sbt.alpha = 1
+    alien.scale.set(1)
+    alien.alpha = 1
 
     // Constrain x to prevent edge overflow
     const wordWidth = sbt.width || 100
     const minX = wordWidth / 2 + 20
     const maxX = BASE_WIDTH - wordWidth / 2 - 20
-    sbt.x = minX + Math.random() * Math.max(0, maxX - minX)
-    sbt.y = -40
-    sbt.visible = true
+    alien.x = minX + Math.random() * Math.max(0, maxX - minX)
+    alien.y = -40
+    alien.visible = true
 
-    ctx.gameRoot.addChild(sbt)
+    ctx.gameRoot.addChild(alien)
     this.activeWordEntities.push({
-      text: sbt as unknown as WordEntity['text'],
+      container: alien,
+      splitText: sbt,
       poolIndex: index,
       word: word.toLowerCase(),
       cursorIndex: 0,
-      baseX: sbt.x,
+      baseX: alien.x,
       originalTint: tint,
       tween: null,
       markedForRemoval: false,
@@ -737,13 +740,13 @@ export class PlayingState implements GameState {
       const result = matchWordKey(activeWord, key)
       if (result === 'correct') {
         // Green highlight on matched character
-        const charObj = activeWord.text.chars[activeWord.cursorIndex]
+        const charObj = activeWord.splitText.chars[activeWord.cursorIndex]
         if (charObj) charObj.tint = 0x4ade80
         activeWord.cursorIndex++
         this.hits++
       } else if (result === 'complete') {
         // Green the last character, then trigger hit tween
-        const charObj = activeWord.text.chars[activeWord.cursorIndex]
+        const charObj = activeWord.splitText.chars[activeWord.cursorIndex]
         if (charObj) charObj.tint = 0x4ade80
         activeWord.cursorIndex++
         this.hits++
@@ -766,8 +769,7 @@ export class PlayingState implements GameState {
         const done = updateTween(entity, dt)
         if (done) {
           if (entity.tween.type === 'miss') {
-            entity.text.tint = entity.originalTint
-            entity.text.x = entity.baseX
+            entity.container.x = entity.baseX
             entity.tween = null
           } else {
             entity.tween = null
@@ -784,11 +786,11 @@ export class PlayingState implements GameState {
         if (done) {
           if (entity.tween.type === 'miss') {
             // Restore char tints after miss
-            for (let i = entity.cursorIndex; i < entity.text.chars.length; i++) {
-              const c = entity.text.chars[i]
+            for (let i = entity.cursorIndex; i < entity.splitText.chars.length; i++) {
+              const c = entity.splitText.chars[i]
               if (c) c.tint = entity.originalTint
             }
-            entity.text.x = entity.baseX
+            entity.container.x = entity.baseX
             entity.tween = null
           } else {
             entity.tween = null

@@ -7,15 +7,15 @@ export interface LetterTween {
 
 /** Minimal interface for tween target to avoid circular deps. */
 interface TweenTarget {
-  text: {
+  container: {
     scale: { set(x: number, y?: number): void }
-    tint: number
     alpha: number
     x: number
-    chars?: Array<{ tint: number }>
+    y: number
   }
   baseX: number
   tween: LetterTween | null
+  originalTint?: number
 }
 
 /** Factory: creates a hit tween (D-07: scale up + green + fade). */
@@ -54,28 +54,26 @@ export function updateTween(target: TweenTarget, dt: number): boolean {
 
   switch (target.tween.type) {
     case 'hit':
-      // D-07: scale up 1.0 -> 1.3, tint green, alpha 1.0 -> 0.0
-      target.text.scale.set(1 + 0.3 * t)
-      target.text.tint = 0x4ade80
-      target.text.alpha = 1 - t
+      // D-07: scale up 1.0 -> 1.3, alpha 1.0 -> 0.0
+      target.container.scale.set(1 + 0.3 * t)
+      target.container.alpha = 1 - t
       break
     case 'miss':
-      // D-08: red tint + dampened horizontal shake, restore x after
-      target.text.tint = 0xef4444
-      target.text.x = target.baseX + Math.sin(t * Math.PI * 6) * 3 * (1 - t)
+      // D-08: dampened horizontal shake, restore x after
+      target.container.x = target.baseX + Math.sin(t * Math.PI * 6) * 3 * (1 - t)
       break
     case 'bottom':
       // D-09: simple fade out
-      target.text.alpha = 1 - t
+      target.container.alpha = 1 - t
       break
     case 'dodge':
       // Quick horizontal dodge motion (alien taunting, not hurt)
-      target.text.x = target.baseX + Math.sin(t * Math.PI * 4) * 20 * (1 - t)
+      target.container.x = target.baseX + Math.sin(t * Math.PI * 4) * 20 * (1 - t)
       break
     case 'escape':
       // Accelerate downward, fade out, shrink
-      target.text.alpha = 1 - t
-      target.text.scale.set(1 - t * 0.5)
+      target.container.alpha = 1 - t
+      target.container.scale.set(1 - t * 0.5)
       break
   }
   return t >= 1
