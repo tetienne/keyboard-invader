@@ -133,7 +133,7 @@ Plans:
 Plans:
 - [x] 08-01-PLAN.md -- Theme constants, Fredoka font, SVG art assets, BootState async loading
 - [ ] 08-02-PLAN.md -- AlienContainer, Starfield, DestructionEffect, Defender, tween extensions, entity refactor
-- [ ] 08-03-PLAN.md -- Avatar SVG system, state integration, celebration upgrade, UI reskin
+- [x] 08-03-PLAN.md -- Avatar SVG system, state integration, celebration upgrade, UI reskin
 - [ ] 08-04-PLAN.md -- Visual identity and 60fps performance verification (checkpoint)
 **UI hint**: yes
 
