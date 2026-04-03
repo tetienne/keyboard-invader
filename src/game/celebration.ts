@@ -1,22 +1,26 @@
-import { BitmapText, Container, Graphics } from 'pixi.js'
+import { Assets, BitmapText, Container, Graphics, Sprite } from 'pixi.js'
+import type { Texture } from 'pixi.js'
 import { BASE_WIDTH, BASE_HEIGHT } from './types.js'
+import { LETTER_COLORS, STAR_PARTICLE_PATH } from './theme.js'
 import { t } from '../shared/i18n/index.js'
 
-const CELEBRATION_COLORS = [
-  0xff6b6b, 0x4ecdc4, 0xffe66d, 0xa78bfa, 0xfb923c, 0xf9a8d4,
-]
-
 interface Particle {
-  graphic: Graphics
+  sprite: Sprite
   vx: number
   vy: number
   life: number
   maxLife: number
 }
 
+interface WarpLine {
+  graphic: Graphics
+  life: number
+}
+
 export class CelebrationOverlay {
   readonly container: Container
   private particles: Particle[] = []
+  private warpLines: WarpLine[] = []
   private levelText: BitmapText
   private backdrop: Graphics
   private elapsed = 0
@@ -46,28 +50,50 @@ export class CelebrationOverlay {
     this.levelText.scale.set(0)
     this.container.addChild(this.levelText)
 
-    // Spawn 40 particles
-    for (let i = 0; i < 40; i++) {
+    // Warp speed lines (first 200ms visual)
+    for (let i = 0; i < 20; i++) {
       const g = new Graphics()
-      const radius = 3 + Math.random() * 3
-      const colorIdx = Math.floor(Math.random() * CELEBRATION_COLORS.length)
-      const color = CELEBRATION_COLORS[colorIdx] ?? 0xffffff
-      g.circle(0, 0, radius)
-      g.fill(color)
-      g.x = BASE_WIDTH / 2
-      g.y = BASE_HEIGHT / 2
+      const angle = Math.random() * Math.PI * 2
+      const len = 40 + Math.random() * 80
+      const cx = BASE_WIDTH / 2
+      const cy = BASE_HEIGHT / 2
+      const startR = 20 + Math.random() * 40
+      const sx = cx + Math.cos(angle) * startR
+      const sy = cy + Math.sin(angle) * startR
+      const ex = cx + Math.cos(angle) * (startR + len)
+      const ey = cy + Math.sin(angle) * (startR + len)
+
+      g.moveTo(sx, sy)
+      g.lineTo(ex, ey)
+      g.stroke({ color: 0xffffff, width: 1, alpha: 0.8 })
+
+      this.warpLines.push({ graphic: g, life: 1.0 })
+      this.container.addChild(g)
+    }
+
+    // Spawn 40 star particles
+    const starTexture = Assets.get<Texture>(STAR_PARTICLE_PATH)
+    for (let i = 0; i < 40; i++) {
+      const sprite = new Sprite(starTexture)
+      sprite.width = 8 + Math.random() * 8
+      sprite.height = sprite.width
+      sprite.anchor.set(0.5)
+      const colorIdx = Math.floor(Math.random() * LETTER_COLORS.length)
+      sprite.tint = LETTER_COLORS[colorIdx] ?? 0xffffff
+      sprite.x = BASE_WIDTH / 2
+      sprite.y = BASE_HEIGHT / 2
 
       const angle = Math.random() * Math.PI * 2
       const speed = 100 + Math.random() * 200
 
       this.particles.push({
-        graphic: g,
+        sprite,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
         life: 1.0,
         maxLife: 2.0,
       })
-      this.container.addChild(g)
+      this.container.addChild(sprite)
     }
   }
 
@@ -91,13 +117,20 @@ export class CelebrationOverlay {
       this.levelText.scale.set(scale)
     }
 
-    // Particle physics
+    // Warp lines fade (first 200ms)
+    for (const wl of this.warpLines) {
+      wl.life -= ds * 5 // fade over ~200ms
+      wl.graphic.alpha = Math.max(0, wl.life)
+    }
+
+    // Star particle physics
     for (const p of this.particles) {
-      p.graphic.x += p.vx * ds
-      p.graphic.y += p.vy * ds
+      p.sprite.x += p.vx * ds
+      p.sprite.y += p.vy * ds
       p.vy += 120 * ds
       p.life -= ds / p.maxLife
-      p.graphic.alpha = Math.max(0, p.life)
+      p.sprite.alpha = Math.max(0, p.life)
+      p.sprite.rotation += ds * 2
     }
 
     // Auto-dismiss

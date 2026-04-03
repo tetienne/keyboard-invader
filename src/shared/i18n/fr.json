@@ -16,6 +16,18 @@
   "levelTitle.capitaine": "Capitaine",
   "levelTitle.commandant": "Commandant",
   "levelTitle.amiral": "Amiral",
+  "profiles.back": "Changer de joueur",
+  "profiles.title": "Qui joue ?",
+  "profiles.edit": "Modifier",
+  "profiles.delete": "Supprimer",
+  "profiles.new": "Nouveau",
+  "profiles.create.title": "Nouveau profil",
+  "profiles.create.name": "Ton prenom",
+  "profiles.create.avatar": "Choisis ton personnage",
+  "profiles.create.confirm": "C'est parti !",
+  "profiles.delete.confirm": "Vraiment supprimer ?",
+  "profiles.delete.yes": "Oui",
+  "profiles.delete.no": "Non",
   "boot.loading": "Chargement des aliens...",
   "boot.error": "Oups, les aliens se sont perdus dans l'espace ! Recharge la page."
 }

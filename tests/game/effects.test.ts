@@ -37,9 +37,9 @@ describe('DestructionEffect', () => {
     const parent = new MockContainer() as never
     const fx = new DestructionEffect(parent)
     fx.burst(100, 200, 0xff0000, 4)
-    // Life starts at 1.0, decreases by ds*2 per update
-    // At dt=600ms: ds=0.6, life -= 1.2 -> life = -0.2 => all dead
-    fx.update(600)
+    // Life starts at 1.0, decreases by ds*1.5 per update
+    // At dt=800ms: ds=0.8, life -= 1.2 -> life = -0.2 => all dead
+    fx.update(800)
     expect(fx.activeCount).toBe(0)
   })
 
@@ -61,23 +61,23 @@ describe('LaserBolt', () => {
     expect(bolt.isActive).toBe(true)
   })
 
-  it('update returns true when bolt animation is complete', () => {
+  it('update returns true while bolt animation is running', () => {
     const parent = new MockContainer() as never
     const bolt = new LaserBolt(parent)
     bolt.fire(100, 600, 200, 200)
 
-    // Not complete yet
-    expect(bolt.update(100)).toBe(false)
+    // Still running at 100ms (DURATION=150ms)
+    expect(bolt.update(100)).toBe(true)
     expect(bolt.isActive).toBe(true)
 
-    // Should complete at 200ms
-    expect(bolt.update(100)).toBe(true)
+    // Should complete after 150ms total
+    expect(bolt.update(100)).toBe(false)
     expect(bolt.isActive).toBe(false)
   })
 
-  it('update returns true when no bolt is active', () => {
+  it('update returns false when no bolt is active', () => {
     const parent = new MockContainer() as never
     const bolt = new LaserBolt(parent)
-    expect(bolt.update(16)).toBe(true)
+    expect(bolt.update(16)).toBe(false)
   })
 })

@@ -37,6 +37,9 @@ function makeProfile(overrides: Partial<ProfileData> = {}): ProfileData {
     preferredGameMode: null,
     sessionHistory: [],
     createdAt: '2026-01-01T00:00:00Z',
+    xp: 0,
+    level: 1,
+    unlockedAvatarIds: ['avatar-red', 'avatar-blue', 'avatar-green'],
     ...overrides,
   }
 }
@@ -87,6 +90,8 @@ function createMockGameContext(profiles: ProfileData[] = []) {
     }),
     getActiveProfile: vi.fn(() => activeProfile),
     getProfileRepository: vi.fn(() => mockRepo),
+    getSessionSaveResult: vi.fn(() => null),
+    setSessionSaveResult: vi.fn(),
     transitions,
     savedProfiles,
     mockRepo,
@@ -233,6 +238,9 @@ describe('ProfileState', () => {
       preferredGameMode: null,
       sessionHistory: [],
       createdAt: new Date().toISOString(),
+      xp: 0,
+      level: 1,
+      unlockedAvatarIds: ['avatar-red', 'avatar-blue', 'avatar-green'],
     }
     proto._profiles.push(newProfile)
     ctx.getProfileRepository().saveAll(proto._profiles)

@@ -8,14 +8,18 @@ import {
   generateProfileId,
   createDefaultStats,
 } from '../persistence/types.js'
-import { AVATARS } from '../avatars/definitions.js'
+import { AVATARS, migrateLegacyAvatarId } from '../avatars/definitions.js'
 import type { AvatarDefinition } from '../avatars/definitions.js'
 import { drawAvatar } from '../avatars/renderer.js'
 import { t } from '../shared/i18n/index.js'
 import type { TranslationKey } from '../shared/i18n/index.js'
+import { Starfield } from './starfield.js'
+import { SPACE_PALETTE, UI_CONSTANTS } from './theme.js'
 
 export class ProfileState implements GameState {
   private _container: Container | null = null
+  private _bgContainer: Container | null = null
+  private _starfield: Starfield | null = null
   private _profiles: ProfileData[] = []
   private _editTarget: ProfileData | null = null
   private _selectedAvatarId: string | null = null
@@ -24,6 +28,11 @@ export class ProfileState implements GameState {
   private _tooltipTimer = 0
 
   enter(ctx: GameContext): void {
+    // Starfield background
+    this._bgContainer = new Container()
+    ctx.gameRoot.addChild(this._bgContainer)
+    this._starfield = new Starfield(this._bgContainer)
+
     this._container = new Container()
     ctx.gameRoot.addChild(this._container)
 
@@ -40,6 +49,15 @@ export class ProfileState implements GameState {
     this._removeInput()
     this._lockedTooltip = null
     this._tooltipTimer = 0
+    if (this._starfield) {
+      this._starfield.destroy()
+      this._starfield = null
+    }
+    if (this._bgContainer) {
+      ctx.gameRoot.removeChild(this._bgContainer)
+      this._bgContainer.destroy({ children: true })
+      this._bgContainer = null
+    }
     if (this._container) {
       ctx.gameRoot.removeChild(this._container)
       this._container.destroy({ children: true })
@@ -50,6 +68,7 @@ export class ProfileState implements GameState {
   }
 
   update(_ctx: GameContext, dt: number): void {
+    this._starfield?.update(dt)
     // Fade out locked avatar tooltip
     if (this._lockedTooltip && this._tooltipTimer > 0) {
       this._tooltipTimer -= dt
@@ -111,9 +130,9 @@ export class ProfileState implements GameState {
       avatarContainer.y = y
 
       if (avatarDef) {
-        const g = new Graphics()
-        drawAvatar(g, avatarDef, avatarSize)
-        avatarContainer.addChild(g)
+        const migratedId = migrateLegacyAvatarId(profile.avatarId)
+        const resolvedDef = AVATARS.find((a) => a.id === migratedId) ?? avatarDef
+        drawAvatar(avatarContainer, resolvedDef, avatarSize)
       }
 
       // Level badge at bottom-right
@@ -373,14 +392,14 @@ export class ProfileState implements GameState {
       avatarContainer.addChild(highlight)
       highlightGraphics.push(highlight)
 
-      const g = new Graphics()
-      drawAvatar(g, def, avatarSize)
-      avatarContainer.addChild(g)
+      const avatarSprite = drawAvatar(avatarContainer, def, avatarSize)
 
       if (isLocked) {
         // Grayed out appearance
-        g.alpha = 0.3
-        g.tint = 0x666666
+        if (avatarSprite) {
+          avatarSprite.alpha = 0.3
+          avatarSprite.tint = 0x666666
+        }
 
         // Lock icon overlay
         const lock = new Graphics()
@@ -468,13 +487,14 @@ export class ProfileState implements GameState {
     if (!this._container) return
 
     // Show profile name and avatar
-    const avatarDef = AVATARS.find((a) => a.id === profile.avatarId)
+    const migratedDeleteId = migrateLegacyAvatarId(profile.avatarId)
+    const avatarDef = AVATARS.find((a) => a.id === migratedDeleteId)
     if (avatarDef) {
-      const g = new Graphics()
-      drawAvatar(g, avatarDef, 80)
-      g.x = BASE_WIDTH / 2
-      g.y = BASE_HEIGHT * 0.25
-      this._container.addChild(g)
+      const avatarHolder = new Container()
+      avatarHolder.x = BASE_WIDTH / 2
+      avatarHolder.y = BASE_HEIGHT * 0.25
+      drawAvatar(avatarHolder, avatarDef, 80)
+      this._container.addChild(avatarHolder)
     }
 
     const nameText = new BitmapText({

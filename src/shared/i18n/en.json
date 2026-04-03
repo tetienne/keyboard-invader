@@ -16,6 +16,18 @@
   "levelTitle.capitaine": "Captain",
   "levelTitle.commandant": "Commander",
   "levelTitle.amiral": "Admiral",
+  "profiles.back": "Switch player",
+  "profiles.title": "Who's playing?",
+  "profiles.edit": "Edit",
+  "profiles.delete": "Delete",
+  "profiles.new": "New",
+  "profiles.create.title": "New profile",
+  "profiles.create.name": "Your name",
+  "profiles.create.avatar": "Choose your character",
+  "profiles.create.confirm": "Let's go!",
+  "profiles.delete.confirm": "Really delete?",
+  "profiles.delete.yes": "Yes",
+  "profiles.delete.no": "No",
   "boot.loading": "Loading aliens...",
   "boot.error": "Oops, the aliens got lost in space! Reload the page."
 }

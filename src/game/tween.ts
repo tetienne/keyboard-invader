@@ -9,13 +9,12 @@ export interface LetterTween {
 interface TweenTarget {
   container: {
     scale: { set(x: number, y?: number): void }
+    tint: number
     alpha: number
     x: number
-    y: number
   }
   baseX: number
   tween: LetterTween | null
-  originalTint?: number
 }
 
 /** Factory: creates a hit tween (D-07: scale up + green + fade). */
@@ -33,12 +32,12 @@ export function createBottomTween(): LetterTween {
   return { elapsed: 0, duration: 400, type: 'bottom' }
 }
 
-/** Factory: creates a dodge tween (alien dodging/taunting on miss). */
+/** Factory: creates a dodge tween (D-13: alien dodges sideways on miss). */
 export function createDodgeTween(): LetterTween {
   return { elapsed: 0, duration: 400, type: 'dodge' }
 }
 
-/** Factory: creates an escape tween (alien zipping off the bottom). */
+/** Factory: creates an escape tween (D-14: alien zips off when reaching bottom). */
 export function createEscapeTween(): LetterTween {
   return { elapsed: 0, duration: 600, type: 'escape' }
 }
@@ -54,12 +53,14 @@ export function updateTween(target: TweenTarget, dt: number): boolean {
 
   switch (target.tween.type) {
     case 'hit':
-      // D-07: scale up 1.0 -> 1.3, alpha 1.0 -> 0.0
+      // D-07: scale up 1.0 -> 1.3, tint green, alpha 1.0 -> 0.0
       target.container.scale.set(1 + 0.3 * t)
+      target.container.tint = 0x4ade80
       target.container.alpha = 1 - t
       break
     case 'miss':
-      // D-08: dampened horizontal shake, restore x after
+      // D-08: red tint + dampened horizontal shake, restore x after
+      target.container.tint = 0xef4444
       target.container.x = target.baseX + Math.sin(t * Math.PI * 6) * 3 * (1 - t)
       break
     case 'bottom':
@@ -67,13 +68,15 @@ export function updateTween(target: TweenTarget, dt: number): boolean {
       target.container.alpha = 1 - t
       break
     case 'dodge':
-      // Quick horizontal dodge motion (alien taunting, not hurt)
-      target.container.x = target.baseX + Math.sin(t * Math.PI * 4) * 20 * (1 - t)
+      // D-13: alien dodges sideways
+      target.container.tint = 0xef4444
+      target.container.x = target.baseX + Math.sin(t * Math.PI * 4) * 8 * (1 - t)
       break
     case 'escape':
-      // Accelerate downward, fade out, shrink
+      // D-14: alien zips off with trail effect
       target.container.alpha = 1 - t
       target.container.scale.set(1 - t * 0.5)
+      target.container.x = target.baseX + Math.sin(t * Math.PI * 2) * 15 * t
       break
   }
   return t >= 1

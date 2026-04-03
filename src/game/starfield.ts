@@ -1,91 +1,54 @@
 import { Container, Graphics } from 'pixi.js'
 import { BASE_WIDTH, BASE_HEIGHT } from './types.js'
+import { SPACE_PALETTE } from './theme.js'
 
-interface StarLayer {
-  container: Container
-  stars: Graphics[]
+interface Star {
+  graphic: Graphics
   speed: number
-  baseAlpha: number
+  baseSpeed: number
 }
 
-const LAYER_CONFIGS = [
-  { count: 40, speed: 10, alpha: 0.3, size: 1 },
-  { count: 25, speed: 25, alpha: 0.6, size: 2 },
-  { count: 15, speed: 45, alpha: 1.0, size: 3 },
-] as const
-
-/**
- * Parallax starfield background with 3 depth layers.
- * Far stars move slowly, near stars move fast.
- */
 export class Starfield {
-  private readonly layers: StarLayer[] = []
+  private stars: Star[] = []
+  private intensity = 1
 
   constructor(parent: Container) {
-    for (const config of LAYER_CONFIGS) {
-      const layerContainer = new Container()
-      parent.addChild(layerContainer)
+    const count = 60
+    for (let i = 0; i < count; i++) {
+      const g = new Graphics()
+      const radius = 0.5 + Math.random() * 1.5
+      const bright = Math.random() > 0.7
+      g.circle(0, 0, radius)
+      g.fill(bright ? SPACE_PALETTE.starBright : SPACE_PALETTE.starDim)
+      g.x = Math.random() * BASE_WIDTH
+      g.y = Math.random() * BASE_HEIGHT
+      g.alpha = 0.3 + Math.random() * 0.7
 
-      const stars: Graphics[] = []
-      for (let i = 0; i < config.count; i++) {
-        const star = new Graphics()
-        star.circle(0, 0, config.size)
-        star.fill(0xffffff)
-        star.x = Math.random() * BASE_WIDTH
-        star.y = Math.random() * BASE_HEIGHT
-        star.alpha = config.alpha
-        layerContainer.addChild(star)
-        stars.push(star)
-      }
-
-      this.layers.push({
-        container: layerContainer,
-        stars,
-        speed: config.speed,
-        baseAlpha: config.alpha,
-      })
+      const baseSpeed = 10 + Math.random() * 30
+      this.stars.push({ graphic: g, speed: baseSpeed, baseSpeed })
+      parent.addChild(g)
     }
   }
 
-  /** Move stars downward. Wrap to top when off-screen. */
   update(dt: number): void {
     const ds = dt / 1000
-    for (const layer of this.layers) {
-      for (const star of layer.stars) {
-        star.y += layer.speed * ds
-        if (star.y > BASE_HEIGHT) {
-          star.y = -2
-          star.x = Math.random() * BASE_WIDTH
-        }
+    for (const star of this.stars) {
+      star.graphic.y += star.speed * this.intensity * ds
+      if (star.graphic.y > BASE_HEIGHT) {
+        star.graphic.y = -2
+        star.graphic.x = Math.random() * BASE_WIDTH
       }
     }
   }
 
-  /** Adjust star intensity for difficulty-based visual shift. */
   setIntensity(level: number): void {
-    // Near layer (index 2)
-    if (this.layers[2]) {
-      this.layers[2].container.alpha = Math.min(0.8 + level * 0.04, 1.0)
-    }
-    // Mid layer (index 1)
-    if (this.layers[1]) {
-      this.layers[1].container.alpha = Math.min(0.5 + level * 0.02, 0.8)
-    }
+    this.intensity = 1 + level * 0.3
   }
 
   destroy(): void {
-    for (const layer of this.layers) {
-      layer.container.destroy({ children: true })
+    for (const star of this.stars) {
+      star.graphic.destroy()
     }
-  }
-
-  /** Expose layer count for testing. */
-  get layerCount(): number {
-    return this.layers.length
-  }
-
-  /** Expose total star count for testing. */
-  get totalStarCount(): number {
-    return this.layers.reduce((sum, l) => sum + l.stars.length, 0)
+    this.stars = []
   }
 }

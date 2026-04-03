@@ -1,85 +1,73 @@
-import { Container, Sprite, BitmapText, Texture, Assets } from 'pixi.js'
+import { Container, Sprite, Assets, BitmapText } from 'pixi.js'
+import type { Texture } from 'pixi.js'
 import { ALIEN_TEXTURES_PATHS, WORD_ALIEN_TEXTURE_PATHS } from './theme.js'
 
-/**
- * AlienContainer wraps an alien Sprite + BitmapText label.
- * Each falling letter/word is visually carried by a cute alien creature.
- */
 export class AlienContainer extends Container {
   readonly sprite: Sprite
   readonly letterLabel: BitmapText
-  bobPhase: number
-  blinkTimer: number
-  private _blinkActive = false
-  private _blinkElapsed = 0
+  private bobPhase = 0
+  private blinkTimer = 0
 
   constructor(texture: Texture, letter: string, tint: number) {
     super()
+
     this.sprite = new Sprite(texture)
+    this.sprite.width = 52
+    this.sprite.height = 52
     this.sprite.anchor.set(0.5)
     this.addChild(this.sprite)
 
     this.letterLabel = new BitmapText({
       text: letter,
-      style: { fontFamily: 'GameFont', fontSize: 48 },
+      style: { fontFamily: 'GameFont', fontSize: 32 },
     })
     this.letterLabel.anchor.set(0.5)
     this.letterLabel.tint = tint
+    this.letterLabel.y = 2
     this.addChild(this.letterLabel)
-
-    this.bobPhase = Math.random() * Math.PI * 2
-    this.blinkTimer = 2000 + Math.random() * 3000
   }
 
-  /** Idle animation: gentle bobbing + occasional eye blink squash. */
   updateIdle(dt: number): void {
-    this.bobPhase += dt * 0.003
+    const ds = dt / 1000
+    // Bobbing
+    this.bobPhase += ds * 3
     this.sprite.y = Math.sin(this.bobPhase) * 3
 
-    if (this._blinkActive) {
-      this._blinkElapsed += dt
-      if (this._blinkElapsed >= 100) {
-        this.sprite.scale.set(1, 1)
-        this._blinkActive = false
-      }
-    } else {
-      this.blinkTimer -= dt
-      if (this.blinkTimer <= 0) {
-        this._blinkActive = true
-        this._blinkElapsed = 0
-        this.sprite.scale.set(1, 0.7)
-        this.blinkTimer = 2000 + Math.random() * 3000
-      }
+    // Blinking (briefly squeeze y-scale)
+    this.blinkTimer += ds
+    if (this.blinkTimer > 3 + Math.random() * 2) {
+      this.sprite.scale.y = 0.85
+      this.blinkTimer = 0
+      setTimeout(() => {
+        if (!this.destroyed) this.sprite.scale.y = 1
+      }, 120)
     }
   }
 
-  /** Update label text and tint. */
   setLetter(letter: string, tint: number): void {
     this.letterLabel.text = letter
     this.letterLabel.tint = tint
   }
 
-  /** Update sprite texture. */
   setTexture(texture: Texture): void {
     this.sprite.texture = texture
   }
 
-  /** Get a random alien texture (already loaded by BootState). */
   static getRandomAlienTexture(wordMode: boolean): Texture {
     const paths = wordMode ? WORD_ALIEN_TEXTURE_PATHS : ALIEN_TEXTURES_PATHS
-    const path = paths[Math.floor(Math.random() * paths.length)]!
+    const idx = Math.floor(Math.random() * paths.length)
+    const path = paths[idx]!
     return Assets.get<Texture>(path)
   }
 
-  /** Reset to initial state for pool recycling. */
   reset(): void {
     this.bobPhase = 0
-    this.blinkTimer = 2000 + Math.random() * 3000
-    this._blinkActive = false
-    this._blinkElapsed = 0
-    this.sprite.scale.set(1, 1)
-    this.sprite.y = 0
-    this.letterLabel.text = ''
+    this.blinkTimer = 0
+    this.sprite.scale.set(1)
+    this.sprite.alpha = 1
+    this.letterLabel.alpha = 1
+    this.alpha = 1
+    this.scale.set(1)
     this.visible = false
   }
 }

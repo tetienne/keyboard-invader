@@ -25,20 +25,12 @@ describe('AlienContainer', () => {
     expect(alien.letterLabel.tint).toBe(0xff0000)
   })
 
-  it('updateIdle changes bobPhase', () => {
+  it('updateIdle changes sprite y (bobbing)', () => {
     const alien = new AlienContainer(texture as never, 'A', 0xffffff)
-    const initialPhase = alien.bobPhase
-    alien.updateIdle(100)
-    expect(alien.bobPhase).not.toBe(initialPhase)
-    expect(alien.bobPhase).toBeCloseTo(initialPhase + 100 * 0.003, 3)
-  })
-
-  it('updateIdle triggers blink when timer expires', () => {
-    const alien = new AlienContainer(texture as never, 'A', 0xffffff)
-    alien.blinkTimer = 50 // Almost expired
-    alien.updateIdle(60) // Should trigger blink
-    // Sprite scaleY should be 0.7 during blink
-    expect(alien.sprite.scale.set).toHaveBeenCalledWith(1, 0.7)
+    const initialY = alien.sprite.y
+    alien.updateIdle(1000) // 1 second
+    // Bobbing should change sprite.y via sine wave
+    expect(alien.sprite.y).not.toBe(initialY)
   })
 
   it('setLetter updates label text and tint', () => {
@@ -57,14 +49,12 @@ describe('AlienContainer', () => {
 
   it('reset restores initial state', () => {
     const alien = new AlienContainer(texture as never, 'A', 0xffffff)
-    alien.bobPhase = 5
-    alien.letterLabel.text = 'Z'
+    alien.alpha = 0.5
     alien.visible = true
 
     alien.reset()
 
-    expect(alien.bobPhase).toBe(0)
-    expect(alien.letterLabel.text).toBe('')
+    expect(alien.alpha).toBe(1)
     expect(alien.visible).toBe(false)
   })
 

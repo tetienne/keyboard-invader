@@ -32,6 +32,9 @@ function makeProfile(overrides: Partial<ProfileData> = {}): ProfileData {
     preferredGameMode: null,
     sessionHistory: [],
     createdAt: new Date().toISOString(),
+    xp: 0,
+    level: 1,
+    unlockedAvatarIds: ['avatar-red', 'avatar-blue', 'avatar-green'],
     ...overrides,
   }
 }

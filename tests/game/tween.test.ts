@@ -11,7 +11,7 @@ import type { LetterTween } from '@/game/tween.js'
 
 function createMockTarget(tween: LetterTween | null = null) {
   return {
-    container: { scale: { set: vi.fn() }, alpha: 1, x: 100, y: 200 },
+    container: { scale: { set: vi.fn() }, alpha: 1, x: 100, y: 200, tint: 0xffffff },
     baseX: 100,
     tween,
   }

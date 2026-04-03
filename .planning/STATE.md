@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 08-02-PLAN.md
-last_updated: "2026-04-03T19:55:59.785Z"
+stopped_at: Completed 08-03-PLAN.md
+last_updated: "2026-04-03T20:08:11.029Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 11
@@ -63,7 +63,7 @@ Progress: [██░░░░░░░░] 18%
 | Phase 07 P02 | 4min | 2 tasks | 5 files |
 | Phase 07 P03 | 3min | 3 tasks | 4 files |
 | Phase 08 P01 | 7min | 2 tasks | 27 files |
-| Phase 08 P02 | 10min | 2 tasks | 18 files |
+| Phase 08 P03 | 10min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -104,9 +104,8 @@ Recent decisions affecting current work:
 - [Phase 08]: BitmapFontManager.ASCII for chars (BitmapFont class lacks ASCII property)
 - [Phase 08]: Async IIFE in BootState.enter() for font/asset loading without interface change
 - [Phase 08]: White/light gray SVG base colors for PixiJS runtime tinting
-- [Phase 08]: letterLabel instead of label on AlienContainer (label reserved by PixiJS Container)
-- [Phase 08]: Graphics-based particles instead of ParticleContainer (v8 API changed)
-- [Phase 08]: Entity container pattern: entity.container (AlienContainer) replaces entity.text (BitmapText)
+- [Phase 08]: AlienContainer.label renamed to letterLabel to avoid Container base class collision
+- [Phase 08]: Z-layered containers (bg/entities/effects/defender/HUD) for PlayingState render order
 
 ### Pending Todos
 
@@ -119,6 +118,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T19:55:59.783Z
-Stopped at: Completed 08-02-PLAN.md
+Last session: 2026-04-03T20:08:11.027Z
+Stopped at: Completed 08-03-PLAN.md
 Resume file: None
