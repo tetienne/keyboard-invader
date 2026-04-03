@@ -3,6 +3,8 @@ import {
   createHitTween,
   createMissTween,
   createBottomTween,
+  createDodgeTween,
+  createEscapeTween,
   updateTween,
 } from '@/game/tween.js'
 import type { LetterTween } from '@/game/tween.js'
@@ -142,6 +144,68 @@ describe('updateTween', () => {
       const tween = createBottomTween()
       const target = createMockTarget(tween)
       expect(updateTween(target, 400)).toBe(true)
+    })
+  })
+
+  describe('dodge tween', () => {
+    it('createDodgeTween returns type dodge, duration 400', () => {
+      const tween = createDodgeTween()
+      expect(tween.type).toBe('dodge')
+      expect(tween.duration).toBe(400)
+      expect(tween.elapsed).toBe(0)
+    })
+
+    it('moves x position during animation', () => {
+      const tween = createDodgeTween()
+      const target = createMockTarget(tween)
+      updateTween(target, 50) // t=0.125 -> sin(0.5*PI) = 1, offset = 20*0.875 = 17.5
+      expect(target.text.x).not.toBe(target.baseX)
+    })
+
+    it('restores x near baseX when complete', () => {
+      const tween = createDodgeTween()
+      const target = createMockTarget(tween)
+      updateTween(target, 400) // t=1.0
+      // At t=1.0, (1-t)=0 so offset is 0
+      expect(target.text.x).toBeCloseTo(target.baseX, 1)
+    })
+
+    it('returns true when complete', () => {
+      const tween = createDodgeTween()
+      const target = createMockTarget(tween)
+      expect(updateTween(target, 400)).toBe(true)
+    })
+  })
+
+  describe('escape tween', () => {
+    it('createEscapeTween returns type escape, duration 600', () => {
+      const tween = createEscapeTween()
+      expect(tween.type).toBe('escape')
+      expect(tween.duration).toBe(600)
+      expect(tween.elapsed).toBe(0)
+    })
+
+    it('reduces alpha to 0', () => {
+      const tween = createEscapeTween()
+      const target = createMockTarget(tween)
+      updateTween(target, 300) // t=0.5
+      expect(target.text.alpha).toBeCloseTo(0.5, 1)
+      updateTween(target, 300) // t=1.0
+      expect(target.text.alpha).toBeCloseTo(0, 1)
+    })
+
+    it('shrinks scale', () => {
+      const tween = createEscapeTween()
+      const target = createMockTarget(tween)
+      updateTween(target, 600) // t=1.0
+      // scale should be set to 0.5 at t=1.0
+      expect(target.text.scale.set).toHaveBeenCalledWith(expect.closeTo(0.5, 1))
+    })
+
+    it('returns true when complete', () => {
+      const tween = createEscapeTween()
+      const target = createMockTarget(tween)
+      expect(updateTween(target, 600)).toBe(true)
     })
   })
 })

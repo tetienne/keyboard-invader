@@ -52,6 +52,7 @@ export class MockGraphics {
   alpha = 1
   tint = 0xffffff
   visible = true
+  scale: { set: Fn } = { set: vi.fn() }
   emit: Fn = vi.fn()
   destroy: Fn = vi.fn()
   clear: Fn = vi.fn().mockReturnThis()
@@ -76,6 +77,7 @@ export class MockSplitBitmapText {
   alpha = 1
   visible = true
   chars: Array<{ tint: number }> = []
+  anchor: { set: Fn } = { set: vi.fn() }
   scale: { set: Fn } = { set: vi.fn() }
   split: Fn = vi.fn()
   destroy: Fn = vi.fn()
@@ -85,14 +87,48 @@ export class MockSplitBitmapText {
   }
 }
 
+export class MockSprite {
+  x = 0
+  y = 0
+  width = 64
+  height = 64
+  alpha = 1
+  tint = 0xffffff
+  visible = true
+  texture: unknown = null
+  anchor: { set: Fn } = { set: vi.fn() }
+  scale: { x: number; y: number; set: Fn } = {
+    x: 1,
+    y: 1,
+    set: vi.fn(function (this: { x: number; y: number }, sx: number, sy?: number) {
+      this.x = sx
+      this.y = sy ?? sx
+    }),
+  }
+  destroy: Fn = vi.fn()
+
+  constructor(texture?: unknown) {
+    if (texture) this.texture = texture
+  }
+}
+
+export class MockTexture {
+  source = 'mock'
+}
+
 export function createPixiMocks(): Record<string, unknown> {
   return {
     Container: MockContainer,
     BitmapText: MockBitmapText,
     SplitBitmapText: MockSplitBitmapText,
     Graphics: MockGraphics,
+    Sprite: MockSprite,
+    Texture: MockTexture,
     BitmapFont: { install: vi.fn() },
     BitmapFontManager: { install: vi.fn(), ASCII: [[' ', '~']] },
-    Assets: { load: vi.fn(() => Promise.resolve()) },
+    Assets: {
+      load: vi.fn(() => Promise.resolve()),
+      get: vi.fn(() => new MockTexture()),
+    },
   }
 }
