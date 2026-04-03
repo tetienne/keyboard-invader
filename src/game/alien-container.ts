@@ -23,7 +23,8 @@ export class AlienContainer extends Container {
       style: { fontFamily: 'GameFont', fontSize: 32 },
     })
     this.letterLabel.anchor.set(0.5)
-    this.letterLabel.tint = tint
+    this.letterLabel.tint = 0x1a1a3e // dark text for contrast
+    this.sprite.tint = tint // color the alien body
     this.letterLabel.y = 2
     this.addChild(this.letterLabel)
   }
@@ -47,7 +48,8 @@ export class AlienContainer extends Container {
 
   setLetter(letter: string, tint: number): void {
     this.letterLabel.text = letter
-    this.letterLabel.tint = tint
+    this.letterLabel.tint = 0x1a1a3e // dark text for contrast
+    this.sprite.tint = tint // color the alien body
   }
 
   setTexture(texture: Texture): void {
