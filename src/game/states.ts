@@ -233,9 +233,6 @@ export class BootState implements GameState {
         ]
         await Assets.load(assetPaths)
 
-        // Pre-allocate pools now that textures are cached
-        ctx.preallocatePools()
-
         ctx.transitionTo('profiles')
       } catch (err) {
         console.error('BootState: failed to load assets', err)
