@@ -9,5 +9,13 @@
   "progression.levelUp": "Level {level}!",
   "progression.avatar.locked": "Lv. {level}",
   "progression.avatar.locked.message": "Reach level {level} to unlock!",
-  "progression.avatar.unlocked": "New character!"
+  "progression.avatar.unlocked": "New character!",
+  "levelTitle.cadet": "Cadet",
+  "levelTitle.apprenti": "Apprentice",
+  "levelTitle.pilote": "Pilot",
+  "levelTitle.capitaine": "Captain",
+  "levelTitle.commandant": "Commander",
+  "levelTitle.amiral": "Admiral",
+  "boot.loading": "Loading aliens...",
+  "boot.error": "Oops, the aliens got lost in space! Reload the page."
 }
