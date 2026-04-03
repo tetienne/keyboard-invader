@@ -8,9 +8,18 @@ export class ObjectPool<T> {
   private readonly active = new Set<number>()
   private readonly factory: () => T
 
+  private _preallocSize: number
+
   constructor(factory: () => T, initialSize = 20) {
     this.factory = factory
-    for (let i = 0; i < initialSize; i++) {
+    this._preallocSize = initialSize
+  }
+
+  /**
+   * Pre-allocate items. Call after dependencies (e.g. assets) are ready.
+   */
+  preallocate(): void {
+    while (this.items.length < this._preallocSize) {
       this.items.push(this.factory())
     }
   }

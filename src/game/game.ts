@@ -77,6 +77,7 @@ export class Game implements GameContext {
       })
       // SplitBitmapText uses pivot for centering (no anchor property)
       alien.addChild(splitText)
+      alien.wordLabel = splitText
       alien.visible = false
       return alien
     }, 10)
@@ -224,6 +225,11 @@ export class Game implements GameContext {
 
   setSessionSaveResult(result: SessionSaveResult | null): void {
     this._sessionSaveResult = result
+  }
+
+  preallocatePools(): void {
+    this._pool.preallocate()
+    this._wordPool.preallocate()
   }
 
   private _showPauseOverlay(): void {

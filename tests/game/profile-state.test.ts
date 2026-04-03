@@ -92,6 +92,7 @@ function createMockGameContext(profiles: ProfileData[] = []) {
     getProfileRepository: vi.fn(() => mockRepo),
     getSessionSaveResult: vi.fn(() => null),
     setSessionSaveResult: vi.fn(),
+    preallocatePools: vi.fn(),
     transitions,
     savedProfiles,
     mockRepo,

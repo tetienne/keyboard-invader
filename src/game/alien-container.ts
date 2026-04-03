@@ -1,10 +1,11 @@
 import { Container, Sprite, Assets, BitmapText } from 'pixi.js'
-import type { Texture } from 'pixi.js'
+import type { SplitBitmapText, Texture } from 'pixi.js'
 import { ALIEN_TEXTURES_PATHS, WORD_ALIEN_TEXTURE_PATHS } from './theme.js'
 
 export class AlienContainer extends Container {
   readonly sprite: Sprite
   readonly letterLabel: BitmapText
+  wordLabel: SplitBitmapText | null = null
   private bobPhase = 0
   private blinkTimer = 0
 

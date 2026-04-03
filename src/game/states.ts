@@ -233,6 +233,9 @@ export class BootState implements GameState {
         ]
         await Assets.load(assetPaths)
 
+        // Pre-allocate pools now that textures are cached
+        ctx.preallocatePools()
+
         ctx.transitionTo('profiles')
       } catch (err) {
         console.error('BootState: failed to load assets', err)
@@ -741,10 +744,7 @@ export class PlayingState implements GameState {
     const ac = item as unknown as AlienContainer
     ac.setTexture(AlienContainer.getRandomAlienTexture(true))
 
-    // Find the SplitBitmapText child added by the word pool factory
-    const sbt = ac.children.find(
-      (c) => c instanceof SplitBitmapText,
-    ) as SplitBitmapText
+    const sbt = ac.wordLabel!
     sbt.text = word.toUpperCase()
     sbt.split()
 

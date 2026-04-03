@@ -7,10 +7,16 @@ function createCounter() {
 }
 
 describe('ObjectPool', () => {
-  it('pre-allocates initialSize items', () => {
+  it('pre-allocates items when preallocate is called', () => {
     const pool = new ObjectPool(createCounter(), 10)
+    pool.preallocate()
     expect(pool.totalCount).toBe(10)
     expect(pool.activeCount).toBe(0)
+  })
+
+  it('does not pre-allocate on construction', () => {
+    const pool = new ObjectPool(createCounter(), 10)
+    expect(pool.totalCount).toBe(0)
   })
 
   it('acquire returns item and increments activeCount', () => {
@@ -30,6 +36,7 @@ describe('ObjectPool', () => {
 
   it('grows pool when all items are active', () => {
     const pool = new ObjectPool(createCounter(), 2)
+    pool.preallocate()
     pool.acquire()
     pool.acquire()
     expect(pool.totalCount).toBe(2)
@@ -40,6 +47,7 @@ describe('ObjectPool', () => {
 
   it('never shrinks after release', () => {
     const pool = new ObjectPool(createCounter(), 5)
+    pool.preallocate()
     const indices: number[] = []
     for (let i = 0; i < 5; i++) {
       indices.push(pool.acquire().index)
@@ -53,6 +61,7 @@ describe('ObjectPool', () => {
 
   it('reset releases all items', () => {
     const pool = new ObjectPool(createCounter(), 5)
+    pool.preallocate()
     pool.acquire()
     pool.acquire()
     pool.acquire()
@@ -64,6 +73,7 @@ describe('ObjectPool', () => {
 
   it('reuses released items before growing', () => {
     const pool = new ObjectPool(createCounter(), 2)
+    pool.preallocate()
     const first = pool.acquire()
     pool.release(first.index)
     const second = pool.acquire()

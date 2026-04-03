@@ -142,11 +142,16 @@ function createMockGameContext(
           visible: true,
           x: 0,
           y: 0,
-          text: '',
           tint: 0xffffff,
           alpha: 1,
-          anchor: { set: vi.fn() },
           scale: { set: vi.fn() },
+          setLetter: vi.fn(),
+          setTexture: vi.fn(),
+          letterLabel: { text: '', tint: 0xffffff },
+          sprite: { y: 0, scale: { set: vi.fn(), y: 1 } },
+          addChild: vi.fn(),
+          updateIdle: vi.fn(),
+          reset: vi.fn(),
         },
         index: idx,
       }
@@ -154,18 +159,28 @@ function createMockGameContext(
     releasePoolItem: vi.fn(),
     acquireWordPoolItem: vi.fn(() => {
       const idx = wordItemCount++
+      const splitText = {
+        visible: true, x: 0, y: 0, text: '', tint: 0xffffff, alpha: 1,
+        width: 200, scale: { set: vi.fn() },
+        chars: [] as Array<{ tint: number }>, split: vi.fn(),
+      }
       return {
         item: {
           visible: true,
           x: 0,
           y: 0,
-          text: '',
           tint: 0xffffff,
           alpha: 1,
-          width: 200,
           scale: { set: vi.fn() },
-          chars: [] as Array<{ tint: number }>,
-          split: vi.fn(),
+          setLetter: vi.fn(),
+          setTexture: vi.fn(),
+          letterLabel: { text: '', tint: 0xffffff, visible: true },
+          sprite: { y: 0, scale: { set: vi.fn(), y: 1 } },
+          children: [splitText],
+          wordLabel: splitText,
+          addChild: vi.fn(),
+          updateIdle: vi.fn(),
+          reset: vi.fn(),
         },
         index: idx,
       }
@@ -194,6 +209,7 @@ function createMockGameContext(
     setSessionSaveResult: vi.fn((r: SessionSaveResult | null) => {
       sessionSaveResult = r
     }),
+    preallocatePools: vi.fn(),
     transitions,
     inputBuffer,
   }
@@ -269,21 +285,21 @@ describe('BootState', () => {
 })
 
 describe('MenuState', () => {
-  it('enter creates mode selection buttons and profile back-link', () => {
+  it('enter creates bg and menu containers on gameRoot', () => {
     const ctx = createMockGameContext()
     const state = new MenuState()
     state.enter(ctx)
-    // Title + 2 buttons + 2 labels + profile back-link = 6 addChild calls
-    expect(ctx.gameRoot.addChild).toHaveBeenCalledTimes(6)
+    // bgContainer + menuContainer = 2 addChild calls on gameRoot
+    expect(ctx.gameRoot.addChild).toHaveBeenCalledTimes(2)
   })
 
-  it('exit cleans up all display objects', () => {
+  it('exit cleans up containers', () => {
     const ctx = createMockGameContext()
     const state = new MenuState()
     state.enter(ctx)
     state.exit(ctx)
-    // Should remove 6 items
-    expect(ctx.gameRoot.removeChild).toHaveBeenCalledTimes(6)
+    // bgContainer + menuContainer = 2 removeChild calls
+    expect(ctx.gameRoot.removeChild).toHaveBeenCalledTimes(2)
   })
 })
 
@@ -331,11 +347,16 @@ describe('PlayingState', () => {
           visible: true,
           x: 200,
           y: 100,
-          text: '',
           tint: 0xffffff,
           alpha: 1,
-          anchor: { set: vi.fn() },
           scale: { set: vi.fn() },
+          setLetter: vi.fn(),
+          setTexture: vi.fn(),
+          letterLabel: { text: '', tint: 0xffffff },
+          sprite: { y: 0, scale: { set: vi.fn(), y: 1 } },
+          addChild: vi.fn(),
+          updateIdle: vi.fn(),
+          reset: vi.fn(),
         },
         index: itemCount++,
       }
@@ -358,11 +379,16 @@ describe('PlayingState', () => {
           visible: true,
           x: 200,
           y: 100,
-          text: '',
           tint: 0xffffff,
           alpha: 1,
-          anchor: { set: vi.fn() },
           scale: { set: vi.fn() },
+          setLetter: vi.fn(),
+          setTexture: vi.fn(),
+          letterLabel: { text: '', tint: 0xffffff },
+          sprite: { y: 0, scale: { set: vi.fn(), y: 1 } },
+          addChild: vi.fn(),
+          updateIdle: vi.fn(),
+          reset: vi.fn(),
         },
         index: itemCount++,
       }
@@ -388,11 +414,16 @@ describe('PlayingState', () => {
         visible: true,
         x: 200,
         y: -40,
-        text: '',
         tint: 0xffffff,
         alpha: 1,
-        anchor: { set: vi.fn() },
         scale: { set: vi.fn() },
+        setLetter: vi.fn(),
+        setTexture: vi.fn(),
+        letterLabel: { text: '', tint: 0xffffff },
+        sprite: { y: 0, scale: { set: vi.fn(), y: 1 } },
+        addChild: vi.fn(),
+        updateIdle: vi.fn(),
+        reset: vi.fn(),
       }
       items.push(item)
       return { item, index: itemCount++ }
@@ -428,11 +459,16 @@ describe('PlayingState', () => {
         visible: true,
         x: 200,
         y: -40,
-        text: '',
         tint: 0xffffff,
         alpha: 1,
-        anchor: { set: vi.fn() },
         scale: { set: vi.fn() },
+        setLetter: vi.fn(),
+        setTexture: vi.fn(),
+        letterLabel: { text: '', tint: 0xffffff },
+        sprite: { y: 0, scale: { set: vi.fn(), y: 1 } },
+        addChild: vi.fn(),
+        updateIdle: vi.fn(),
+        reset: vi.fn(),
       }
       items.push(item)
       return { item, index: itemCount++ }
@@ -469,11 +505,16 @@ describe('PlayingState', () => {
           visible: true,
           x: 100,
           y: 0,
-          text: '',
           tint: 0xffffff,
           alpha: 1,
-          anchor: { set: vi.fn() },
           scale: { set: vi.fn() },
+          setLetter: vi.fn(),
+          setTexture: vi.fn(),
+          letterLabel: { text: '', tint: 0xffffff },
+          sprite: { y: 0, scale: { set: vi.fn(), y: 1 } },
+          addChild: vi.fn(),
+          updateIdle: vi.fn(),
+          reset: vi.fn(),
         },
         index: itemCount++,
       }

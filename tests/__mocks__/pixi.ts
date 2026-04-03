@@ -47,13 +47,22 @@ export class MockBitmapText {
 }
 
 export class MockGraphics {
+  children: unknown[] = []
   x = 0
   y = 0
   alpha = 1
   tint = 0xffffff
   visible = true
+  eventMode = 'auto'
+  cursor = 'default'
   scale: { set: Fn } = { set: vi.fn() }
+  on: Fn = vi.fn()
   emit: Fn = vi.fn()
+  addChild: Fn = vi.fn((...args: unknown[]) => {
+    this.children.push(...args)
+    return args[0]
+  })
+  removeChild: Fn = vi.fn()
   destroy: Fn = vi.fn()
   clear: Fn = vi.fn().mockReturnThis()
   rect: Fn = vi.fn().mockReturnThis()
