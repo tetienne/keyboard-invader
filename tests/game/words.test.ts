@@ -16,9 +16,7 @@ function createMockWordEntity(
 ): WordEntity {
   return {
     container: { y } as unknown as WordEntity['container'],
-    splitText: {
-      chars: word.split('').map(() => ({ tint: 0xffffff })),
-    } as unknown as WordEntity['splitText'],
+    wordText: { text: word, tint: 0xffffff } as unknown as WordEntity['wordText'],
     poolIndex: 0,
     word,
     cursorIndex,

@@ -4,7 +4,6 @@ import {
   BitmapText,
   Container,
   Graphics,
-  SplitBitmapText,
   Texture,
 } from 'pixi.js'
 import type { GameContext, GameMode, SessionResult, SessionSaveResult, StateName } from './types.js'
@@ -63,21 +62,13 @@ export class Game implements GameContext {
       alien.visible = false
       return alien
     }, 20)
-    // AlienContainer pool for falling words (alien sprite + SplitBitmapText)
+    // AlienContainer pool for falling words (alien sprite only — SplitBitmapText added at spawn)
     this._wordPool = new ObjectPool(() => {
       const paths = WORD_ALIEN_TEXTURE_PATHS
       const path = paths[Math.floor(Math.random() * paths.length)]!
       const texture = Assets.get<Texture>(path)
       const alien = new AlienContainer(texture, '', 0xffffff)
-      alien.letterLabel.visible = false // Hide the BitmapText label
-      // Create SplitBitmapText as a child for per-character tinting
-      const splitText = new SplitBitmapText({
-        text: '',
-        style: { fontFamily: 'GameFont', fontSize: 48 },
-      })
-      // SplitBitmapText uses pivot for centering (no anchor property)
-      alien.addChild(splitText)
-      alien.wordLabel = splitText
+      alien.letterLabel.visible = false
       alien.visible = false
       return alien
     }, 10)

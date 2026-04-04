@@ -1,11 +1,11 @@
 import { Container, Sprite, Assets, BitmapText } from 'pixi.js'
-import type { SplitBitmapText, Texture } from 'pixi.js'
+import type { Texture } from 'pixi.js'
 import { ALIEN_TEXTURES_PATHS, WORD_ALIEN_TEXTURE_PATHS } from './theme.js'
 
 export class AlienContainer extends Container {
   readonly sprite: Sprite
   readonly letterLabel: BitmapText
-  wordLabel: SplitBitmapText | null = null
+  wordLabel: BitmapText | null = null
   private bobPhase = 0
   private blinkTimer = 0
 
@@ -13,17 +13,17 @@ export class AlienContainer extends Container {
     super()
 
     this.sprite = new Sprite(texture)
-    this.sprite.width = 52
-    this.sprite.height = 52
+    this.sprite.width = 72
+    this.sprite.height = 72
     this.sprite.anchor.set(0.5)
     this.addChild(this.sprite)
 
     this.letterLabel = new BitmapText({
       text: letter,
-      style: { fontFamily: 'GameFont', fontSize: 32 },
+      style: { fontFamily: 'GameFont', fontSize: 38 },
     })
     this.letterLabel.anchor.set(0.5)
-    this.letterLabel.tint = 0x1a1a3e // dark text for contrast
+    this.letterLabel.tint = 0xffffff // white text
     this.sprite.tint = tint // color the alien body
     this.letterLabel.y = 2
     this.addChild(this.letterLabel)
@@ -48,7 +48,7 @@ export class AlienContainer extends Container {
 
   setLetter(letter: string, tint: number): void {
     this.letterLabel.text = letter
-    this.letterLabel.tint = 0x1a1a3e // dark text for contrast
+    this.letterLabel.tint = 0xffffff // white text
     this.sprite.tint = tint // color the alien body
   }
 

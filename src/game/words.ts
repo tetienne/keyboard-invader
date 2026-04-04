@@ -1,4 +1,4 @@
-import type { SplitBitmapText } from 'pixi.js'
+import type { BitmapText } from 'pixi.js'
 import type { AlienContainer } from './alien-container.js'
 import type { LetterTween } from './tween.js'
 import frWords from '../shared/i18n/fr.words.json'
@@ -29,7 +29,7 @@ export function getAvailableWords(
 /** A falling word entity managed by PlayingState in word mode. */
 export interface WordEntity {
   readonly container: AlienContainer
-  readonly splitText: SplitBitmapText
+  readonly wordText: BitmapText
   readonly poolIndex: number
   word: string
   cursorIndex: number

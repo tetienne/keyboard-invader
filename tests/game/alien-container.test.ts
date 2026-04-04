@@ -22,7 +22,7 @@ describe('AlienContainer', () => {
     expect(alien.sprite).toBeDefined()
     expect(alien.letterLabel).toBeDefined()
     expect(alien.letterLabel.text).toBe('A')
-    expect(alien.letterLabel.tint).toBe(0x1a1a3e) // dark text
+    expect(alien.letterLabel.tint).toBe(0xffffff) // white text
     expect(alien.sprite.tint).toBe(0xff0000) // alien body colored
   })
 
@@ -38,7 +38,7 @@ describe('AlienContainer', () => {
     const alien = new AlienContainer(texture as never, 'A', 0xffffff)
     alien.setLetter('B', 0x00ff00)
     expect(alien.letterLabel.text).toBe('B')
-    expect(alien.letterLabel.tint).toBe(0x1a1a3e) // dark text
+    expect(alien.letterLabel.tint).toBe(0xffffff) // white text
     expect(alien.sprite.tint).toBe(0x00ff00) // alien body colored
   })
 

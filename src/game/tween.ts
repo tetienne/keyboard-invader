@@ -9,7 +9,6 @@ export interface LetterTween {
 interface TweenTarget {
   container: {
     scale: { set(x: number, y?: number): void }
-    tint: number
     alpha: number
     x: number
   }
@@ -53,14 +52,12 @@ export function updateTween(target: TweenTarget, dt: number): boolean {
 
   switch (target.tween.type) {
     case 'hit':
-      // D-07: scale up 1.0 -> 1.3, tint green, alpha 1.0 -> 0.0
+      // D-07: scale up 1.0 -> 1.3, fade out
       target.container.scale.set(1 + 0.3 * t)
-      target.container.tint = 0x4ade80
       target.container.alpha = 1 - t
       break
     case 'miss':
-      // D-08: red tint + dampened horizontal shake, restore x after
-      target.container.tint = 0xef4444
+      // D-08: dampened horizontal shake
       target.container.x = target.baseX + Math.sin(t * Math.PI * 6) * 3 * (1 - t)
       break
     case 'bottom':
@@ -69,7 +66,6 @@ export function updateTween(target: TweenTarget, dt: number): boolean {
       break
     case 'dodge':
       // D-13: alien dodges sideways
-      target.container.tint = 0xef4444
       target.container.x = target.baseX + Math.sin(t * Math.PI * 4) * 8 * (1 - t)
       break
     case 'escape':

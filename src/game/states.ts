@@ -7,7 +7,6 @@ import {
   BitmapText,
   Container,
   Graphics,
-  SplitBitmapText,
 } from 'pixi.js'
 import type {
   GameState,
@@ -741,23 +740,30 @@ export class PlayingState implements GameState {
     const ac = item as unknown as AlienContainer
     ac.setTexture(AlienContainer.getRandomAlienTexture(true))
 
-    const sbt = ac.wordLabel!
-    sbt.text = word.toUpperCase()
-    sbt.split()
+    // Create word BitmapText on first use
+    if (!ac.wordLabel) {
+      const newBt = new BitmapText({
+        text: '',
+        style: { fontFamily: 'GameFont', fontSize: 38 },
+      })
+      newBt.anchor.set(0.5)
+      newBt.y = 2
+      ac.addChild(newBt)
+      ac.wordLabel = newBt
+    }
+    const wordBt = ac.wordLabel
+    wordBt.text = word.toUpperCase()
 
     const colorIdx = Math.floor(Math.random() * LETTER_COLORS.length)
     const tint = LETTER_COLORS[colorIdx] ?? 0xffffff
-
-    // Reset all char tints to the chosen color
-    for (const char of sbt.chars) {
-      char.tint = tint
-    }
+    ac.sprite.tint = tint // color alien body
+    wordBt.tint = 0xffffff // white text
 
     ac.scale.set(1)
     ac.alpha = 1
 
     // Constrain x to prevent edge overflow
-    const wordWidth = sbt.width || 100
+    const wordWidth = wordBt.width || 100
     const minX = wordWidth / 2 + 20
     const maxX = BASE_WIDTH - wordWidth / 2 - 20
     ac.x = minX + Math.random() * Math.max(0, maxX - minX)
@@ -768,7 +774,7 @@ export class PlayingState implements GameState {
     wordParent.addChild(ac)
     this.activeWordEntities.push({
       container: ac,
-      splitText: sbt,
+      wordText: wordBt,
       poolIndex: index,
       word: word.toLowerCase(),
       cursorIndex: 0,
@@ -814,15 +820,9 @@ export class PlayingState implements GameState {
     for (const key of keys) {
       const result = matchWordKey(activeWord, key)
       if (result === 'correct') {
-        // Green highlight on matched character
-        const charObj = activeWord.splitText.chars[activeWord.cursorIndex]
-        if (charObj) charObj.tint = 0x4ade80
         activeWord.cursorIndex++
         this.hits++
       } else if (result === 'complete') {
-        // Green the last character, then trigger hit tween
-        const charObj = activeWord.splitText.chars[activeWord.cursorIndex]
-        if (charObj) charObj.tint = 0x4ade80
         activeWord.cursorIndex++
         this.hits++
         this.difficulty.recordResult(true)
@@ -853,7 +853,6 @@ export class PlayingState implements GameState {
         const done = updateTween(entity, dt)
         if (done) {
           if (entity.tween.type === 'miss' || entity.tween.type === 'dodge') {
-            entity.container.tint = entity.originalTint
             entity.container.x = entity.baseX
             entity.tween = null
           } else {
@@ -870,11 +869,6 @@ export class PlayingState implements GameState {
         const done = updateTween(entity, dt)
         if (done) {
           if (entity.tween.type === 'miss' || entity.tween.type === 'dodge') {
-            // Restore char tints after miss/dodge
-            for (let i = entity.cursorIndex; i < entity.splitText.chars.length; i++) {
-              const c = entity.splitText.chars[i]
-              if (c) c.tint = entity.originalTint
-            }
             entity.container.x = entity.baseX
             entity.tween = null
           } else {
