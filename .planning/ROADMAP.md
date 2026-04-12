@@ -150,7 +150,9 @@ Plans:
   1. DEFAULT_UNLOCKED_AVATARS uses current avatar IDs — new profiles see 3 unlocked avatars
   2. Wrong-key presses in word mode call recordResult(false) — difficulty window reflects word mode misses
   3. AlienContainer.updateIdle(dt) is called in PlayingState update loop — aliens bob/blink while falling
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 08.1-01-PLAN.md -- Avatar ID fix, word mode miss signal, alien idle animation wiring
 
 ### Phase 8.2: Word Mode UX Polish (INSERTED — gap closure)
 **Goal**: Children see per-character visual feedback while typing words, and the menu highlights their preferred game mode
@@ -213,7 +215,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 
 | 6. Profiles & Local Persistence | 0/0 | Not started | - |
 | 7. Progression System | 3/3 | Complete   | 2026-04-02 |
 | 8. Visual Identity | 0/5 | Planning complete | - |
-| 8.1 Critical Integration Fixes | 0/0 | Not started | - |
+| 8.1 Critical Integration Fixes | 0/1 | Planning complete | - |
 | 8.2 Word Mode UX Polish | 0/0 | Not started | - |
 | 8.3 DX & Dead Code Cleanup | 0/0 | Not started | - |
 | 9. Audio System | 0/0 | Not started | - |
