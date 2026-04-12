@@ -1,10 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { migrateIfNeeded } from '../../src/persistence/schema.js'
-import {
-  CURRENT_SCHEMA_VERSION,
-  DEFAULT_UNLOCKED_AVATARS,
-} from '../../src/persistence/types.js'
-import type { StorageEnvelope } from '../../src/persistence/types.js'
+import { CURRENT_SCHEMA_VERSION, DEFAULT_UNLOCKED_AVATARS } from '../../src/persistence/types.js'
+import type { StorageEnvelope, ProfileData } from '../../src/persistence/types.js'
+import { AVATARS } from '../../src/avatars/definitions.js'
 
 describe('migrateIfNeeded', () => {
   it('returns profiles unchanged when schemaVersion matches CURRENT_SCHEMA_VERSION', () => {
@@ -30,7 +28,7 @@ describe('migrateIfNeeded', () => {
     ]
     const envelope: StorageEnvelope = {
       schemaVersion: CURRENT_SCHEMA_VERSION,
-      profiles: profiles as any,
+      profiles: profiles as unknown as ProfileData[],
     }
 
     const result = migrateIfNeeded(envelope)
@@ -52,14 +50,16 @@ describe('migrateIfNeeded', () => {
     }
     const envelope: StorageEnvelope = {
       schemaVersion: 0,
-      profiles: [oldProfile] as any,
+      profiles: [oldProfile] as unknown as ProfileData[],
     }
 
     const result = migrateIfNeeded(envelope)
     expect(result).toHaveLength(1)
-    expect(result[0]!.lastDifficultyParams).toBeNull()
-    expect(result[0]!.preferredGameMode).toBeNull()
-    expect(result[0]!.sessionHistory).toEqual([])
+    const first = result[0]
+    expect(first).toBeDefined()
+    expect(first?.lastDifficultyParams).toBeNull()
+    expect(first?.preferredGameMode).toBeNull()
+    expect(first?.sessionHistory).toEqual([])
   })
 
   it('preserves existing fields while adding defaults for missing ones', () => {
@@ -82,18 +82,20 @@ describe('migrateIfNeeded', () => {
     }
     const envelope: StorageEnvelope = {
       schemaVersion: 0,
-      profiles: [oldProfile] as any,
+      profiles: [oldProfile] as unknown as ProfileData[],
     }
 
     const result = migrateIfNeeded(envelope)
-    expect(result[0]!.lastDifficultyParams).toEqual({
+    const first = result[0]
+    expect(first).toBeDefined()
+    expect(first?.lastDifficultyParams).toEqual({
       fallSpeed: 1.5,
       spawnInterval: 2000,
       complexityLevel: 2,
     })
-    expect(result[0]!.preferredGameMode).toBeNull()
-    expect(result[0]!.sessionHistory).toEqual([])
-    expect(result[0]!.name).toBe('Raphael')
+    expect(first?.preferredGameMode).toBeNull()
+    expect(first?.sessionHistory).toEqual([])
+    expect(first?.name).toBe('Raphael')
   })
 
   it('migrates v1 profiles to v2 with xp, level, and unlockedAvatarIds defaults', () => {
@@ -109,21 +111,21 @@ describe('migrateIfNeeded', () => {
       },
       lastDifficultyParams: null,
       preferredGameMode: 'letters',
-      sessionHistory: [
-        { hits: 10, misses: 2, accuracy: 83, mode: 'letters', date: '2026-04-01' },
-      ],
+      sessionHistory: [{ hits: 10, misses: 2, accuracy: 83, mode: 'letters', date: '2026-04-01' }],
       createdAt: '2026-04-01T00:00:00.000Z',
     }
     const envelope: StorageEnvelope = {
       schemaVersion: 1,
-      profiles: [v1Profile] as any,
+      profiles: [v1Profile] as unknown as ProfileData[],
     }
 
     const result = migrateIfNeeded(envelope)
     expect(result).toHaveLength(1)
-    expect(result[0]!.xp).toBe(0)
-    expect(result[0]!.level).toBe(1)
-    expect(result[0]!.unlockedAvatarIds).toEqual([...DEFAULT_UNLOCKED_AVATARS])
+    const first = result[0]
+    expect(first).toBeDefined()
+    expect(first?.xp).toBe(0)
+    expect(first?.level).toBe(1)
+    expect(first?.unlockedAvatarIds).toEqual([...DEFAULT_UNLOCKED_AVATARS])
   })
 
   it('applies both v1 and v2 defaults for v0 profiles', () => {
@@ -141,18 +143,20 @@ describe('migrateIfNeeded', () => {
     }
     const envelope: StorageEnvelope = {
       schemaVersion: 0,
-      profiles: [v0Profile] as any,
+      profiles: [v0Profile] as unknown as ProfileData[],
     }
 
     const result = migrateIfNeeded(envelope)
+    const first = result[0]
+    expect(first).toBeDefined()
     // v1 defaults
-    expect(result[0]!.lastDifficultyParams).toBeNull()
-    expect(result[0]!.preferredGameMode).toBeNull()
-    expect(result[0]!.sessionHistory).toEqual([])
+    expect(first?.lastDifficultyParams).toBeNull()
+    expect(first?.preferredGameMode).toBeNull()
+    expect(first?.sessionHistory).toEqual([])
     // v2 defaults
-    expect(result[0]!.xp).toBe(0)
-    expect(result[0]!.level).toBe(1)
-    expect(result[0]!.unlockedAvatarIds).toEqual([...DEFAULT_UNLOCKED_AVATARS])
+    expect(first?.xp).toBe(0)
+    expect(first?.level).toBe(1)
+    expect(first?.unlockedAvatarIds).toEqual([...DEFAULT_UNLOCKED_AVATARS])
   })
 
   it('preserves existing v1 fields during v1->v2 migration', () => {
@@ -168,22 +172,22 @@ describe('migrateIfNeeded', () => {
       },
       lastDifficultyParams: { fallSpeed: 100, spawnInterval: 1000, complexityLevel: 2 },
       preferredGameMode: 'words',
-      sessionHistory: [
-        { hits: 20, misses: 5, accuracy: 80, mode: 'words', date: '2026-04-01' },
-      ],
+      sessionHistory: [{ hits: 20, misses: 5, accuracy: 80, mode: 'words', date: '2026-04-01' }],
       createdAt: '2026-03-15T00:00:00.000Z',
     }
     const envelope: StorageEnvelope = {
       schemaVersion: 1,
-      profiles: [v1Profile] as any,
+      profiles: [v1Profile] as unknown as ProfileData[],
     }
 
     const result = migrateIfNeeded(envelope)
-    expect(result[0]!.cumulativeStats.totalSessions).toBe(10)
-    expect(result[0]!.cumulativeStats.totalHits).toBe(200)
-    expect(result[0]!.sessionHistory).toHaveLength(1)
-    expect(result[0]!.preferredGameMode).toBe('words')
-    expect(result[0]!.lastDifficultyParams).toEqual({
+    const first = result[0]
+    expect(first).toBeDefined()
+    expect(first?.cumulativeStats.totalSessions).toBe(10)
+    expect(first?.cumulativeStats.totalHits).toBe(200)
+    expect(first?.sessionHistory).toHaveLength(1)
+    expect(first?.preferredGameMode).toBe('words')
+    expect(first?.lastDifficultyParams).toEqual({
       fallSpeed: 100,
       spawnInterval: 1000,
       complexityLevel: 2,
@@ -211,10 +215,27 @@ describe('migrateIfNeeded', () => {
     }
     const envelope: StorageEnvelope = {
       schemaVersion: 2,
-      profiles: [v2Profile] as any,
+      profiles: [v2Profile] as unknown as ProfileData[],
     }
 
     const result = migrateIfNeeded(envelope)
     expect(result[0]).toEqual(v2Profile)
+  })
+})
+
+describe('DEFAULT_UNLOCKED_AVATARS cross-validation', () => {
+  it('contains exactly 3 avatar IDs', () => {
+    expect(DEFAULT_UNLOCKED_AVATARS).toHaveLength(3)
+  })
+
+  it('contains the correct current avatar IDs', () => {
+    expect(DEFAULT_UNLOCKED_AVATARS).toEqual(['avatar-kid-01', 'avatar-kid-02', 'avatar-alien-01'])
+  })
+
+  it('every ID exists in the AVATARS definitions array', () => {
+    const validIds = AVATARS.map((a) => a.id)
+    for (const id of DEFAULT_UNLOCKED_AVATARS) {
+      expect(validIds).toContain(id)
+    }
   })
 })

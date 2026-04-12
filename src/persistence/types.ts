@@ -6,9 +6,9 @@ export const MAX_PROFILES = 4
 export const MAX_SESSION_HISTORY = 10
 
 export const DEFAULT_UNLOCKED_AVATARS: readonly string[] = [
-  'avatar-red',
-  'avatar-blue',
-  'avatar-green',
+  'avatar-kid-01',
+  'avatar-kid-02',
+  'avatar-alien-01',
 ]
 
 export interface StorageEnvelope {
