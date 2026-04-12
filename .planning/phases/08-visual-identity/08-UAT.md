@@ -1,9 +1,9 @@
 ---
-status: diagnosed
+status: complete
 phase: 08-visual-identity
 source: 08-01-SUMMARY.md, 08-02-SUMMARY.md, 08-03-SUMMARY.md, 08-04-SUMMARY.md
 started: 2026-04-12T07:41:00Z
-updated: 2026-04-12T07:50:00Z
+updated: 2026-04-12T17:30:00Z
 ---
 
 ## Current Test
@@ -58,9 +58,8 @@ result: pass
 
 ### 10. Dodge/Escape Tweens on Miss
 expected: When a letter reaches the bottom without being typed, it plays a dodge or escape animation (horizontal oscillation or accelerate + fade) rather than just disappearing.
-result: issue
-reported: "no"
-severity: major
+result: pass
+note: Re-verified after 08-05 fix (escape tween threshold + completion handler)
 
 ### 11. Celebration Star Particles
 expected: At the end of a session or on level-up, a celebration overlay plays with star-shaped sprite particles and warp speed line effects.
@@ -73,23 +72,12 @@ result: pass
 ## Summary
 
 total: 12
-passed: 11
-issues: 1
+passed: 12
+issues: 0
 pending: 0
 skipped: 0
 blocked: 0
 
 ## Gaps
 
-- truth: "When a letter reaches the bottom without being typed, it plays a dodge or escape animation (horizontal oscillation or accelerate + fade) rather than just disappearing."
-  status: failed
-  reason: "User reported: no"
-  severity: major
-  test: 10
-  root_cause: "In _updateTweens() and _updateWordTweens() (states.ts ~L855-876), escape tweens fall into the else branch on completion, setting entity.tween=null immediately. The cleanup pass then removes the entity before the animation renders because markedForRemoval is true and tween is null."
-  artifacts:
-    - path: "src/game/states.ts"
-      issue: "_updateTweens completion handler does not include 'escape' type in the reset branch — escape tween nullified prematurely"
-  missing:
-    - "Add 'escape' to the tween type check alongside 'miss' and 'dodge' in _updateTweens and _updateWordTweens completion handlers"
-  debug_session: ""
+[none — all issues resolved]
