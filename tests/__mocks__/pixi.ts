@@ -85,7 +85,7 @@ export class MockSplitBitmapText {
   tint = 0xffffff
   alpha = 1
   visible = true
-  chars: Array<{ tint: number }> = []
+  chars: { tint: number }[] = []
   anchor: { set: Fn } = { set: vi.fn() }
   scale: { set: Fn } = { set: vi.fn() }
   split: Fn = vi.fn()
@@ -93,6 +93,23 @@ export class MockSplitBitmapText {
 
   constructor(opts?: { text?: string }) {
     if (opts?.text) this.text = opts.text
+  }
+}
+
+export class MockText {
+  x = 0
+  y = 0
+  text = ''
+  style: unknown = null
+  alpha = 1
+  visible = true
+  anchor: { set: Fn } = { set: vi.fn() }
+  scale: { set: Fn } = { set: vi.fn() }
+  destroy: Fn = vi.fn()
+
+  constructor(opts?: { text?: string; style?: unknown }) {
+    if (opts?.text) this.text = opts.text
+    if (opts?.style) this.style = opts.style
   }
 }
 
@@ -133,6 +150,7 @@ export function createPixiMocks(): Record<string, unknown> {
     Graphics: MockGraphics,
     Sprite: MockSprite,
     Texture: MockTexture,
+    Text: MockText,
     BitmapFont: { install: vi.fn() },
     BitmapFontManager: { install: vi.fn(), ASCII: [[' ', '~']] },
     Assets: {
