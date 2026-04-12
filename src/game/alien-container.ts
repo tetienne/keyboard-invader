@@ -16,6 +16,7 @@ export class AlienContainer extends Container {
   wordLabel: BitmapText | null = null
   private bobPhase = 0
   private blinkTimer = 0
+  private blinkEndTime = 0
 
   constructor(texture: Texture, letter: string, tint: number) {
     super()
@@ -43,14 +44,19 @@ export class AlienContainer extends Container {
     this.bobPhase += ds * 3
     this.sprite.y = Math.sin(this.bobPhase) * 3
 
-    // Blinking (briefly squeeze y-scale)
-    this.blinkTimer += ds
-    if (this.blinkTimer > 3 + Math.random() * 2) {
-      this.sprite.scale.y = 0.85
-      this.blinkTimer = 0
-      setTimeout(() => {
-        if (!this.destroyed) this.sprite.scale.y = 1
-      }, 120)
+    // Blinking (briefly squeeze y-scale, timer-based to avoid stale setTimeout)
+    if (this.blinkEndTime > 0) {
+      this.blinkEndTime -= ds
+      if (this.blinkEndTime <= 0) {
+        this.sprite.scale.y = 1
+      }
+    } else {
+      this.blinkTimer += ds
+      if (this.blinkTimer > 3 + Math.random() * 2) {
+        this.sprite.scale.y = 0.85
+        this.blinkTimer = 0
+        this.blinkEndTime = 0.12
+      }
     }
   }
 
@@ -80,6 +86,7 @@ export class AlienContainer extends Container {
   reset(): void {
     this.bobPhase = 0
     this.blinkTimer = 0
+    this.blinkEndTime = 0
     this.sprite.scale.set(1)
     this.sprite.alpha = 1
     this.letterLabel.alpha = 1
