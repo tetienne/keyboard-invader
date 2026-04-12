@@ -129,12 +129,13 @@ Plans:
   2. The game uses a consistent color palette and rounded, child-friendly visual language
   3. Destruction effects (particles, pops, sparkles) play when a letter/word is eliminated
   4. All visual elements render without jank at 60fps on a mid-range laptop (validated with 4x CPU throttle)
-**Plans:** 4 plans
+**Plans:** 5 plans
 Plans:
 - [x] 08-01-PLAN.md -- Theme constants, Fredoka font, SVG art assets, BootState async loading
 - [x] 08-02-PLAN.md -- AlienContainer, Starfield, DestructionEffect, Defender, tween extensions, entity refactor
 - [x] 08-03-PLAN.md -- Avatar SVG system, state integration, celebration upgrade, UI reskin
 - [x] 08-04-PLAN.md -- Visual identity and 60fps performance verification (checkpoint)
+- [ ] 08-05-PLAN.md -- Gap closure: fix escape tween premature removal in _updateTweens
 **UI hint**: yes
 
 ### Phase 9: Audio System
@@ -174,7 +175,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 5. Adaptive Difficulty | 0/0 | Not started | - |
 | 6. Profiles & Local Persistence | 0/0 | Not started | - |
 | 7. Progression System | 3/3 | Complete   | 2026-04-02 |
-| 8. Visual Identity | 0/4 | Planning complete | - |
+| 8. Visual Identity | 0/5 | Planning complete | - |
 | 9. Audio System | 0/0 | Not started | - |
 | 10. Responsive Layout & Cross-Browser | 0/0 | Not started | - |
 
