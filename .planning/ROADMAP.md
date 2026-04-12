@@ -135,7 +135,7 @@ Plans:
 - [x] 08-02-PLAN.md -- AlienContainer, Starfield, DestructionEffect, Defender, tween extensions, entity refactor
 - [x] 08-03-PLAN.md -- Avatar SVG system, state integration, celebration upgrade, UI reskin
 - [x] 08-04-PLAN.md -- Visual identity and 60fps performance verification (checkpoint)
-- [ ] 08-05-PLAN.md -- Gap closure: fix escape tween premature removal in _updateTweens
+- [x] 08-05-PLAN.md -- Gap closure: fix escape tween premature removal in _updateTweens
 **UI hint**: yes
 
 ### Phase 9: Audio System
