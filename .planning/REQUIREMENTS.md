@@ -30,13 +30,13 @@
 
 ### Profiles & Persistence
 
-- [ ] **PROF-01**: L'enfant choisit son profil en cliquant sur son avatar (pas de mot de passe)
+- [x] **PROF-01**: L'enfant choisit son profil en cliquant sur son avatar (pas de mot de passe)
 - [x] **PROF-02**: La progression de chaque enfant est sauvegardee dans le navigateur (LocalStorage)
 - [ ] **PROF-03**: La progression peut etre synchronisee entre appareils via Firebase (optionnel)
 
 ### Audio & Visual
 
-- [ ] **AV-01**: Le jeu a un style visuel cartoon/SVG avec des personnages colores et expressifs
+- [x] **AV-01**: Le jeu a un style visuel cartoon/SVG avec des personnages colores et expressifs
 - [ ] **AV-02**: Le jeu a des effets sonores (frappe, destruction, felicitations)
 - [ ] **AV-03**: Le jeu a une musique d'ambiance avec controle du volume
 - [x] **AV-04**: Les animations sont fluides (60fps) meme sur machines modestes
@@ -96,14 +96,14 @@
 | DIFF-01 | Phase 5 | Complete |
 | DIFF-02 | Phase 5 | Complete |
 | DIFF-03 | Phase 5 | Complete |
-| DIFF-04 | Phase 5, 8.1 | Pending |
+| DIFF-04 | Phase 5, 8.1 | Complete |
 | PROG-01 | Phase 7 | Complete |
 | PROG-02 | Phase 7 | Complete |
 | PROG-03 | Phase 7 | Complete |
-| PROF-01 | Phase 6, 8.1 | Pending |
+| PROF-01 | Phase 6, 8.1 | Complete |
 | PROF-02 | Phase 6 | Complete |
 | PROF-03 | Phase 10 | Pending |
-| AV-01 | Phase 8, 8.1 | Pending |
+| AV-01 | Phase 8, 8.1 | Complete |
 | AV-02 | Phase 9 | Pending |
 | AV-03 | Phase 9 | Pending |
 | AV-04 | Phase 2 | Complete |

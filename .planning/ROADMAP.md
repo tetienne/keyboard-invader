@@ -152,7 +152,7 @@ Plans:
   3. AlienContainer.updateIdle(dt) is called in PlayingState update loop — aliens bob/blink while falling
 **Plans:** 1 plan
 Plans:
-- [ ] 08.1-01-PLAN.md -- Avatar ID fix, word mode miss signal, alien idle animation wiring
+- [x] 08.1-01-PLAN.md -- Avatar ID fix, word mode miss signal, alien idle animation wiring
 
 ### Phase 8.2: Word Mode UX Polish (INSERTED — gap closure)
 **Goal**: Children see per-character visual feedback while typing words, and the menu highlights their preferred game mode
