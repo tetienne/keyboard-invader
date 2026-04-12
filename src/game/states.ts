@@ -563,7 +563,7 @@ export class PlayingState implements GameState {
       if (
         entity.tween === null &&
         !entity.markedForRemoval &&
-        entity.container.y > BASE_HEIGHT + 40
+        entity.container.y > BASE_HEIGHT - 60
       ) {
         this.misses++
         this.difficulty.recordResult(false)
@@ -575,7 +575,7 @@ export class PlayingState implements GameState {
       if (
         entity.tween === null &&
         !entity.markedForRemoval &&
-        entity.container.y > BASE_HEIGHT + 40
+        entity.container.y > BASE_HEIGHT - 60
       ) {
         this.misses++
         this.difficulty.recordResult(false)
@@ -852,7 +852,7 @@ export class PlayingState implements GameState {
       if (entity.tween !== null) {
         const done = updateTween(entity, dt)
         if (done) {
-          if (entity.tween.type === 'miss' || entity.tween.type === 'dodge') {
+          if (entity.tween.type === 'miss' || entity.tween.type === 'dodge' || entity.tween.type === 'escape') {
             entity.container.x = entity.baseX
             entity.tween = null
           } else {
@@ -868,7 +868,7 @@ export class PlayingState implements GameState {
       if (entity.tween !== null) {
         const done = updateTween(entity, dt)
         if (done) {
-          if (entity.tween.type === 'miss' || entity.tween.type === 'dodge') {
+          if (entity.tween.type === 'miss' || entity.tween.type === 'dodge' || entity.tween.type === 'escape') {
             entity.container.x = entity.baseX
             entity.tween = null
           } else {
