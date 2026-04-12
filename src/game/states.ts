@@ -524,11 +524,13 @@ export class PlayingState implements GameState {
     // --- Fall logic ---
     const dtSec = dt / 1000
     for (const entity of this.activeEntities) {
+      entity.container.updateIdle(dt)
       if (entity.tween === null && !entity.markedForRemoval) {
         entity.container.y += fallSpeed * dtSec
       }
     }
     for (const entity of this.activeWordEntities) {
+      entity.container.updateIdle(dt)
       if (entity.tween === null && !entity.markedForRemoval) {
         entity.container.y += fallSpeed * dtSec
       }
@@ -843,6 +845,7 @@ export class PlayingState implements GameState {
       } else {
         // Wrong key: dodge animation, no cursor reset
         this.misses++
+        this.difficulty.recordResult(false)
         activeWord.tween ??= createDodgeTween()
       }
     }
