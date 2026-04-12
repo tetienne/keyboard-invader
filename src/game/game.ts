@@ -21,6 +21,7 @@ import { setupCanvas } from './canvas.js'
 import { DebugOverlay } from './debug.js'
 import { AlienContainer } from './alien-container.js'
 import { ALIEN_TEXTURES_PATHS, WORD_ALIEN_TEXTURE_PATHS } from './theme.js'
+import { t } from '../shared/i18n/index.js'
 
 /**
  * Safely retrieves a texture from the asset cache.
@@ -234,14 +235,14 @@ export class Game implements GameContext {
     bg.fill({ color: 0x000000, alpha: 0.5 })
     this._pauseOverlay.addChild(bg)
     const text = new BitmapText({
-      text: 'PAUSE',
+      text: t('game.pause'),
       style: { fontFamily: 'GameFont', fontSize: 48 },
     })
     text.x = BASE_WIDTH / 2 - text.width / 2
     text.y = BASE_HEIGHT / 2 - text.height / 2
     this._pauseOverlay.addChild(text)
     const hint = new BitmapText({
-      text: 'Appuie sur Espace pour continuer',
+      text: t('game.pauseHint'),
       style: { fontFamily: 'GameFont', fontSize: 20 },
     })
     hint.x = BASE_WIDTH / 2 - hint.width / 2

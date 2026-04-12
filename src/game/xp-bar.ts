@@ -1,5 +1,6 @@
 import { BitmapText, Container, Graphics } from 'pixi.js'
 import { SPACE_PALETTE } from './theme.js'
+import { t } from '../shared/i18n/index.js'
 
 export interface XpBarConfig {
   width: number
@@ -52,7 +53,7 @@ export class XpBar {
 
     // Level label left of bar
     this.levelText = new BitmapText({
-      text: 'Niv. 1',
+      text: t('progression.level').replace('{level}', '1'),
       style: { fontFamily: 'GameFont', fontSize: config.fontSize },
     })
     this.levelText.x = 0
@@ -92,7 +93,7 @@ export class XpBar {
 
   /** Set bar state immediately (no animation). Used for initial display and HUD. */
   setProgress(level: number, currentXp: number, requiredXp: number): void {
-    this.levelText.text = `Niv. ${String(level)}`
+    this.levelText.text = t('progression.level').replace('{level}', String(level))
     const progress = requiredXp > 0 ? Math.min(currentXp / requiredXp, 1) : 0
     this.currentProgress = progress
     this._drawFill(progress)
@@ -148,7 +149,7 @@ export class XpBar {
 
   /** Update the displayed level number. */
   setLevel(level: number): void {
-    this.levelText.text = `Niv. ${String(level)}`
+    this.levelText.text = t('progression.level').replace('{level}', String(level))
   }
 
   /** Update the XP fraction text. */
