@@ -42,6 +42,7 @@ export class Game implements GameContext {
   private readonly _debug: DebugOverlay
   private _cleanupCanvas: (() => void) | null = null
   private _cleanupVisibility: (() => void) | null = null
+  private _cleanupDebug: (() => void) | null = null
   private _sessionResult: SessionResult | null = null
   private _gameMode: GameMode = 'letters'
   private _pauseOverlay: Container | null = null
@@ -314,17 +315,22 @@ export class Game implements GameContext {
   }
 
   private _setupDebugToggle(): void {
-    window.addEventListener('keydown', (e) => {
+    const onDebugKey = (e: KeyboardEvent): void => {
       if (e.key === 'F3') {
         e.preventDefault()
         this._debug.toggle()
       }
-    })
+    }
+    window.addEventListener('keydown', onDebugKey)
+    this._cleanupDebug = () => {
+      window.removeEventListener('keydown', onDebugKey)
+    }
   }
 
   destroy(): void {
     this._cleanupCanvas?.()
     this._cleanupVisibility?.()
+    this._cleanupDebug?.()
     this._input.detach()
     this._debug.destroy()
     this.app.destroy(true)
