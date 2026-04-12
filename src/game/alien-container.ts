@@ -1,6 +1,14 @@
-import { Container, Sprite, Assets, BitmapText } from 'pixi.js'
-import type { Texture } from 'pixi.js'
+import { Container, Sprite, Assets, BitmapText, Texture } from 'pixi.js'
 import { ALIEN_TEXTURES_PATHS, WORD_ALIEN_TEXTURE_PATHS } from './theme.js'
+
+/**
+ * Safely retrieves a texture from the asset cache.
+ * Assets.get() is typed as always returning T, but at runtime it returns
+ * undefined if the asset has not been loaded yet.
+ */
+function safeGetTexture(path: string): Texture | undefined {
+  return Assets.get<Texture>(path) as Texture | undefined
+}
 
 export class AlienContainer extends Container {
   readonly sprite: Sprite
@@ -59,8 +67,14 @@ export class AlienContainer extends Container {
   static getRandomAlienTexture(wordMode: boolean): Texture {
     const paths = wordMode ? WORD_ALIEN_TEXTURE_PATHS : ALIEN_TEXTURES_PATHS
     const idx = Math.floor(Math.random() * paths.length)
-    const path = paths[idx]!
-    return Assets.get<Texture>(path)
+    const path = paths[idx]
+    if (!path) return Texture.WHITE
+    const texture = safeGetTexture(path)
+    if (!texture) {
+      console.warn(`Alien texture not loaded: ${path}`)
+      return Texture.WHITE
+    }
+    return texture
   }
 
   reset(): void {

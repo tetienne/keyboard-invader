@@ -1,11 +1,4 @@
-import {
-  Application,
-  Assets,
-  BitmapText,
-  Container,
-  Graphics,
-  Texture,
-} from 'pixi.js'
+import { Application, Assets, BitmapText, Container, Graphics, Texture } from 'pixi.js'
 import type { GameContext, GameMode, SessionResult, SessionSaveResult, StateName } from './types.js'
 import type { DifficultyParams } from './difficulty.js'
 import type { ProfileData } from '../persistence/types.js'
@@ -28,6 +21,15 @@ import { setupCanvas } from './canvas.js'
 import { DebugOverlay } from './debug.js'
 import { AlienContainer } from './alien-container.js'
 import { ALIEN_TEXTURES_PATHS, WORD_ALIEN_TEXTURE_PATHS } from './theme.js'
+
+/**
+ * Safely retrieves a texture from the asset cache.
+ * Assets.get() is typed as always returning T, but at runtime it returns
+ * undefined if the asset has not been loaded yet.
+ */
+function safeGetTexture(path: string): Texture | undefined {
+  return Assets.get<Texture>(path) as Texture | undefined
+}
 
 export class Game implements GameContext {
   readonly app: Application
@@ -56,8 +58,8 @@ export class Game implements GameContext {
     // AlienContainer pool for falling letters (alien sprite + label)
     this._pool = new ObjectPool(() => {
       const paths = ALIEN_TEXTURES_PATHS
-      const path = paths[Math.floor(Math.random() * paths.length)]!
-      const texture = Assets.get<Texture>(path)
+      const path = paths[Math.floor(Math.random() * paths.length)]
+      const texture = path ? (safeGetTexture(path) ?? Texture.WHITE) : Texture.WHITE
       const alien = new AlienContainer(texture, 'A', 0xffffff)
       alien.visible = false
       return alien
@@ -65,8 +67,8 @@ export class Game implements GameContext {
     // AlienContainer pool for falling words (alien sprite only — SplitBitmapText added at spawn)
     this._wordPool = new ObjectPool(() => {
       const paths = WORD_ALIEN_TEXTURE_PATHS
-      const path = paths[Math.floor(Math.random() * paths.length)]!
-      const texture = Assets.get<Texture>(path)
+      const path = paths[Math.floor(Math.random() * paths.length)]
+      const texture = path ? (safeGetTexture(path) ?? Texture.WHITE) : Texture.WHITE
       const alien = new AlienContainer(texture, '', 0xffffff)
       alien.letterLabel.visible = false
       alien.visible = false
