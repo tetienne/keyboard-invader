@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 08.1-01-PLAN.md
+stopped_at: Phase 8.1 complete
 last_updated: "2026-04-12T11:21:04.165Z"
-last_activity: 2026-04-12 -- Phase 8.1 planning complete
+last_activity: 2026-04-12 -- Phase 8.1 complete — 3 integration fixes
 progress:
   total_phases: 14
   completed_phases: 9
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-30)
 
 **Core value:** Rendre l'apprentissage du clavier amusant et non frustrant pour des enfants de 5 a 8 ans
-**Current focus:** Phase 08 — visual-identity
+**Current focus:** Phase 08.1 complete — next: 8.2 or 8.3
 
 ## Current Position
 
-Phase: 999.1
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-04-12 -- Phase 8.1 planning complete
+Phase: 08.1
+Plan: 01 (complete)
+Status: Phase complete
+Last activity: 2026-04-12 -- Phase 8.1 complete — avatar IDs, word mode miss signal, idle animation
 
-Progress: [██░░░░░░░░] 18%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 

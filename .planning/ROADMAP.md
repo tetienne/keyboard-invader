@@ -20,7 +20,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 6: Profiles & Local Persistence** - Avatar-based child profiles with LocalStorage saving of all progress
 - [x] **Phase 7: Progression System** - XP earning, leveling, and level-up celebration animations (completed 2026-04-02)
 - [ ] **Phase 8: Visual Identity** - Cartoon/SVG art style, character sprites, visual effects, and 60fps rendering validation
-- [ ] **Phase 8.1: Critical Integration Fixes** - Fix avatar ID mismatch, word mode difficulty signal, alien idle animation (INSERTED — gap closure)
+- [x] **Phase 8.1: Critical Integration Fixes** - Fix avatar ID mismatch, word mode difficulty signal, alien idle animation (INSERTED — gap closure) (2026-04-12)
 - [ ] **Phase 8.2: Word Mode UX Polish** - Per-character typing feedback and menu preferred mode highlight (INSERTED — gap closure)
 - [ ] **Phase 8.3: DX & Dead Code Cleanup** - Commit-msg hook, dead code removal, vitest config fix (INSERTED — gap closure)
 - [ ] **Phase 9: Audio System** - Sound effects, background music, volume controls, and autoplay policy handling
@@ -215,7 +215,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 
 | 6. Profiles & Local Persistence | 0/0 | Not started | - |
 | 7. Progression System | 3/3 | Complete   | 2026-04-02 |
 | 8. Visual Identity | 0/5 | Planning complete | - |
-| 8.1 Critical Integration Fixes | 0/1 | Planning complete | - |
+| 8.1 Critical Integration Fixes | 1/1 | Complete | 2026-04-12 |
 | 8.2 Word Mode UX Polish | 0/0 | Not started | - |
 | 8.3 DX & Dead Code Cleanup | 0/0 | Not started | - |
 | 9. Audio System | 0/0 | Not started | - |
