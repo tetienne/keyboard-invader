@@ -15,6 +15,7 @@ import { getAvailableLetters, findLowestMatch, findLowestEntity } from './letter
 import type { LetterEntity } from './letters.js'
 import type { WordEntity, WordLists } from './words.js'
 import { loadWordLists, getAvailableWords, findActiveWord, matchWordKey } from './words.js'
+import type { LetterTween } from './tween.js'
 import { updateTween, createHitTween, createDodgeTween, createEscapeTween } from './tween.js'
 import {
   DifficultyManager,
@@ -547,8 +548,8 @@ export class PlayingState implements GameState {
     }
 
     // --- Tween updates (both arrays) ---
-    this._updateTweens(this.activeEntities, dt)
-    this._updateWordTweens(this.activeWordEntities, dt)
+    this._updateEntityTweens(this.activeEntities, dt)
+    this._updateEntityTweens(this.activeWordEntities, dt)
 
     // --- Bottom detection: use escape tween instead of bottom tween ---
     for (const entity of this.activeEntities) {
@@ -847,7 +848,10 @@ export class PlayingState implements GameState {
     }
   }
 
-  private _updateTweens(entities: LetterEntity[], dt: number): void {
+  private _updateEntityTweens(
+    entities: { container: AlienContainer; baseX: number; tween: LetterTween | null }[],
+    dt: number,
+  ): void {
     for (const entity of entities) {
       if (entity.tween !== null) {
         const done = updateTween(entity, dt)
@@ -858,30 +862,8 @@ export class PlayingState implements GameState {
             entity.tween.type === 'escape'
           ) {
             entity.container.x = entity.baseX
-            entity.tween = null
-          } else {
-            entity.tween = null
           }
-        }
-      }
-    }
-  }
-
-  private _updateWordTweens(entities: WordEntity[], dt: number): void {
-    for (const entity of entities) {
-      if (entity.tween !== null) {
-        const done = updateTween(entity, dt)
-        if (done) {
-          if (
-            entity.tween.type === 'miss' ||
-            entity.tween.type === 'dodge' ||
-            entity.tween.type === 'escape'
-          ) {
-            entity.container.x = entity.baseX
-            entity.tween = null
-          } else {
-            entity.tween = null
-          }
+          entity.tween = null
         }
       }
     }
