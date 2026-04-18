@@ -151,7 +151,7 @@ describe('WordEntity interface with SplitBitmapText', () => {
     expect((entity.wordText as unknown as { chars: unknown[] }).chars).toHaveLength(3)
     expect((entity.wordText as unknown as { pivot: unknown }).pivot).toBeDefined()
     // SplitBitmapText should NOT have anchor
-    expect((entity.wordText as unknown as Record<string, unknown>).anchor).toBeUndefined()
+    expect((entity.wordText as unknown as Record<string, unknown>)['anchor']).toBeUndefined()
   })
 })
 

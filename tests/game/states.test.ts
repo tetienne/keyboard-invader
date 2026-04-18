@@ -315,7 +315,7 @@ describe('MenuState preferred mode glow', () => {
     state.enter(ctx)
     // The glow is added via addChildAt on menuContainer (second addChild on gameRoot)
     const addChildCalls = vi.mocked(ctx.gameRoot.addChild).mock.calls
-    const menuContainer = addChildCalls[1]?.[0] as { addChildAt: ReturnType<typeof vi.fn> }
+    const menuContainer = addChildCalls[1]?.[0] as unknown as { addChildAt: ReturnType<typeof vi.fn> }
     expect(menuContainer.addChildAt).not.toHaveBeenCalled()
     state.exit(ctx)
   })
@@ -332,7 +332,7 @@ describe('MenuState preferred mode glow', () => {
     const state = new MenuState()
     state.enter(ctx)
     const addChildCalls = vi.mocked(ctx.gameRoot.addChild).mock.calls
-    const menuContainer = addChildCalls[1]?.[0] as { addChildAt: ReturnType<typeof vi.fn> }
+    const menuContainer = addChildCalls[1]?.[0] as unknown as { addChildAt: ReturnType<typeof vi.fn> }
     expect(menuContainer.addChildAt).toHaveBeenCalledTimes(1)
     // Glow inserted at index 0 (behind panels)
     const glowCall = menuContainer.addChildAt.mock.calls[0] as [{ stroke: ReturnType<typeof vi.fn> }, number]
@@ -352,7 +352,7 @@ describe('MenuState preferred mode glow', () => {
     const state = new MenuState()
     state.enter(ctx)
     const addChildCalls = vi.mocked(ctx.gameRoot.addChild).mock.calls
-    const menuContainer = addChildCalls[1]?.[0] as { addChildAt: ReturnType<typeof vi.fn> }
+    const menuContainer = addChildCalls[1]?.[0] as unknown as { addChildAt: ReturnType<typeof vi.fn> }
     expect(menuContainer.addChildAt).toHaveBeenCalledTimes(1)
     state.exit(ctx)
   })
@@ -363,7 +363,7 @@ describe('MenuState preferred mode glow', () => {
     const state = new MenuState()
     state.enter(ctx)
     const addChildCalls = vi.mocked(ctx.gameRoot.addChild).mock.calls
-    const menuContainer = addChildCalls[1]?.[0] as { addChildAt: ReturnType<typeof vi.fn> }
+    const menuContainer = addChildCalls[1]?.[0] as unknown as { addChildAt: ReturnType<typeof vi.fn> }
     expect(menuContainer.addChildAt).not.toHaveBeenCalled()
     state.exit(ctx)
   })

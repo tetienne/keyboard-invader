@@ -857,7 +857,8 @@ export class PlayingState implements GameState {
         // Per-character gold tinting on correct keypress
         const sbt = activeWord.wordText
         for (let i = 0; i < sbt.chars.length; i++) {
-          sbt.chars[i].tint = i < activeWord.cursorIndex ? 0xffd700 : 0xffffff
+          const ch = sbt.chars[i]
+          if (ch) ch.tint = i < activeWord.cursorIndex ? 0xffd700 : 0xffffff
         }
       } else if (result === 'complete') {
         activeWord.cursorIndex++
@@ -866,7 +867,8 @@ export class PlayingState implements GameState {
         // All chars gold on word completion
         const sbt = activeWord.wordText
         for (let i = 0; i < sbt.chars.length; i++) {
-          sbt.chars[i].tint = 0xffd700
+          const ch = sbt.chars[i]
+          if (ch) ch.tint = 0xffd700
         }
 
         // Fire laser from defender to target
