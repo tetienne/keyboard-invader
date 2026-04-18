@@ -7,16 +7,34 @@ import {
   BitmapText,
   Container,
   Graphics,
-  Text,
 } from 'pixi.js'
-import type { GameState, StateName, GameContext, GameMode, SessionSaveResult } from './types.js'
+import type {
+  GameState,
+  StateName,
+  GameContext,
+  GameMode,
+  SessionSaveResult,
+} from './types.js'
 import { TRANSITIONS, BASE_WIDTH, BASE_HEIGHT } from './types.js'
-import { getAvailableLetters, findLowestMatch, findLowestEntity } from './letters.js'
+import {
+  getAvailableLetters,
+  findLowestMatch,
+  findLowestEntity,
+} from './letters.js'
 import type { LetterEntity } from './letters.js'
 import type { WordEntity, WordLists } from './words.js'
-import { loadWordLists, getAvailableWords, findActiveWord, matchWordKey } from './words.js'
-import type { LetterTween } from './tween.js'
-import { updateTween, createHitTween, createDodgeTween, createEscapeTween } from './tween.js'
+import {
+  loadWordLists,
+  getAvailableWords,
+  findActiveWord,
+  matchWordKey,
+} from './words.js'
+import {
+  updateTween,
+  createHitTween,
+  createDodgeTween,
+  createEscapeTween,
+} from './tween.js'
 import {
   DifficultyManager,
   LETTER_DIFFICULTY_CONFIG,
@@ -48,11 +66,7 @@ function drawSpacePanel(g: Graphics, x: number, y: number, w: number, h: number)
   g.roundRect(x, y, w, h, UI_CONSTANTS.panelCornerRadius)
   g.fill({ color: SPACE_PALETTE.secondary, alpha: UI_CONSTANTS.panelBgAlpha })
   g.roundRect(x, y, w, h, UI_CONSTANTS.panelCornerRadius)
-  g.stroke({
-    color: SPACE_PALETTE.glow,
-    width: UI_CONSTANTS.panelBorderWidth,
-    alpha: UI_CONSTANTS.panelBorderAlpha,
-  })
+  g.stroke({ color: SPACE_PALETTE.glow, width: UI_CONSTANTS.panelBorderWidth, alpha: UI_CONSTANTS.panelBorderAlpha })
 }
 
 function saveSessionToProfile(ctx: GameContext): SessionSaveResult | null {
@@ -60,13 +74,17 @@ function saveSessionToProfile(ctx: GameContext): SessionSaveResult | null {
   const result = ctx.getSessionResult()
   if (!profile || !result) return null
 
-  const accuracy = result.total > 0 ? Math.round((result.hits / result.total) * 100) : 0
+  const accuracy =
+    result.total > 0 ? Math.round((result.hits / result.total) * 100) : 0
 
   // Update cumulative stats
   profile.cumulativeStats.totalSessions++
   profile.cumulativeStats.totalHits += result.hits
   profile.cumulativeStats.totalMisses += result.misses
-  profile.cumulativeStats.bestAccuracy = Math.max(profile.cumulativeStats.bestAccuracy, accuracy)
+  profile.cumulativeStats.bestAccuracy = Math.max(
+    profile.cumulativeStats.bestAccuracy,
+    accuracy,
+  )
 
   // Add session summary (FIFO, max 10)
   profile.sessionHistory.push({
@@ -217,21 +235,6 @@ export class BootState implements GameState {
         ctx.transitionTo('profiles')
       } catch (err) {
         console.error('BootState: failed to load assets', err)
-        // Show user-visible error (use canvas Text since BitmapFont may not be loaded)
-        const errorText = new Text({
-          text: t('boot.error'),
-          style: {
-            fontFamily: 'sans-serif',
-            fontSize: 22,
-            fill: '#ffffff',
-            wordWrap: true,
-            wordWrapWidth: BASE_WIDTH - 80,
-          },
-        })
-        errorText.anchor.set(0.5)
-        errorText.x = BASE_WIDTH / 2
-        errorText.y = BASE_HEIGHT / 2
-        ctx.gameRoot.addChild(errorText)
       }
     })()
   }
@@ -502,7 +505,8 @@ export class PlayingState implements GameState {
     this.laser?.update(dt)
     this.defender?.update(dt)
 
-    const sessionLength = this.mode === 'words' ? this.WORD_SESSION_LENGTH : this.SESSION_LENGTH
+    const sessionLength =
+      this.mode === 'words' ? this.WORD_SESSION_LENGTH : this.SESSION_LENGTH
     const { fallSpeed, spawnInterval } = this.difficulty.params
 
     // Update starfield intensity based on difficulty
@@ -510,7 +514,10 @@ export class PlayingState implements GameState {
 
     // --- Spawn logic ---
     this.spawnTimer += dt
-    while (this.spawnTimer >= spawnInterval && this.totalSpawned < sessionLength) {
+    while (
+      this.spawnTimer >= spawnInterval &&
+      this.totalSpawned < sessionLength
+    ) {
       this.spawnTimer -= spawnInterval
 
       if (this.mode === 'letters') {
@@ -524,13 +531,11 @@ export class PlayingState implements GameState {
     // --- Fall logic ---
     const dtSec = dt / 1000
     for (const entity of this.activeEntities) {
-      entity.container.updateIdle(dt)
       if (entity.tween === null && !entity.markedForRemoval) {
         entity.container.y += fallSpeed * dtSec
       }
     }
     for (const entity of this.activeWordEntities) {
-      entity.container.updateIdle(dt)
       if (entity.tween === null && !entity.markedForRemoval) {
         entity.container.y += fallSpeed * dtSec
       }
@@ -550,15 +555,15 @@ export class PlayingState implements GameState {
     }
 
     // --- Tween updates (both arrays) ---
-    this._updateEntityTweens(this.activeEntities, dt)
-    this._updateEntityTweens(this.activeWordEntities, dt)
+    this._updateTweens(this.activeEntities, dt)
+    this._updateWordTweens(this.activeWordEntities, dt)
 
     // --- Bottom detection: use escape tween instead of bottom tween ---
     for (const entity of this.activeEntities) {
       if (
         entity.tween === null &&
         !entity.markedForRemoval &&
-        entity.container.y > BASE_HEIGHT - 60
+        entity.container.y > BASE_HEIGHT + 40
       ) {
         this.misses++
         this.difficulty.recordResult(false)
@@ -570,7 +575,7 @@ export class PlayingState implements GameState {
       if (
         entity.tween === null &&
         !entity.markedForRemoval &&
-        entity.container.y > BASE_HEIGHT - 60
+        entity.container.y > BASE_HEIGHT + 40
       ) {
         this.misses++
         this.difficulty.recordResult(false)
@@ -612,7 +617,9 @@ export class PlayingState implements GameState {
 
     // --- Session end check ---
     const activeCount =
-      this.mode === 'words' ? this.activeWordEntities.length : this.activeEntities.length
+      this.mode === 'words'
+        ? this.activeWordEntities.length
+        : this.activeEntities.length
     if (this.totalSpawned >= sessionLength && activeCount === 0) {
       ctx.setSessionResult({
         hits: this.hits,
@@ -653,21 +660,10 @@ export class PlayingState implements GameState {
     this.activeWordEntities = []
 
     // Destroy visual modules
-    if (this.starfield) {
-      this.starfield.destroy()
-      this.starfield = null
-    }
-    if (this.effects) {
-      this.effects.clear()
-      this.effects = null
-    }
-    if (this.laser) {
-      this.laser = null
-    }
-    if (this.defender) {
-      this.defender.destroy()
-      this.defender = null
-    }
+    if (this.starfield) { this.starfield.destroy(); this.starfield = null }
+    if (this.effects) { this.effects.clear(); this.effects = null }
+    if (this.laser) { this.laser = null }
+    if (this.defender) { this.defender.destroy(); this.defender = null }
 
     // Remove score/HUD (already children of containers that will be destroyed)
     this.scoreText = null
@@ -676,13 +672,7 @@ export class PlayingState implements GameState {
     this.hudLevelLabel = null
 
     // Destroy z-layer containers
-    const containers = [
-      this.bgContainer,
-      this.entitiesContainer,
-      this.effectsContainer,
-      this.defenderContainer,
-      this.hudContainer,
-    ]
+    const containers = [this.bgContainer, this.entitiesContainer, this.effectsContainer, this.defenderContainer, this.hudContainer]
     for (const c of containers) {
       if (c) {
         ctx.gameRoot.removeChild(c)
@@ -707,10 +697,11 @@ export class PlayingState implements GameState {
 
   private _spawnLetter(ctx: GameContext): void {
     const available = getAvailableLetters(this.difficulty.params.complexityLevel)
-    const letter = available[Math.floor(Math.random() * available.length)] ?? 'a'
+    const letter =
+      available[Math.floor(Math.random() * available.length)] ?? 'a'
 
     const { item, index } = ctx.acquirePoolItem()
-    const ac = item as AlienContainer
+    const ac = item as unknown as AlienContainer
 
     const colorIdx = Math.floor(Math.random() * LETTER_COLORS.length)
     const tint = LETTER_COLORS[colorIdx] ?? 0xffffff
@@ -738,11 +729,15 @@ export class PlayingState implements GameState {
   private _spawnWord(ctx: GameContext): void {
     if (!this.wordLists) return
 
-    const available = getAvailableWords(this.wordLists, this.difficulty.params.complexityLevel)
-    const word = available[Math.floor(Math.random() * available.length)] ?? 'mot'
+    const available = getAvailableWords(
+      this.wordLists,
+      this.difficulty.params.complexityLevel,
+    )
+    const word =
+      available[Math.floor(Math.random() * available.length)] ?? 'mot'
 
     const { item, index } = ctx.acquireWordPoolItem()
-    const ac = item as AlienContainer
+    const ac = item as unknown as AlienContainer
     ac.setTexture(AlienContainer.getRandomAlienTexture(true))
 
     // Create word BitmapText on first use
@@ -845,28 +840,40 @@ export class PlayingState implements GameState {
       } else {
         // Wrong key: dodge animation, no cursor reset
         this.misses++
-        this.difficulty.recordResult(false)
-        activeWord.tween ??= createDodgeTween()
+        if (activeWord.tween === null) {
+          activeWord.tween = createDodgeTween()
+        }
       }
     }
   }
 
-  private _updateEntityTweens(
-    entities: { container: AlienContainer; baseX: number; tween: LetterTween | null }[],
-    dt: number,
-  ): void {
+  private _updateTweens(entities: LetterEntity[], dt: number): void {
     for (const entity of entities) {
       if (entity.tween !== null) {
         const done = updateTween(entity, dt)
         if (done) {
-          if (
-            entity.tween.type === 'miss' ||
-            entity.tween.type === 'dodge' ||
-            entity.tween.type === 'escape'
-          ) {
+          if (entity.tween.type === 'miss' || entity.tween.type === 'dodge') {
             entity.container.x = entity.baseX
+            entity.tween = null
+          } else {
+            entity.tween = null
           }
-          entity.tween = null
+        }
+      }
+    }
+  }
+
+  private _updateWordTweens(entities: WordEntity[], dt: number): void {
+    for (const entity of entities) {
+      if (entity.tween !== null) {
+        const done = updateTween(entity, dt)
+        if (done) {
+          if (entity.tween.type === 'miss' || entity.tween.type === 'dodge') {
+            entity.container.x = entity.baseX
+            entity.tween = null
+          } else {
+            entity.tween = null
+          }
         }
       }
     }
@@ -951,7 +958,7 @@ export class GameOverState implements GameState {
     })
     accuracyText.anchor.set(0.5)
     accuracyText.x = BASE_WIDTH / 2
-    accuracyText.y = BASE_HEIGHT * 0.3
+    accuracyText.y = BASE_HEIGHT * 0.30
 
     // Items line (shifted up: 0.36)
     const itemsText = new BitmapText({
@@ -980,7 +987,7 @@ export class GameOverState implements GameState {
       xpEarnedText.tint = 0xe94560
       xpEarnedText.anchor.set(0.5)
       xpEarnedText.x = BASE_WIDTH / 2
-      xpEarnedText.y = BASE_HEIGHT * 0.5
+      xpEarnedText.y = BASE_HEIGHT * 0.50
       this.container.addChild(xpEarnedText)
     }
 
@@ -1018,8 +1025,9 @@ export class GameOverState implements GameState {
           this.saveResult.levelUp.remainingXp,
           this.saveResult.levelUp.newLevel,
         )
-        this.targetProgress =
-          newProgress.required > 0 ? newProgress.current / newProgress.required : 0
+        this.targetProgress = newProgress.required > 0
+          ? newProgress.current / newProgress.required
+          : 0
         this.targetXpCurrent = newProgress.current
         this.targetXpRequired = newProgress.required
       }
@@ -1038,7 +1046,7 @@ export class GameOverState implements GameState {
     })
     replayBtn.anchor.set(0.5)
     replayBtn.x = BASE_WIDTH / 2
-    replayBtn.y = BASE_HEIGHT * 0.7
+    replayBtn.y = BASE_HEIGHT * 0.70
     replayBtn.eventMode = 'static'
     replayBtn.cursor = 'pointer'
     replayBtn.on('pointerover', () => {
@@ -1058,7 +1066,7 @@ export class GameOverState implements GameState {
     })
     menuBtn.anchor.set(0.5)
     menuBtn.x = BASE_WIDTH / 2
-    menuBtn.y = BASE_HEIGHT * 0.8
+    menuBtn.y = BASE_HEIGHT * 0.80
     menuBtn.eventMode = 'static'
     menuBtn.cursor = 'pointer'
     menuBtn.on('pointerover', () => {
@@ -1071,7 +1079,14 @@ export class GameOverState implements GameState {
       ctx.transitionTo('menu')
     })
 
-    this.container.addChild(title, accuracyText, itemsText, timeText, replayBtn, menuBtn)
+    this.container.addChild(
+      title,
+      accuracyText,
+      itemsText,
+      timeText,
+      replayBtn,
+      menuBtn,
+    )
     ctx.gameRoot.addChild(this.container)
 
     // Initialize animation phase
@@ -1119,10 +1134,9 @@ export class GameOverState implements GameState {
         if (this.phaseTimer >= 300 && this.saveResult) {
           const prevTotalXp = this.saveResult.levelUp.remainingXp - this.saveResult.xpGain.totalXp
           const prevProgress = xpForCurrentLevel(prevTotalXp, this.currentDisplayLevel)
-          const fromProgress =
-            prevProgress.required > 0
-              ? Math.max(0, prevProgress.current) / prevProgress.required
-              : 0
+          const fromProgress = prevProgress.required > 0
+            ? Math.max(0, prevProgress.current) / prevProgress.required
+            : 0
           const toProgress = this.targetProgress
           const duration = Math.max(200, 800 * Math.abs(toProgress - fromProgress))
           this.xpBar.animateFill(fromProgress, toProgress, duration)
@@ -1166,21 +1180,18 @@ export class GameOverState implements GameState {
             this.xpBar.setLevel(this.currentDisplayLevel)
 
             // Compute the target for remaining XP at new level
-            if (!this.saveResult) {
-              this.resultsPhase = 'done'
-              break
-            }
             if (this.pendingLevelUps > 0) {
               // More level-ups: fill to 100% again
               this.targetProgress = 1.0
             } else {
               // Final level: fill to actual remaining progress
               const newProgress = xpForCurrentLevel(
-                this.saveResult.levelUp.remainingXp,
-                this.saveResult.levelUp.newLevel,
+                this.saveResult!.levelUp.remainingXp,
+                this.saveResult!.levelUp.newLevel,
               )
-              this.targetProgress =
-                newProgress.required > 0 ? newProgress.current / newProgress.required : 0
+              this.targetProgress = newProgress.required > 0
+                ? newProgress.current / newProgress.required
+                : 0
               this.targetXpCurrent = newProgress.current
               this.targetXpRequired = newProgress.required
             }

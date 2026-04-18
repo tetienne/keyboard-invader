@@ -29,7 +29,5 @@
   "profiles.delete.yes": "Oui",
   "profiles.delete.no": "Non",
   "boot.loading": "Chargement des aliens...",
-  "boot.error": "Oups, les aliens se sont perdus dans l'espace ! Recharge la page.",
-  "game.pause": "PAUSE",
-  "game.pauseHint": "Appuie sur Espace pour continuer"
+  "boot.error": "Oups, les aliens se sont perdus dans l'espace ! Recharge la page."
 }

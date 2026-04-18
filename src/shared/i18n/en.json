@@ -29,7 +29,5 @@
   "profiles.delete.yes": "Yes",
   "profiles.delete.no": "No",
   "boot.loading": "Loading aliens...",
-  "boot.error": "Oops, the aliens got lost in space! Reload the page.",
-  "game.pause": "PAUSE",
-  "game.pauseHint": "Press Space to continue"
+  "boot.error": "Oops, the aliens got lost in space! Reload the page."
 }

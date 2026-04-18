@@ -119,6 +119,42 @@ describe('findActiveWord', () => {
   })
 })
 
+describe('WordEntity interface with SplitBitmapText', () => {
+  it('accepts SplitBitmapText-shaped object with chars and pivot (no anchor)', () => {
+    const splitTextMock = {
+      text: 'CAT',
+      chars: [{ tint: 0xffffff }, { tint: 0xffffff }, { tint: 0xffffff }],
+      pivot: { set: () => {}, x: 0, y: 0 },
+      x: 0,
+      y: 0,
+      width: 200,
+      height: 40,
+      tint: 0xffffff,
+      alpha: 1,
+      visible: true,
+      scale: { set: () => {} },
+      split: () => {},
+      destroy: () => {},
+    }
+    const entity: WordEntity = {
+      container: { y: 100 } as unknown as WordEntity['container'],
+      wordText: splitTextMock as unknown as WordEntity['wordText'],
+      poolIndex: 0,
+      word: 'cat',
+      cursorIndex: 0,
+      baseX: 100,
+      originalTint: 0xffffff,
+      tween: null,
+      markedForRemoval: false,
+    }
+    expect(entity.wordText).toBeDefined()
+    expect((entity.wordText as unknown as { chars: unknown[] }).chars).toHaveLength(3)
+    expect((entity.wordText as unknown as { pivot: unknown }).pivot).toBeDefined()
+    // SplitBitmapText should NOT have anchor
+    expect((entity.wordText as unknown as Record<string, unknown>).anchor).toBeUndefined()
+  })
+})
+
 describe('matchWordKey', () => {
   it('returns correct for matching non-final character', () => {
     const entity = createMockWordEntity('cat', 100, 0)

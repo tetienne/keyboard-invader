@@ -15,7 +15,6 @@ import {
   PausedState,
   GameOverState,
 } from '@/game/states.js'
-import { DifficultyManager } from '@/game/difficulty.js'
 
 // Mock pixi.js BEFORE any imports that use it
 vi.mock('pixi.js', async () => {
@@ -107,7 +106,9 @@ describe('StateMachine', () => {
 
 // --- Concrete State Tests ---
 
-function createMockGameContext(mode: GameMode = 'letters'): GameContext & {
+function createMockGameContext(
+  mode: GameMode = 'letters',
+): GameContext & {
   transitions: StateName[]
   inputBuffer: string[]
 } {
@@ -158,18 +159,6 @@ function createMockGameContext(mode: GameMode = 'letters'): GameContext & {
     releasePoolItem: vi.fn(),
     acquireWordPoolItem: vi.fn(() => {
       const idx = wordItemCount++
-      const splitText = {
-        visible: true,
-        x: 0,
-        y: 0,
-        text: '',
-        tint: 0xffffff,
-        alpha: 1,
-        width: 200,
-        scale: { set: vi.fn() },
-        chars: [] as { tint: number }[],
-        split: vi.fn(),
-      }
       return {
         item: {
           visible: true,
@@ -182,9 +171,12 @@ function createMockGameContext(mode: GameMode = 'letters'): GameContext & {
           setTexture: vi.fn(),
           letterLabel: { text: '', tint: 0xffffff, visible: true },
           sprite: { y: 0, scale: { set: vi.fn(), y: 1 } },
-          children: [splitText],
-          wordLabel: splitText,
-          addChild: vi.fn(),
+          children: [],
+          wordLabel: null as unknown,
+          addChild: vi.fn(function (this: { children: unknown[]; wordLabel: unknown }, child: unknown) {
+            this.children.push(child)
+            this.wordLabel = child
+          }),
           updateIdle: vi.fn(),
           reset: vi.fn(),
         },
@@ -246,25 +238,22 @@ describe('BootState', () => {
   })
 
   it('calls Assets.load with all asset paths', async () => {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { Assets: PixiAssets } = await import('pixi.js')
+    const { Assets } = await import('pixi.js')
     const ctx = createMockGameContext()
     const state = new BootState()
     state.enter(ctx)
 
     await vi.waitFor(() => {
-      expect(PixiAssets.load).toHaveBeenCalled()
+      expect(Assets.load).toHaveBeenCalled()
     })
-    const loadCall = vi.mocked(PixiAssets.load).mock.calls[0]?.[0] as string[]
-    expect(loadCall).toEqual(
-      expect.arrayContaining([
-        '/assets/aliens/alien-01.svg',
-        '/assets/aliens/word-alien-01.svg',
-        '/assets/spaceship.svg',
-        '/assets/star.svg',
-        '/assets/avatars/kid-01.svg',
-      ]),
-    )
+    const loadCall = vi.mocked(Assets.load).mock.calls[0]?.[0] as string[]
+    expect(loadCall).toEqual(expect.arrayContaining([
+      '/assets/aliens/alien-01.svg',
+      '/assets/aliens/word-alien-01.svg',
+      '/assets/spaceship.svg',
+      '/assets/star.svg',
+      '/assets/avatars/kid-01.svg',
+    ]))
   })
 
   it('transitions to profiles after all assets resolve', async () => {
@@ -278,12 +267,9 @@ describe('BootState', () => {
   })
 
   it('does not transition if Assets.load rejects', async () => {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { Assets: PixiAssets } = await import('pixi.js')
-    vi.mocked(PixiAssets.load).mockRejectedValueOnce(new Error('load failed'))
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {
-      // intentionally empty: suppress console.error during test
-    })
+    const { Assets } = await import('pixi.js')
+    vi.mocked(Assets.load).mockRejectedValueOnce(new Error('load failed'))
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     const ctx = createMockGameContext()
     const state = new BootState()
     state.enter(ctx)
@@ -419,7 +405,8 @@ describe('PlayingState', () => {
   it('transitions to gameover when all 20 letters processed and cleared', () => {
     const ctx = createMockGameContext()
     let itemCount = 0
-    const items: { y: number; visible: boolean; alpha: number; x: number }[] = []
+    const items: { y: number; visible: boolean; alpha: number; x: number }[] =
+      []
     vi.mocked(ctx.acquirePoolItem).mockImplementation(() => {
       const item = {
         visible: true,
@@ -463,7 +450,8 @@ describe('PlayingState', () => {
   it('setSessionResult includes timePlayed and mode', () => {
     const ctx = createMockGameContext()
     let itemCount = 0
-    const items: { y: number; visible: boolean; alpha: number; x: number }[] = []
+    const items: { y: number; visible: boolean; alpha: number; x: number }[] =
+      []
     vi.mocked(ctx.acquirePoolItem).mockImplementation(() => {
       const item = {
         visible: true,
@@ -536,112 +524,6 @@ describe('PlayingState', () => {
     state.exit(ctx)
     expect(ctx.releasePoolItem).toHaveBeenCalled()
   })
-
-  it('word mode wrong-key calls difficulty.recordResult(false)', () => {
-    const recordResultSpy = vi.spyOn(DifficultyManager.prototype, 'recordResult')
-
-    const ctx = createMockGameContext('words')
-    const state = new PlayingState()
-    state.enter(ctx)
-
-    // Spawn a word entity (word spawn interval is 2500ms)
-    state.update(ctx, 2500)
-    expect(ctx.acquireWordPoolItem).toHaveBeenCalledTimes(1)
-
-    // Clear any recordResult calls from spawn frame
-    recordResultSpy.mockClear()
-
-    // Push a wrong key (digit -- no word starts with '9')
-    ctx.inputBuffer.push('9')
-    state.update(ctx, 16)
-
-    // recordResult(false) should have been called for the wrong key
-    expect(recordResultSpy).toHaveBeenCalledWith(false)
-
-    recordResultSpy.mockRestore()
-  })
-
-  it('updateIdle is called on active letter entities during update', () => {
-    const ctx = createMockGameContext('letters')
-    const updateIdleFn = vi.fn()
-    let itemCount = 0
-    vi.mocked(ctx.acquirePoolItem).mockImplementation(() => {
-      return {
-        item: {
-          visible: true,
-          x: 200,
-          y: 100,
-          tint: 0xffffff,
-          alpha: 1,
-          scale: { set: vi.fn() },
-          setLetter: vi.fn(),
-          setTexture: vi.fn(),
-          letterLabel: { text: '', tint: 0xffffff },
-          sprite: { y: 0, scale: { set: vi.fn(), y: 1 } },
-          addChild: vi.fn(),
-          updateIdle: updateIdleFn,
-          reset: vi.fn(),
-        },
-        index: itemCount++,
-      }
-    })
-
-    const state = new PlayingState()
-    state.enter(ctx)
-    state.update(ctx, 1500) // Spawn one letter entity
-    updateIdleFn.mockClear() // Clear calls from spawn frame
-    state.update(ctx, 16) // Next frame should call updateIdle
-
-    expect(updateIdleFn).toHaveBeenCalledWith(16)
-  })
-
-  it('updateIdle is called on active word entities during update', () => {
-    const ctx = createMockGameContext('words')
-    const updateIdleFn = vi.fn()
-    let itemCount = 0
-    vi.mocked(ctx.acquireWordPoolItem).mockImplementation(() => {
-      const splitText = {
-        visible: true,
-        x: 0,
-        y: 0,
-        text: '',
-        tint: 0xffffff,
-        alpha: 1,
-        width: 200,
-        scale: { set: vi.fn() },
-        chars: [] as { tint: number }[],
-        split: vi.fn(),
-      }
-      return {
-        item: {
-          visible: true,
-          x: 200,
-          y: 100,
-          tint: 0xffffff,
-          alpha: 1,
-          scale: { set: vi.fn() },
-          setLetter: vi.fn(),
-          setTexture: vi.fn(),
-          letterLabel: { text: '', tint: 0xffffff, visible: true },
-          sprite: { y: 0, scale: { set: vi.fn(), y: 1 } },
-          children: [splitText],
-          wordLabel: splitText,
-          addChild: vi.fn(),
-          updateIdle: updateIdleFn,
-          reset: vi.fn(),
-        },
-        index: itemCount++,
-      }
-    })
-
-    const state = new PlayingState()
-    state.enter(ctx)
-    state.update(ctx, 2500) // Spawn one word entity
-    updateIdleFn.mockClear() // Clear calls from spawn frame
-    state.update(ctx, 16) // Next frame should call updateIdle
-
-    expect(updateIdleFn).toHaveBeenCalledWith(16)
-  })
 })
 
 describe('GameOverState', () => {
@@ -700,13 +582,7 @@ describe('GameOverState profile saving', () => {
       cumulativeStats: { totalSessions: 0, totalHits: 0, totalMisses: 0, bestAccuracy: 0 },
       lastDifficultyParams: null,
       preferredGameMode: null,
-      sessionHistory: [] as {
-        hits: number
-        misses: number
-        accuracy: number
-        mode: string
-        date: string
-      }[],
+      sessionHistory: [] as Array<{ hits: number; misses: number; accuracy: number; mode: string; date: string }>,
       createdAt: '2026-01-01T00:00:00Z',
       xp: 0,
       level: 1,
@@ -757,13 +633,7 @@ describe('GameOverState profile saving', () => {
       cumulativeStats: { totalSessions: 0, totalHits: 0, totalMisses: 0, bestAccuracy: 0 },
       lastDifficultyParams: null,
       preferredGameMode: null,
-      sessionHistory: [] as {
-        hits: number
-        misses: number
-        accuracy: number
-        mode: string
-        date: string
-      }[],
+      sessionHistory: [] as Array<{ hits: number; misses: number; accuracy: number; mode: string; date: string }>,
       createdAt: '2026-01-01T00:00:00Z',
       xp: 40,
       level: 1,
@@ -796,8 +666,7 @@ describe('GameOverState profile saving', () => {
     expect(profile.xp).toBe(81) // 40 + 41
     expect(profile.level).toBe(2) // crossed 50 threshold
     expect(ctx.setSessionSaveResult).toHaveBeenCalled()
-    const saveResult = (ctx.setSessionSaveResult as ReturnType<typeof vi.fn>).mock
-      .calls[0]?.[0] as SessionSaveResult
+    const saveResult = (ctx.setSessionSaveResult as ReturnType<typeof vi.fn>).mock.calls[0]?.[0] as SessionSaveResult
     expect(saveResult.xpGain.totalXp).toBe(41)
     expect(saveResult.levelUp.previousLevel).toBe(1)
     expect(saveResult.levelUp.newLevel).toBe(2)
@@ -816,9 +685,7 @@ describe('GameOverState profile saving', () => {
     })
 
     const state = new GameOverState()
-    expect(() => {
-      state.enter(ctx)
-    }).not.toThrow()
+    expect(() => state.enter(ctx)).not.toThrow()
   })
 })
 
@@ -876,6 +743,119 @@ describe('PlayingState profile difficulty restoration', () => {
         complexityLevel: 0,
       }),
     )
+    state.exit(ctx)
+  })
+})
+
+describe('PlayingState word mode per-character tinting', () => {
+  function createWordModeContext() {
+    const ctx = createMockGameContext('words')
+    let wordItemCount = 0
+    vi.mocked(ctx.acquireWordPoolItem).mockImplementation(() => {
+      const idx = wordItemCount++
+      return {
+        item: {
+          visible: true,
+          x: 0,
+          y: 0,
+          tint: 0xffffff,
+          alpha: 1,
+          scale: { set: vi.fn() },
+          setLetter: vi.fn(),
+          setTexture: vi.fn(),
+          letterLabel: { text: '', tint: 0xffffff, visible: true },
+          sprite: { y: 0, scale: { set: vi.fn(), y: 1 } },
+          children: [],
+          wordLabel: null as unknown,
+          addChild: vi.fn(function (this: { children: unknown[]; wordLabel: unknown }, child: unknown) {
+            this.children.push(child)
+            this.wordLabel = child
+          }),
+          updateIdle: vi.fn(),
+          reset: vi.fn(),
+        },
+        index: idx,
+      }
+    })
+    return ctx
+  }
+
+  function getSpawnedWordLabel(ctx: ReturnType<typeof createWordModeContext>) {
+    const call = vi.mocked(ctx.acquireWordPoolItem).mock.results[0]
+    const item = (call?.value as { item: { wordLabel: { chars: Array<{ tint: number }>; text: string } } }).item
+    return item.wordLabel
+  }
+
+  it('new word spawn starts all chars white (0xffffff)', () => {
+    const ctx = createWordModeContext()
+    const state = new PlayingState()
+    state.enter(ctx)
+    state.update(ctx, 2500) // trigger word spawn
+    expect(ctx.acquireWordPoolItem).toHaveBeenCalled()
+
+    const wordLabel = getSpawnedWordLabel(ctx)
+    expect(wordLabel.chars.length).toBeGreaterThan(0)
+    for (const ch of wordLabel.chars) {
+      expect(ch.tint).toBe(0xffffff)
+    }
+    state.exit(ctx)
+  })
+
+  it('correctly typed character turns gold (0xffd700)', () => {
+    const ctx = createWordModeContext()
+    const state = new PlayingState()
+    state.enter(ctx)
+    state.update(ctx, 2500) // spawn word
+
+    const wordLabel = getSpawnedWordLabel(ctx)
+    const firstChar = wordLabel.text[0]!.toLowerCase()
+
+    ctx.inputBuffer.push(firstChar)
+    state.update(ctx, 16)
+
+    expect(wordLabel.chars[0]!.tint).toBe(0xffd700)
+    // Remaining chars stay white
+    for (let i = 1; i < wordLabel.chars.length; i++) {
+      expect(wordLabel.chars[i]!.tint).toBe(0xffffff)
+    }
+    state.exit(ctx)
+  })
+
+  it('all chars gold on word completion', () => {
+    const ctx = createWordModeContext()
+    const state = new PlayingState()
+    state.enter(ctx)
+    state.update(ctx, 2500) // spawn word
+
+    const wordLabel = getSpawnedWordLabel(ctx)
+    const word = wordLabel.text.toLowerCase()
+
+    // Type all characters
+    for (const ch of word) {
+      ctx.inputBuffer.push(ch)
+      state.update(ctx, 16)
+    }
+
+    for (const ch of wordLabel.chars) {
+      expect(ch.tint).toBe(0xffd700)
+    }
+    state.exit(ctx)
+  })
+
+  it('wrong key does not change char tints', () => {
+    const ctx = createWordModeContext()
+    const state = new PlayingState()
+    state.enter(ctx)
+    state.update(ctx, 2500) // spawn word
+
+    const wordLabel = getSpawnedWordLabel(ctx)
+
+    ctx.inputBuffer.push('1') // wrong key
+    state.update(ctx, 16)
+
+    for (const ch of wordLabel.chars) {
+      expect(ch.tint).toBe(0xffffff)
+    }
     state.exit(ctx)
   })
 })
