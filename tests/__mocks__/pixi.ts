@@ -13,6 +13,10 @@ export class MockContainer {
     this.children.push(...args)
     return args[0]
   })
+  addChildAt: Fn = vi.fn((child: unknown, index: number) => {
+    this.children.splice(index, 0, child)
+    return child
+  })
   removeChild: Fn = vi.fn()
   removeChildren: Fn = vi.fn(() => {
     const removed = this.children.slice()

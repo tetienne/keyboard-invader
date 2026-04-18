@@ -301,6 +301,74 @@ describe('MenuState', () => {
   })
 })
 
+describe('MenuState preferred mode glow', () => {
+  it('no glow when preferredGameMode is null (D-07)', () => {
+    const ctx = createMockGameContext()
+    vi.mocked(ctx.getActiveProfile).mockReturnValue({
+      id: 'test-1', name: 'Lea', avatarId: 'circle',
+      cumulativeStats: { totalSessions: 0, totalHits: 0, totalMisses: 0, bestAccuracy: 0 },
+      lastDifficultyParams: null, preferredGameMode: null,
+      sessionHistory: [], createdAt: '2026-01-01T00:00:00Z',
+      xp: 0, level: 1, unlockedAvatarIds: [],
+    } as never)
+    const state = new MenuState()
+    state.enter(ctx)
+    // The glow is added via addChildAt on menuContainer (second addChild on gameRoot)
+    const addChildCalls = vi.mocked(ctx.gameRoot.addChild).mock.calls
+    const menuContainer = addChildCalls[1]?.[0] as { addChildAt: ReturnType<typeof vi.fn> }
+    expect(menuContainer.addChildAt).not.toHaveBeenCalled()
+    state.exit(ctx)
+  })
+
+  it('glow created when preferredGameMode is letters (D-05)', () => {
+    const ctx = createMockGameContext()
+    vi.mocked(ctx.getActiveProfile).mockReturnValue({
+      id: 'test-1', name: 'Lea', avatarId: 'circle',
+      cumulativeStats: { totalSessions: 0, totalHits: 0, totalMisses: 0, bestAccuracy: 0 },
+      lastDifficultyParams: null, preferredGameMode: 'letters',
+      sessionHistory: [], createdAt: '2026-01-01T00:00:00Z',
+      xp: 0, level: 1, unlockedAvatarIds: [],
+    } as never)
+    const state = new MenuState()
+    state.enter(ctx)
+    const addChildCalls = vi.mocked(ctx.gameRoot.addChild).mock.calls
+    const menuContainer = addChildCalls[1]?.[0] as { addChildAt: ReturnType<typeof vi.fn> }
+    expect(menuContainer.addChildAt).toHaveBeenCalledTimes(1)
+    // Glow inserted at index 0 (behind panels)
+    const glowCall = menuContainer.addChildAt.mock.calls[0] as [{ stroke: ReturnType<typeof vi.fn> }, number]
+    expect(glowCall[1]).toBe(0)
+    state.exit(ctx)
+  })
+
+  it('glow created when preferredGameMode is words (D-05)', () => {
+    const ctx = createMockGameContext()
+    vi.mocked(ctx.getActiveProfile).mockReturnValue({
+      id: 'test-1', name: 'Lea', avatarId: 'circle',
+      cumulativeStats: { totalSessions: 0, totalHits: 0, totalMisses: 0, bestAccuracy: 0 },
+      lastDifficultyParams: null, preferredGameMode: 'words',
+      sessionHistory: [], createdAt: '2026-01-01T00:00:00Z',
+      xp: 0, level: 1, unlockedAvatarIds: [],
+    } as never)
+    const state = new MenuState()
+    state.enter(ctx)
+    const addChildCalls = vi.mocked(ctx.gameRoot.addChild).mock.calls
+    const menuContainer = addChildCalls[1]?.[0] as { addChildAt: ReturnType<typeof vi.fn> }
+    expect(menuContainer.addChildAt).toHaveBeenCalledTimes(1)
+    state.exit(ctx)
+  })
+
+  it('no glow when getActiveProfile returns null', () => {
+    const ctx = createMockGameContext()
+    vi.mocked(ctx.getActiveProfile).mockReturnValue(null)
+    const state = new MenuState()
+    state.enter(ctx)
+    const addChildCalls = vi.mocked(ctx.gameRoot.addChild).mock.calls
+    const menuContainer = addChildCalls[1]?.[0] as { addChildAt: ReturnType<typeof vi.fn> }
+    expect(menuContainer.addChildAt).not.toHaveBeenCalled()
+    state.exit(ctx)
+  })
+})
+
 describe('PlayingState', () => {
   it('reads gameMode from context on enter', () => {
     const ctx = createMockGameContext('words')

@@ -260,6 +260,8 @@ export class MenuState implements GameState {
   private menuContainer: Container | null = null
   private starfield: Starfield | null = null
   private bgContainer: Container | null = null
+  private glowGraphic: Graphics | null = null
+  private glowTime = 0
 
   enter(ctx: GameContext): void {
     // Background layer with starfield
@@ -344,6 +346,29 @@ export class MenuState implements GameState {
     wordLabel.y = 18
     wordPanel.addChild(wordLabel)
 
+    // Preferred mode glow (D-05 through D-08)
+    const profile = ctx.getActiveProfile()
+    const preferred = profile?.preferredGameMode ?? null
+
+    if (preferred !== null) {
+      const targetPanel = preferred === 'letters' ? letterPanel : wordPanel
+      const glowPad = 8
+      const glow = new Graphics()
+      glow.roundRect(
+        -letterPanelW / 2 - glowPad,
+        -letterPanelH / 2 - glowPad,
+        letterPanelW + glowPad * 2,
+        letterPanelH + glowPad * 2,
+        UI_CONSTANTS.panelCornerRadius + 4,
+      )
+      glow.stroke({ color: SPACE_PALETTE.glow, width: 3, alpha: 0.6 })
+      glow.x = targetPanel.x
+      glow.y = targetPanel.y
+      this.menuContainer!.addChildAt(glow, 0)
+      this.glowGraphic = glow
+      this.glowTime = 0
+    }
+
     // "Change player" back-link
     const profileBtn = new BitmapText({
       text: t('profiles.back'),
@@ -363,6 +388,8 @@ export class MenuState implements GameState {
   }
 
   exit(ctx: GameContext): void {
+    this.glowGraphic = null
+    this.glowTime = 0
     if (this.starfield) {
       this.starfield.destroy()
       this.starfield = null
@@ -381,6 +408,10 @@ export class MenuState implements GameState {
 
   update(_ctx: GameContext, dt: number): void {
     this.starfield?.update(dt)
+    if (this.glowGraphic) {
+      this.glowTime += dt / 1000
+      this.glowGraphic.alpha = 0.4 + 0.4 * Math.sin(this.glowTime * 2.5)
+    }
   }
 
   render(): void {
