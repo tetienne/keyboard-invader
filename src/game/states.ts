@@ -7,6 +7,7 @@ import {
   BitmapText,
   Container,
   Graphics,
+  SplitBitmapText,
 } from 'pixi.js'
 import type {
   GameState,
@@ -740,30 +741,30 @@ export class PlayingState implements GameState {
     const ac = item as unknown as AlienContainer
     ac.setTexture(AlienContainer.getRandomAlienTexture(true))
 
-    // Create word BitmapText on first use
+    // Create word SplitBitmapText on first use (per-char tinting)
     if (!ac.wordLabel) {
-      const newBt = new BitmapText({
+      const sbt = new SplitBitmapText({
         text: '',
         style: { fontFamily: 'GameFont', fontSize: 38 },
       })
-      newBt.anchor.set(0.5)
-      newBt.y = 2
-      ac.addChild(newBt)
-      ac.wordLabel = newBt
+      sbt.y = 2
+      ac.addChild(sbt)
+      ac.wordLabel = sbt
     }
-    const wordBt = ac.wordLabel
-    wordBt.text = word.toUpperCase()
+    const wordSbt = ac.wordLabel
+    wordSbt.text = word.toUpperCase()
+    // SplitBitmapText extends Container (no anchor), use pivot for centering
+    wordSbt.pivot.set(wordSbt.width / 2, wordSbt.height / 2)
 
     const colorIdx = Math.floor(Math.random() * LETTER_COLORS.length)
     const tint = LETTER_COLORS[colorIdx] ?? 0xffffff
     ac.sprite.tint = tint // color alien body
-    wordBt.tint = 0xffffff // white text
 
     ac.scale.set(1)
     ac.alpha = 1
 
     // Constrain x to prevent edge overflow
-    const wordWidth = wordBt.width || 100
+    const wordWidth = wordSbt.width || 100
     const minX = wordWidth / 2 + 20
     const maxX = BASE_WIDTH - wordWidth / 2 - 20
     ac.x = minX + Math.random() * Math.max(0, maxX - minX)
@@ -774,7 +775,7 @@ export class PlayingState implements GameState {
     wordParent.addChild(ac)
     this.activeWordEntities.push({
       container: ac,
-      wordText: wordBt,
+      wordText: wordSbt,
       poolIndex: index,
       word: word.toLowerCase(),
       cursorIndex: 0,
@@ -822,10 +823,20 @@ export class PlayingState implements GameState {
       if (result === 'correct') {
         activeWord.cursorIndex++
         this.hits++
+        // Per-character gold tinting on correct keypress
+        const sbt = activeWord.wordText
+        for (let i = 0; i < sbt.chars.length; i++) {
+          sbt.chars[i].tint = i < activeWord.cursorIndex ? 0xffd700 : 0xffffff
+        }
       } else if (result === 'complete') {
         activeWord.cursorIndex++
         this.hits++
         this.difficulty.recordResult(true)
+        // All chars gold on word completion
+        const sbt = activeWord.wordText
+        for (let i = 0; i < sbt.chars.length; i++) {
+          sbt.chars[i].tint = 0xffd700
+        }
 
         // Fire laser from defender to target
         if (this.defender && this.laser) {
