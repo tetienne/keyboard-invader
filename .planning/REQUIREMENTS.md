@@ -9,18 +9,18 @@
 
 - [x] **GAME-01**: L'enfant voit des lettres/mots tomber du haut de l'ecran et tape pour les eliminer
 - [x] **GAME-02**: L'enfant en mode lettres (pre-lecteur) voit des lettres individuelles avec gros visuels
-- [ ] **GAME-03**: L'enfant en mode mots (lecteur) voit des mots courts a taper en entier
+- [x] **GAME-03**: L'enfant en mode mots (lecteur) voit des mots courts a taper en entier
 - [x] **GAME-04**: L'enfant recoit un feedback audio et visuel immediat a chaque frappe (correct ou incorrect)
 - [x] **GAME-05**: L'enfant voit son score affiche pendant la partie
-- [ ] **GAME-06**: L'enfant peut mettre le jeu en pause et reprendre
-- [ ] **GAME-07**: L'enfant voit un resume de fin de session (precision, lettres/mots pratiques, temps)
+- [x] **GAME-06**: L'enfant peut mettre le jeu en pause et reprendre
+- [x] **GAME-07**: L'enfant voit un resume de fin de session (precision, lettres/mots pratiques, temps)
 
 ### Adaptive Difficulty
 
-- [ ] **DIFF-01**: La vitesse de chute s'ajuste automatiquement selon la performance de l'enfant
-- [ ] **DIFF-02**: La longueur/complexite des mots s'adapte au niveau de l'enfant
-- [ ] **DIFF-03**: Le taux d'apparition des lettres/mots s'adapte a la performance en temps reel
-- [ ] **DIFF-04**: Le systeme vise un taux de reussite d'environ 70% pour maintenir l'etat de flow
+- [x] **DIFF-01**: La vitesse de chute s'ajuste automatiquement selon la performance de l'enfant
+- [x] **DIFF-02**: La longueur/complexite des mots s'adapte au niveau de l'enfant
+- [x] **DIFF-03**: Le taux d'apparition des lettres/mots s'adapte a la performance en temps reel
+- [x] **DIFF-04**: Le systeme vise un taux de reussite d'environ 70% pour maintenir l'etat de flow
 
 ### Progression
 
@@ -30,8 +30,8 @@
 
 ### Profiles & Persistence
 
-- [ ] **PROF-01**: L'enfant choisit son profil en cliquant sur son avatar (pas de mot de passe)
-- [ ] **PROF-02**: La progression de chaque enfant est sauvegardee dans le navigateur (LocalStorage)
+- [x] **PROF-01**: L'enfant choisit son profil en cliquant sur son avatar (pas de mot de passe)
+- [x] **PROF-02**: La progression de chaque enfant est sauvegardee dans le navigateur (LocalStorage)
 - [ ] **PROF-03**: La progression peut etre synchronisee entre appareils via Firebase (optionnel)
 
 ### Audio & Visual
@@ -43,7 +43,7 @@
 
 ### Developer Experience
 
-- [x] **DX-01**: Pre-commit hooks (pre-commit framework) valident le code avant chaque commit
+- [ ] **DX-01**: Pre-commit hooks (pre-commit framework) valident le code avant chaque commit
 - [x] **DX-02**: ESLint maximum (typescript-eslint strict + stylistic, no-explicit-any, naming-convention, tous plugins necessaires)
 - [x] **DX-03**: Le projet utilise TypeScript en mode strict (strict: true, noUncheckedIndexedAccess, etc.)
 - [x] **DX-04**: Tailwind CSS pour le styling des ecrans hors-jeu (menus, profils, settings)
@@ -51,7 +51,7 @@
 
 ### Infrastructure
 
-- [x] **INFRA-01**: L'application est deployable sur une plateforme gratuite (GitHub Pages, Netlify, Vercel)
+- [ ] **INFRA-01**: L'application est deployable sur une plateforme gratuite (GitHub Pages, Netlify, Vercel)
 - [ ] **INFRA-02**: L'application fonctionne sur tous les navigateurs modernes (Chrome, Firefox, Safari, Edge)
 - [ ] **INFRA-03**: L'application est responsive (desktop prioritaire, tablette/mobile supportes)
 
@@ -88,31 +88,31 @@
 |-------------|-------|--------|
 | GAME-01 | Phase 2, 3 | Complete |
 | GAME-02 | Phase 3 | Complete |
-| GAME-03 | Phase 4 | Pending |
-| GAME-04 | Phase 3 | Complete |
+| GAME-03 | Phase 4, 8.2 | Complete |
+| GAME-04 | Phase 3, 8.2 | Complete |
 | GAME-05 | Phase 3 | Complete |
-| GAME-06 | Phase 4 | Pending |
-| GAME-07 | Phase 4 | Pending |
-| DIFF-01 | Phase 5 | Pending |
-| DIFF-02 | Phase 5 | Pending |
-| DIFF-03 | Phase 5 | Pending |
-| DIFF-04 | Phase 5 | Pending |
+| GAME-06 | Phase 4 | Complete |
+| GAME-07 | Phase 4 | Complete |
+| DIFF-01 | Phase 5 | Complete |
+| DIFF-02 | Phase 5 | Complete |
+| DIFF-03 | Phase 5 | Complete |
+| DIFF-04 | Phase 5, 8.1 | Complete |
 | PROG-01 | Phase 7 | Complete |
 | PROG-02 | Phase 7 | Complete |
 | PROG-03 | Phase 7 | Complete |
-| PROF-01 | Phase 6 | Pending |
-| PROF-02 | Phase 6 | Pending |
+| PROF-01 | Phase 6, 8.1 | Complete |
+| PROF-02 | Phase 6 | Complete |
 | PROF-03 | Phase 10 | Pending |
-| AV-01 | Phase 8 | Complete |
+| AV-01 | Phase 8, 8.1 | Complete |
 | AV-02 | Phase 9 | Pending |
 | AV-03 | Phase 9 | Pending |
 | AV-04 | Phase 2 | Complete |
-| DX-01 | Phase 1 | Complete |
+| DX-01 | Phase 1, 8.3 | Pending |
 | DX-02 | Phase 1 | Complete |
 | DX-03 | Phase 1 | Complete |
 | DX-04 | Phase 1 | Complete |
 | DX-05 | Phase 1 | Complete |
-| INFRA-01 | Phase 1 | Complete |
+| INFRA-01 | Phase 1 | Partial (needs GitHub secrets) |
 | INFRA-02 | Phase 10 | Pending |
 | INFRA-03 | Phase 10 | Pending |
 
@@ -120,7 +120,8 @@
 - v1 requirements: 29 total
 - Mapped to phases: 29
 - Unmapped: 0
+- Complete: 21 | Pending (gap closure): 4 (PROF-01, DIFF-04, AV-01, DX-01) | Partial: 1 (INFRA-01) | Out of scope: 3 (PROF-03, AV-02, AV-03)
 
 ---
 *Requirements defined: 2026-03-28*
-*Last updated: 2026-03-28 after roadmap creation*
+*Last updated: 2026-04-12 after gap closure phase creation*
