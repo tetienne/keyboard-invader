@@ -162,7 +162,9 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. In word mode, each correctly typed character changes color/tint to show progress through the word
   2. The menu visually indicates the child's preferred game mode (last played or explicitly set)
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 08.2-01-PLAN.md -- SplitBitmapText per-char word feedback + menu preferred mode glow
 **UI hint**: yes
 
 ### Phase 8.3: DX & Dead Code Cleanup (INSERTED — gap closure)
@@ -216,7 +218,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 
 | 7. Progression System | 3/3 | Complete   | 2026-04-02 |
 | 8. Visual Identity | 0/5 | Planning complete | - |
 | 8.1 Critical Integration Fixes | 1/1 | Complete | 2026-04-12 |
-| 8.2 Word Mode UX Polish | 0/0 | Not started | - |
+| 8.2 Word Mode UX Polish | 0/1 | Planning complete | - |
 | 8.3 DX & Dead Code Cleanup | 0/0 | Not started | - |
 | 9. Audio System | 0/0 | Not started | - |
 | 10. Responsive Layout & Cross-Browser | 0/0 | Not started | - |
