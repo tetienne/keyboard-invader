@@ -772,18 +772,21 @@ export class PlayingState implements GameState {
     const ac = item as unknown as AlienContainer
     ac.setTexture(AlienContainer.getRandomAlienTexture(true))
 
-    // Create word SplitBitmapText on first use (per-char tinting)
+    const upperWord = word.toUpperCase()
+    // Create word SplitBitmapText on first use (per-char tinting).
+    // Must construct with non-empty text — PixiJS `split()` crashes on `addChild(...[])`.
     if (!ac.wordLabel) {
       const sbt = new SplitBitmapText({
-        text: '',
+        text: upperWord,
         style: { fontFamily: 'GameFont', fontSize: 38 },
       })
       sbt.y = 2
       ac.addChild(sbt)
       ac.wordLabel = sbt
+    } else {
+      ac.wordLabel.text = upperWord
     }
     const wordSbt = ac.wordLabel
-    wordSbt.text = word.toUpperCase()
     // SplitBitmapText extends Container (no anchor), use pivot for centering
     wordSbt.pivot.set(wordSbt.width / 2, wordSbt.height / 2)
 
