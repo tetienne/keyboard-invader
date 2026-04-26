@@ -9,20 +9,17 @@ gaps:
     status: resolved
     reason: "Fixed: commit-msg hook installed via `prek install -t commit-msg`, Prettier formatting fixed in tests/smoke.test.ts. All hooks now pass."
   - truth: "The built application is live on a free hosting platform (Cloudflare Pages or equivalent)"
-    status: partial
-    reason: "wrangler.toml is correctly configured for Cloudflare Workers Static Assets deployment and `wrangler deploy --dry-run` succeeds. Live deployment depends on user configuring CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID in GitHub secrets."
-    artifacts:
-      - path: ".github/workflows/ci.yml"
-        issue: "Deploy job is correct but cannot execute until GitHub secrets are added"
-    missing:
-      - "User must add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID as GitHub repository secrets"
+    status: resolved
+    reason: "Live at https://keyboard-invader.thibaut-34b.workers.dev/ — user-confirmed 2026-04-26."
 human_verification:
   - test: "Verify live Cloudflare deployment URL"
-    expected: "Visiting https://keyboard-invader.<account>.workers.dev shows PixiJS canvas with dark background"
-    why_human: "Requires Cloudflare credentials and a completed CI run — cannot verify programmatically"
+    expected: "Visiting https://keyboard-invader.thibaut-34b.workers.dev/ shows PixiJS canvas with dark background"
+    status: resolved
+    resolved: "2026-04-26 — user confirmed live deployment at https://keyboard-invader.thibaut-34b.workers.dev/"
   - test: "Test commit-msg hook rejects non-conventional commit"
     expected: "Running `git commit -m 'bad commit message'` is rejected with commitlint error"
     why_human: "commit-msg hook file does not exist; once installed, behavior requires a real git commit attempt"
+    deferred_to: "Phase 8.3 (DX & Dead Code Cleanup) — installs the commit-msg hook"
 ---
 
 # Phase 01: Project Scaffolding & Dev Tooling Verification Report
