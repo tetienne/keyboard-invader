@@ -1,5 +1,4 @@
 {
-  "progression.level": "Lv. {level}",
   "progression.levelUp": "Level {level}!",
   "progression.avatar.locked": "Lv. {level}",
   "progression.avatar.locked.message": "Reach level {level} to unlock!",

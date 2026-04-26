@@ -38,7 +38,8 @@ describe('i18n keys: every key in en.json is referenced somewhere in src/', () =
 
     const orphans: string[] = []
     for (const key of enKeys) {
-      const found = fileContents.some((c) => c.includes(key))
+      const quoted = [`'${key}'`, `"${key}"`, `\`${key}\``]
+      const found = fileContents.some((c) => quoted.some((q) => c.includes(q)))
       if (!found) orphans.push(key)
     }
 
