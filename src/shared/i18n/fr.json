@@ -1,9 +1,4 @@
 {
-  "app.title": "Keyboard Invader",
-  "app.subtitle": "Apprends a taper en t'amusant !",
-  "menu.play": "Jouer",
-  "menu.profiles": "Profils",
-  "menu.settings": "Reglages",
   "progression.xp.earned": "+{xp} XP",
   "progression.level": "Niv. {level}",
   "progression.levelUp": "Niveau {level} !",
@@ -28,6 +23,5 @@
   "profiles.delete.confirm": "Vraiment supprimer ?",
   "profiles.delete.yes": "Oui",
   "profiles.delete.no": "Non",
-  "boot.loading": "Chargement des aliens...",
   "boot.error": "Oups, les aliens se sont perdus dans l'espace ! Recharge la page."
 }
