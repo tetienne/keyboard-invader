@@ -106,9 +106,7 @@ describe('StateMachine', () => {
 
 // --- Concrete State Tests ---
 
-function createMockGameContext(
-  mode: GameMode = 'letters',
-): GameContext & {
+function createMockGameContext(mode: GameMode = 'letters'): GameContext & {
   transitions: StateName[]
   inputBuffer: string[]
 } {
@@ -173,7 +171,10 @@ function createMockGameContext(
           sprite: { y: 0, scale: { set: vi.fn(), y: 1 } },
           children: [],
           wordLabel: null as unknown,
-          addChild: vi.fn(function (this: { children: unknown[]; wordLabel: unknown }, child: unknown) {
+          addChild: vi.fn(function (
+            this: { children: unknown[]; wordLabel: unknown },
+            child: unknown,
+          ) {
             this.children.push(child)
             this.wordLabel = child
           }),
@@ -238,6 +239,7 @@ describe('BootState', () => {
   })
 
   it('calls Assets.load with all asset paths', async () => {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const { Assets } = await import('pixi.js')
     const ctx = createMockGameContext()
     const state = new BootState()
@@ -247,13 +249,15 @@ describe('BootState', () => {
       expect(Assets.load).toHaveBeenCalled()
     })
     const loadCall = vi.mocked(Assets.load).mock.calls[0]?.[0] as string[]
-    expect(loadCall).toEqual(expect.arrayContaining([
-      '/assets/aliens/alien-01.svg',
-      '/assets/aliens/word-alien-01.svg',
-      '/assets/spaceship.svg',
-      '/assets/star.svg',
-      '/assets/avatars/kid-01.svg',
-    ]))
+    expect(loadCall).toEqual(
+      expect.arrayContaining([
+        '/assets/aliens/alien-01.svg',
+        '/assets/aliens/word-alien-01.svg',
+        '/assets/spaceship.svg',
+        '/assets/star.svg',
+        '/assets/avatars/kid-01.svg',
+      ]),
+    )
   })
 
   it('transitions to profiles after all assets resolve', async () => {
@@ -267,9 +271,12 @@ describe('BootState', () => {
   })
 
   it('does not transition if Assets.load rejects', async () => {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const { Assets } = await import('pixi.js')
     vi.mocked(Assets.load).mockRejectedValueOnce(new Error('load failed'))
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {
+      /* swallow expected error */
+    })
     const ctx = createMockGameContext()
     const state = new BootState()
     state.enter(ctx)
@@ -305,17 +312,25 @@ describe('MenuState preferred mode glow', () => {
   it('no glow when preferredGameMode is null (D-07)', () => {
     const ctx = createMockGameContext()
     vi.mocked(ctx.getActiveProfile).mockReturnValue({
-      id: 'test-1', name: 'Lea', avatarId: 'circle',
+      id: 'test-1',
+      name: 'Lea',
+      avatarId: 'circle',
       cumulativeStats: { totalSessions: 0, totalHits: 0, totalMisses: 0, bestAccuracy: 0 },
-      lastDifficultyParams: null, preferredGameMode: null,
-      sessionHistory: [], createdAt: '2026-01-01T00:00:00Z',
-      xp: 0, level: 1, unlockedAvatarIds: [],
+      lastDifficultyParams: null,
+      preferredGameMode: null,
+      sessionHistory: [],
+      createdAt: '2026-01-01T00:00:00Z',
+      xp: 0,
+      level: 1,
+      unlockedAvatarIds: [],
     } as never)
     const state = new MenuState()
     state.enter(ctx)
     // The glow is added via addChildAt on menuContainer (second addChild on gameRoot)
     const addChildCalls = vi.mocked(ctx.gameRoot.addChild).mock.calls
-    const menuContainer = addChildCalls[1]?.[0] as unknown as { addChildAt: ReturnType<typeof vi.fn> }
+    const menuContainer = addChildCalls[1]?.[0] as unknown as {
+      addChildAt: ReturnType<typeof vi.fn>
+    }
     expect(menuContainer.addChildAt).not.toHaveBeenCalled()
     state.exit(ctx)
   })
@@ -323,19 +338,30 @@ describe('MenuState preferred mode glow', () => {
   it('glow created when preferredGameMode is letters (D-05)', () => {
     const ctx = createMockGameContext()
     vi.mocked(ctx.getActiveProfile).mockReturnValue({
-      id: 'test-1', name: 'Lea', avatarId: 'circle',
+      id: 'test-1',
+      name: 'Lea',
+      avatarId: 'circle',
       cumulativeStats: { totalSessions: 0, totalHits: 0, totalMisses: 0, bestAccuracy: 0 },
-      lastDifficultyParams: null, preferredGameMode: 'letters',
-      sessionHistory: [], createdAt: '2026-01-01T00:00:00Z',
-      xp: 0, level: 1, unlockedAvatarIds: [],
+      lastDifficultyParams: null,
+      preferredGameMode: 'letters',
+      sessionHistory: [],
+      createdAt: '2026-01-01T00:00:00Z',
+      xp: 0,
+      level: 1,
+      unlockedAvatarIds: [],
     } as never)
     const state = new MenuState()
     state.enter(ctx)
     const addChildCalls = vi.mocked(ctx.gameRoot.addChild).mock.calls
-    const menuContainer = addChildCalls[1]?.[0] as unknown as { addChildAt: ReturnType<typeof vi.fn> }
+    const menuContainer = addChildCalls[1]?.[0] as unknown as {
+      addChildAt: ReturnType<typeof vi.fn>
+    }
     expect(menuContainer.addChildAt).toHaveBeenCalledTimes(1)
     // Glow inserted at index 0 (behind panels)
-    const glowCall = menuContainer.addChildAt.mock.calls[0] as [{ stroke: ReturnType<typeof vi.fn> }, number]
+    const glowCall = menuContainer.addChildAt.mock.calls[0] as [
+      { stroke: ReturnType<typeof vi.fn> },
+      number,
+    ]
     expect(glowCall[1]).toBe(0)
     state.exit(ctx)
   })
@@ -343,16 +369,24 @@ describe('MenuState preferred mode glow', () => {
   it('glow created when preferredGameMode is words (D-05)', () => {
     const ctx = createMockGameContext()
     vi.mocked(ctx.getActiveProfile).mockReturnValue({
-      id: 'test-1', name: 'Lea', avatarId: 'circle',
+      id: 'test-1',
+      name: 'Lea',
+      avatarId: 'circle',
       cumulativeStats: { totalSessions: 0, totalHits: 0, totalMisses: 0, bestAccuracy: 0 },
-      lastDifficultyParams: null, preferredGameMode: 'words',
-      sessionHistory: [], createdAt: '2026-01-01T00:00:00Z',
-      xp: 0, level: 1, unlockedAvatarIds: [],
+      lastDifficultyParams: null,
+      preferredGameMode: 'words',
+      sessionHistory: [],
+      createdAt: '2026-01-01T00:00:00Z',
+      xp: 0,
+      level: 1,
+      unlockedAvatarIds: [],
     } as never)
     const state = new MenuState()
     state.enter(ctx)
     const addChildCalls = vi.mocked(ctx.gameRoot.addChild).mock.calls
-    const menuContainer = addChildCalls[1]?.[0] as unknown as { addChildAt: ReturnType<typeof vi.fn> }
+    const menuContainer = addChildCalls[1]?.[0] as unknown as {
+      addChildAt: ReturnType<typeof vi.fn>
+    }
     expect(menuContainer.addChildAt).toHaveBeenCalledTimes(1)
     state.exit(ctx)
   })
@@ -363,7 +397,9 @@ describe('MenuState preferred mode glow', () => {
     const state = new MenuState()
     state.enter(ctx)
     const addChildCalls = vi.mocked(ctx.gameRoot.addChild).mock.calls
-    const menuContainer = addChildCalls[1]?.[0] as unknown as { addChildAt: ReturnType<typeof vi.fn> }
+    const menuContainer = addChildCalls[1]?.[0] as unknown as {
+      addChildAt: ReturnType<typeof vi.fn>
+    }
     expect(menuContainer.addChildAt).not.toHaveBeenCalled()
     state.exit(ctx)
   })
@@ -473,8 +509,7 @@ describe('PlayingState', () => {
   it('transitions to gameover when all 20 letters processed and cleared', () => {
     const ctx = createMockGameContext()
     let itemCount = 0
-    const items: { y: number; visible: boolean; alpha: number; x: number }[] =
-      []
+    const items: { y: number; visible: boolean; alpha: number; x: number }[] = []
     vi.mocked(ctx.acquirePoolItem).mockImplementation(() => {
       const item = {
         visible: true,
@@ -518,8 +553,7 @@ describe('PlayingState', () => {
   it('setSessionResult includes timePlayed and mode', () => {
     const ctx = createMockGameContext()
     let itemCount = 0
-    const items: { y: number; visible: boolean; alpha: number; x: number }[] =
-      []
+    const items: { y: number; visible: boolean; alpha: number; x: number }[] = []
     vi.mocked(ctx.acquirePoolItem).mockImplementation(() => {
       const item = {
         visible: true,
@@ -560,6 +594,41 @@ describe('PlayingState', () => {
     expect(result?.total).toBe(20)
     expect(result?.timePlayed).toBeGreaterThan(0)
     expect(result?.mode).toBe('letters')
+  })
+
+  it('calls updateIdle on letter entities each frame for bobbing/blinking', () => {
+    const ctx = createMockGameContext()
+    let itemCount = 0
+    const items: { updateIdle: ReturnType<typeof vi.fn> }[] = []
+    vi.mocked(ctx.acquirePoolItem).mockImplementation(() => {
+      const item = {
+        visible: true,
+        x: 200,
+        y: -40,
+        tint: 0xffffff,
+        alpha: 1,
+        scale: { set: vi.fn() },
+        setLetter: vi.fn(),
+        setTexture: vi.fn(),
+        letterLabel: { text: '', tint: 0xffffff },
+        sprite: { y: 0, scale: { set: vi.fn(), y: 1 } },
+        addChild: vi.fn(),
+        updateIdle: vi.fn(),
+        reset: vi.fn(),
+      }
+      items.push(item)
+      return { item, index: itemCount++ }
+    })
+
+    const state = new PlayingState()
+    state.enter(ctx)
+    state.update(ctx, 5000) // spawn at least one letter
+    state.update(ctx, 16) // run a fall-loop pass over the spawned entity
+
+    expect(items.length).toBeGreaterThan(0)
+    const first = items[0]
+    expect(first?.updateIdle).toHaveBeenCalled()
+    state.exit(ctx)
   })
 
   it('exit clears all active entities', () => {
@@ -650,7 +719,13 @@ describe('GameOverState profile saving', () => {
       cumulativeStats: { totalSessions: 0, totalHits: 0, totalMisses: 0, bestAccuracy: 0 },
       lastDifficultyParams: null,
       preferredGameMode: null,
-      sessionHistory: [] as Array<{ hits: number; misses: number; accuracy: number; mode: string; date: string }>,
+      sessionHistory: [] as {
+        hits: number
+        misses: number
+        accuracy: number
+        mode: string
+        date: string
+      }[],
       createdAt: '2026-01-01T00:00:00Z',
       xp: 0,
       level: 1,
@@ -701,7 +776,13 @@ describe('GameOverState profile saving', () => {
       cumulativeStats: { totalSessions: 0, totalHits: 0, totalMisses: 0, bestAccuracy: 0 },
       lastDifficultyParams: null,
       preferredGameMode: null,
-      sessionHistory: [] as Array<{ hits: number; misses: number; accuracy: number; mode: string; date: string }>,
+      sessionHistory: [] as {
+        hits: number
+        misses: number
+        accuracy: number
+        mode: string
+        date: string
+      }[],
       createdAt: '2026-01-01T00:00:00Z',
       xp: 40,
       level: 1,
@@ -734,7 +815,8 @@ describe('GameOverState profile saving', () => {
     expect(profile.xp).toBe(81) // 40 + 41
     expect(profile.level).toBe(2) // crossed 50 threshold
     expect(ctx.setSessionSaveResult).toHaveBeenCalled()
-    const saveResult = (ctx.setSessionSaveResult as ReturnType<typeof vi.fn>).mock.calls[0]?.[0] as SessionSaveResult
+    const saveResult = (ctx.setSessionSaveResult as ReturnType<typeof vi.fn>).mock
+      .calls[0]?.[0] as SessionSaveResult
     expect(saveResult.xpGain.totalXp).toBe(41)
     expect(saveResult.levelUp.previousLevel).toBe(1)
     expect(saveResult.levelUp.newLevel).toBe(2)
@@ -753,7 +835,9 @@ describe('GameOverState profile saving', () => {
     })
 
     const state = new GameOverState()
-    expect(() => state.enter(ctx)).not.toThrow()
+    expect(() => {
+      state.enter(ctx)
+    }).not.toThrow()
   })
 })
 
@@ -835,7 +919,10 @@ describe('PlayingState word mode per-character tinting', () => {
           sprite: { y: 0, scale: { set: vi.fn(), y: 1 } },
           children: [],
           wordLabel: null as unknown,
-          addChild: vi.fn(function (this: { children: unknown[]; wordLabel: unknown }, child: unknown) {
+          addChild: vi.fn(function (
+            this: { children: unknown[]; wordLabel: unknown },
+            child: unknown,
+          ) {
             this.children.push(child)
             this.wordLabel = child
           }),
@@ -850,7 +937,9 @@ describe('PlayingState word mode per-character tinting', () => {
 
   function getSpawnedWordLabel(ctx: ReturnType<typeof createWordModeContext>) {
     const call = vi.mocked(ctx.acquireWordPoolItem).mock.results[0]
-    const item = (call?.value as { item: { wordLabel: { chars: Array<{ tint: number }>; text: string } } }).item
+    const item = (
+      call?.value as { item: { wordLabel: { chars: { tint: number }[]; text: string } } }
+    ).item
     return item.wordLabel
   }
 
@@ -876,15 +965,15 @@ describe('PlayingState word mode per-character tinting', () => {
     state.update(ctx, 2500) // spawn word
 
     const wordLabel = getSpawnedWordLabel(ctx)
-    const firstChar = wordLabel.text[0]!.toLowerCase()
+    const firstChar = wordLabel.text[0]?.toLowerCase() ?? ''
 
     ctx.inputBuffer.push(firstChar)
     state.update(ctx, 16)
 
-    expect(wordLabel.chars[0]!.tint).toBe(0xffd700)
+    expect(wordLabel.chars[0]?.tint).toBe(0xffd700)
     // Remaining chars stay white
     for (let i = 1; i < wordLabel.chars.length; i++) {
-      expect(wordLabel.chars[i]!.tint).toBe(0xffffff)
+      expect(wordLabel.chars[i]?.tint).toBe(0xffffff)
     }
     state.exit(ctx)
   })
@@ -924,6 +1013,19 @@ describe('PlayingState word mode per-character tinting', () => {
     for (const ch of wordLabel.chars) {
       expect(ch.tint).toBe(0xffffff)
     }
+    state.exit(ctx)
+  })
+
+  it('calls updateIdle on word entities each frame for bobbing/blinking', () => {
+    const ctx = createWordModeContext()
+    const state = new PlayingState()
+    state.enter(ctx)
+    state.update(ctx, 2500) // spawn at least one word
+    state.update(ctx, 16) // run a fall-loop pass over the spawned entity
+
+    const call = vi.mocked(ctx.acquireWordPoolItem).mock.results[0]
+    const item = (call?.value as { item: { updateIdle: ReturnType<typeof vi.fn> } }).item
+    expect(item.updateIdle).toHaveBeenCalled()
     state.exit(ctx)
   })
 })
