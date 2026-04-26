@@ -43,7 +43,7 @@
 
 ### Developer Experience
 
-- [ ] **DX-01**: Pre-commit hooks (pre-commit framework) valident le code avant chaque commit
+- [x] **DX-01**: Pre-commit hooks (pre-commit framework) valident le code avant chaque commit
 - [x] **DX-02**: ESLint maximum (typescript-eslint strict + stylistic, no-explicit-any, naming-convention, tous plugins necessaires)
 - [x] **DX-03**: Le projet utilise TypeScript en mode strict (strict: true, noUncheckedIndexedAccess, etc.)
 - [x] **DX-04**: Tailwind CSS pour le styling des ecrans hors-jeu (menus, profils, settings)
@@ -107,7 +107,7 @@
 | AV-02 | Phase 9 | Pending |
 | AV-03 | Phase 9 | Pending |
 | AV-04 | Phase 2 | Complete |
-| DX-01 | Phase 1, 8.3 | Pending |
+| DX-01 | Phase 1, 8.3 | Complete |
 | DX-02 | Phase 1 | Complete |
 | DX-03 | Phase 1 | Complete |
 | DX-04 | Phase 1 | Complete |

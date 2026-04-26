@@ -22,7 +22,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 8: Visual Identity** - Cartoon/SVG art style, character sprites, visual effects, and 60fps rendering validation
 - [x] **Phase 8.1: Critical Integration Fixes** - Fix avatar ID mismatch, word mode difficulty signal, alien idle animation (INSERTED — gap closure) (2026-04-12)
 - [x] **Phase 8.2: Word Mode UX Polish** - Per-character typing feedback and menu preferred mode highlight (INSERTED — gap closure) (completed 2026-04-19)
-- [ ] **Phase 8.3: DX & Dead Code Cleanup** - Commit-msg hook, dead code removal, vitest config fix (INSERTED — gap closure)
+- [x] **Phase 8.3: DX & Dead Code Cleanup** - Commit-msg hook, dead code removal, vitest config fix (INSERTED — gap closure) (completed 2026-04-26)
 - [ ] **Phase 9: Audio System** - Sound effects, background music, volume controls, and autoplay policy handling
 - [ ] **Phase 10: Responsive Layout & Cross-Browser** - Desktop-first responsive design with tablet/mobile support and browser compatibility
 
