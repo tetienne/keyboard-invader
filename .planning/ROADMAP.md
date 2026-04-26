@@ -177,7 +177,11 @@ Plans:
   2. PausedState dead code removed from state machine
   3. Dead exports (createBottomTween, createMissTween, resolveLevel, preallocatePools) removed
   4. Dead i18n keys removed and vitest config excludes .claude/** files
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 08.3-01-PLAN.md -- Pause + dead exports cleanup (PausedState, tween factories, preallocatePools, resolveLevel demotion) + test updates
+- [ ] 08.3-02-PLAN.md -- i18n cleanup (6 audit-listed keys) + new keys-used safeguard test + smoke.test.ts trim
+- [ ] 08.3-03-PLAN.md -- commit-msg hook propagation via README install command + vite.config.ts verify
 
 ### Phase 9: Audio System
 **Goal**: The game has satisfying sound effects and ambient music that make typing feel rewarding, with parent-friendly volume controls
@@ -219,7 +223,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 
 | 8. Visual Identity | 0/5 | Planning complete | - |
 | 8.1 Critical Integration Fixes | 1/1 | Complete | 2026-04-12 |
 | 8.2 Word Mode UX Polish | 1/1 | Complete    | 2026-04-19 |
-| 8.3 DX & Dead Code Cleanup | 0/0 | Not started | - |
+| 8.3 DX & Dead Code Cleanup | 0/3 | Planning complete | - |
 | 9. Audio System | 0/0 | Not started | - |
 | 10. Responsive Layout & Cross-Browser | 0/0 | Not started | - |
 
