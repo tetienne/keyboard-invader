@@ -1,8 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import {
   createHitTween,
-  createMissTween,
-  createBottomTween,
   createDodgeTween,
   createEscapeTween,
   updateTween,
@@ -22,20 +20,6 @@ describe('LetterTween interface', () => {
     const t = createHitTween()
     expect(t.type).toBe('hit')
     expect(t.duration).toBe(300)
-    expect(t.elapsed).toBe(0)
-  })
-
-  it('createMissTween returns correct shape', () => {
-    const t = createMissTween()
-    expect(t.type).toBe('miss')
-    expect(t.duration).toBe(200)
-    expect(t.elapsed).toBe(0)
-  })
-
-  it('createBottomTween returns correct shape', () => {
-    const t = createBottomTween()
-    expect(t.type).toBe('bottom')
-    expect(t.duration).toBe(400)
     expect(t.elapsed).toBe(0)
   })
 })
@@ -91,45 +75,6 @@ describe('updateTween', () => {
       const tween = createHitTween()
       const target = createMockTarget(tween)
       expect(updateTween(target, 100)).toBe(false)
-    })
-  })
-
-  describe('miss tween', () => {
-    it('applies horizontal offset that dampens over time', () => {
-      const tween = createMissTween()
-      const target = createMockTarget(tween)
-      // At t=0.25 (50ms/200ms), shake should be non-zero
-      updateTween(target, 50)
-      const xAtQuarter = target.container.x
-      // Should have some offset from baseX
-      // At t close to 1, offset should be near 0 (dampened)
-      updateTween(target, 140) // elapsed=190, t~0.95
-      const xAtEnd = target.container.x
-      // The offset at end should be smaller than at quarter
-      expect(Math.abs(xAtEnd - 100)).toBeLessThan(Math.abs(xAtQuarter - 100))
-    })
-
-    it('returns true when complete', () => {
-      const tween = createMissTween()
-      const target = createMockTarget(tween)
-      expect(updateTween(target, 200)).toBe(true)
-    })
-  })
-
-  describe('bottom tween', () => {
-    it('fades alpha from 1 to 0', () => {
-      const tween = createBottomTween()
-      const target = createMockTarget(tween)
-      updateTween(target, 200) // t=0.5
-      expect(target.container.alpha).toBeCloseTo(0.5, 1)
-      updateTween(target, 200) // t=1.0
-      expect(target.container.alpha).toBeCloseTo(0, 1)
-    })
-
-    it('returns true when elapsed >= duration', () => {
-      const tween = createBottomTween()
-      const target = createMockTarget(tween)
-      expect(updateTween(target, 400)).toBe(true)
     })
   })
 

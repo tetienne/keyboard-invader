@@ -17,7 +17,6 @@ import {
   BootState,
   MenuState,
   PlayingState,
-  PausedState,
   GameOverState,
 } from './states.js'
 import { ProfileState } from './profile-state.js'
@@ -82,7 +81,6 @@ export class Game implements GameContext {
       profiles: new ProfileState(),
       menu: new MenuState(),
       playing: new PlayingState(),
-      paused: new PausedState(),
       gameover: new GameOverState(),
     })
   }
@@ -216,11 +214,6 @@ export class Game implements GameContext {
 
   setSessionSaveResult(result: SessionSaveResult | null): void {
     this._sessionSaveResult = result
-  }
-
-  preallocatePools(): void {
-    this._pool.preallocate()
-    this._wordPool.preallocate()
   }
 
   private _showPauseOverlay(): void {

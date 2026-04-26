@@ -12,7 +12,6 @@ import {
   BootState,
   MenuState,
   PlayingState,
-  PausedState,
   GameOverState,
 } from '@/game/states.js'
 
@@ -42,7 +41,6 @@ describe('StateMachine', () => {
       profiles: createMockState(),
       menu: createMockState(),
       playing: createMockState(),
-      paused: createMockState(),
       gameover: createMockState(),
     }
   }
@@ -71,7 +69,7 @@ describe('StateMachine', () => {
     const ctx = createMockContext()
     sm.start('boot', ctx)
     expect(() => {
-      sm.transition('paused', ctx)
+      sm.transition('gameover', ctx)
     }).toThrow(/Invalid transition/)
   })
 
@@ -208,7 +206,6 @@ function createMockGameContext(mode: GameMode = 'letters'): GameContext & {
     setSessionSaveResult: vi.fn((r: SessionSaveResult | null) => {
       sessionSaveResult = r
     }),
-    preallocatePools: vi.fn(),
     transitions,
     inputBuffer,
   }
@@ -1030,19 +1027,3 @@ describe('PlayingState word mode per-character tinting', () => {
   })
 })
 
-describe('PausedState', () => {
-  it('enter adds overlay to gameRoot', () => {
-    const ctx = createMockGameContext()
-    const state = new PausedState()
-    state.enter(ctx)
-    expect(ctx.gameRoot.addChild).toHaveBeenCalled()
-  })
-
-  it('exit removes overlay from gameRoot', () => {
-    const ctx = createMockGameContext()
-    const state = new PausedState()
-    state.enter(ctx)
-    state.exit(ctx)
-    expect(ctx.gameRoot.removeChild).toHaveBeenCalled()
-  })
-})

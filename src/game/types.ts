@@ -20,7 +20,6 @@ export type StateName =
   | 'profiles'
   | 'menu'
   | 'playing'
-  | 'paused'
   | 'gameover'
 export type GameMode = 'letters' | 'words'
 
@@ -28,8 +27,7 @@ export const TRANSITIONS: Record<StateName, readonly StateName[]> = {
   boot: ['profiles'],
   profiles: ['menu'],
   menu: ['playing', 'profiles'],
-  playing: ['paused', 'menu', 'gameover'],
-  paused: ['playing', 'menu'],
+  playing: ['menu', 'gameover'],
   gameover: ['menu', 'playing'],
 } as const
 
@@ -81,5 +79,4 @@ export interface GameContext {
   getProfileRepository(): ProfileRepository
   getSessionSaveResult(): SessionSaveResult | null
   setSessionSaveResult(result: SessionSaveResult | null): void
-  preallocatePools(): void
 }

@@ -49,7 +49,7 @@ export function calculateXpGain(
  * Determine level from cumulative XP.
  * Iterates thresholds from highest to find the matching level.
  */
-export function resolveLevel(totalXp: number): number {
+function resolveLevel(totalXp: number): number {
   for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
     if (totalXp >= LEVEL_THRESHOLDS[i]!) {
       return i + 1
