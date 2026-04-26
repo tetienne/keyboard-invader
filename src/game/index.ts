@@ -32,8 +32,6 @@ export { LETTER_COLORS } from './theme.js'
 export type { LetterEntity } from './letters.js'
 export {
   createHitTween,
-  createMissTween,
-  createBottomTween,
   updateTween,
 } from './tween.js'
 export type { LetterTween } from './tween.js'

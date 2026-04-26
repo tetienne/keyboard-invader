@@ -206,7 +206,6 @@ function createMockGameContext(mode: GameMode = 'letters'): GameContext & {
     setSessionSaveResult: vi.fn((r: SessionSaveResult | null) => {
       sessionSaveResult = r
     }),
-    preallocatePools: vi.fn(),
     transitions,
     inputBuffer,
   }

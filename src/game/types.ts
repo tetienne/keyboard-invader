@@ -79,5 +79,4 @@ export interface GameContext {
   getProfileRepository(): ProfileRepository
   getSessionSaveResult(): SessionSaveResult | null
   setSessionSaveResult(result: SessionSaveResult | null): void
-  preallocatePools(): void
 }

@@ -216,11 +216,6 @@ export class Game implements GameContext {
     this._sessionSaveResult = result
   }
 
-  preallocatePools(): void {
-    this._pool.preallocate()
-    this._wordPool.preallocate()
-  }
-
   private _showPauseOverlay(): void {
     if (this._pauseOverlay) return
     this._pauseOverlay = new Container()

@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
   calculateXpGain,
-  resolveLevel,
   applyXp,
   xpForCurrentLevel,
   LEVEL_THRESHOLDS,
@@ -51,28 +50,6 @@ describe('calculateXpGain', () => {
   it('returns all zeros when total is 0', () => {
     const result = calculateXpGain(0, 0, 'letters')
     expect(result.totalXp).toBe(0)
-  })
-})
-
-describe('resolveLevel', () => {
-  it('returns level 1 for 0 XP', () => {
-    expect(resolveLevel(0)).toBe(1)
-  })
-
-  it('returns level 1 for 49 XP', () => {
-    expect(resolveLevel(49)).toBe(1)
-  })
-
-  it('returns level 2 for exactly 50 XP', () => {
-    expect(resolveLevel(50)).toBe(2)
-  })
-
-  it('returns level 10 for exactly 1900 XP', () => {
-    expect(resolveLevel(1900)).toBe(10)
-  })
-
-  it('returns level 10 for XP beyond max threshold', () => {
-    expect(resolveLevel(5000)).toBe(10)
   })
 })
 

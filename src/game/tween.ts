@@ -21,16 +21,6 @@ export function createHitTween(): LetterTween {
   return { elapsed: 0, duration: 300, type: 'hit' }
 }
 
-/** Factory: creates a miss tween (D-08: red + shake). */
-export function createMissTween(): LetterTween {
-  return { elapsed: 0, duration: 200, type: 'miss' }
-}
-
-/** Factory: creates a bottom tween (D-09: fade out). */
-export function createBottomTween(): LetterTween {
-  return { elapsed: 0, duration: 400, type: 'bottom' }
-}
-
 /** Factory: creates a dodge tween (D-13: alien dodges sideways on miss). */
 export function createDodgeTween(): LetterTween {
   return { elapsed: 0, duration: 400, type: 'dodge' }
