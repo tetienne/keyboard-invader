@@ -13,7 +13,7 @@ A fun typing game for children ages 5-8. Letters and words fall from the top of 
 ```bash
 mise install          # Installs Node.js 24 LTS + prek
 pnpm install          # Installs dependencies
-prek install          # Sets up git hooks
+prek install --hook-type pre-commit --hook-type commit-msg   # Sets up git hooks
 ```
 
 ### Commands
