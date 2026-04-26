@@ -1,16 +1,8 @@
 {
-  "progression.xp.earned": "+{xp} XP",
   "progression.level": "Lv. {level}",
   "progression.levelUp": "Level {level}!",
   "progression.avatar.locked": "Lv. {level}",
   "progression.avatar.locked.message": "Reach level {level} to unlock!",
-  "progression.avatar.unlocked": "New character!",
-  "levelTitle.cadet": "Cadet",
-  "levelTitle.apprenti": "Apprentice",
-  "levelTitle.pilote": "Pilot",
-  "levelTitle.capitaine": "Captain",
-  "levelTitle.commandant": "Commander",
-  "levelTitle.amiral": "Admiral",
   "profiles.back": "Switch player",
   "profiles.title": "Who's playing?",
   "profiles.edit": "Edit",
@@ -22,6 +14,5 @@
   "profiles.create.confirm": "Let's go!",
   "profiles.delete.confirm": "Really delete?",
   "profiles.delete.yes": "Yes",
-  "profiles.delete.no": "No",
-  "boot.error": "Oops, the aliens got lost in space! Reload the page."
+  "profiles.delete.no": "No"
 }
