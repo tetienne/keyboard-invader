@@ -4,7 +4,6 @@ export {
   BootState,
   MenuState,
   PlayingState,
-  PausedState,
   GameOverState,
 } from './states.js'
 export { GameLoop, TICK_MS } from './loop.js'
