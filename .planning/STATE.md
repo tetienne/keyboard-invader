@@ -4,8 +4,8 @@ milestone: v1.0
 milestone_name: milestone
 status: completed
 stopped_at: Phase 8.2 context gathered
-last_updated: "2026-04-19T16:43:51.227Z"
-last_activity: 2026-04-19
+last_updated: "2026-04-26T16:30:35.439Z"
+last_activity: 2026-04-26
 progress:
   total_phases: 14
   completed_phases: 10
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 Phase: 08.3
 Plan: Not started
 Status: Phase complete
-Last activity: 2026-04-19
+Last activity: 2026-04-26 - Completed quick task 260426-pph: Re-wire AlienContainer.updateIdle in PlayingState fall loops
 
 Progress: [██████████] 100%
 
@@ -118,6 +118,12 @@ None yet.
 
 - Adaptive difficulty parameters (window size, thresholds) need calibration with real child testing in Phase 5
 - Accented characters deferred — Phase 3 uses ASCII-only (a-z). Dead-key handling for French accents needed before word lists in Phase 4+
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260426-pph | Re-wire AlienContainer.updateIdle in PlayingState fall loops (regression from worktree restore) | 2026-04-26 | 88a15d4 | [260426-pph-re-wire-aliencontainer-updateidle-dt-in-](./quick/260426-pph-re-wire-aliencontainer-updateidle-dt-in-/) |
 
 ## Session Continuity
 
