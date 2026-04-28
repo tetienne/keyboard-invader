@@ -20,7 +20,7 @@
 - [x] **DIFF-01**: La vitesse de chute s'ajuste automatiquement selon la performance de l'enfant
 - [x] **DIFF-02**: La longueur/complexite des mots s'adapte au niveau de l'enfant
 - [x] **DIFF-03**: Le taux d'apparition des lettres/mots s'adapte a la performance en temps reel
-- [x] **DIFF-04**: Le systeme vise un taux de reussite d'environ 70% pour maintenir l'etat de flow
+- [ ] **DIFF-04**: Le systeme vise un taux de reussite d'environ 70% pour maintenir l'etat de flow
 
 ### Progression
 
@@ -30,7 +30,7 @@
 
 ### Profiles & Persistence
 
-- [x] **PROF-01**: L'enfant choisit son profil en cliquant sur son avatar (pas de mot de passe)
+- [ ] **PROF-01**: L'enfant choisit son profil en cliquant sur son avatar (pas de mot de passe)
 - [x] **PROF-02**: La progression de chaque enfant est sauvegardee dans le navigateur (LocalStorage)
 - [ ] **PROF-03**: La progression peut etre synchronisee entre appareils via Firebase (optionnel)
 
@@ -51,7 +51,7 @@
 
 ### Infrastructure
 
-- [ ] **INFRA-01**: L'application est deployable sur une plateforme gratuite (GitHub Pages, Netlify, Vercel)
+- [x] **INFRA-01**: L'application est deployable sur une plateforme gratuite (GitHub Pages, Netlify, Vercel)
 - [ ] **INFRA-02**: L'application fonctionne sur tous les navigateurs modernes (Chrome, Firefox, Safari, Edge)
 - [ ] **INFRA-03**: L'application est responsive (desktop prioritaire, tablette/mobile supportes)
 
@@ -96,13 +96,13 @@
 | DIFF-01 | Phase 5 | Complete |
 | DIFF-02 | Phase 5 | Complete |
 | DIFF-03 | Phase 5 | Complete |
-| DIFF-04 | Phase 5, 8.1 | Complete |
+| DIFF-04 | Phase 5, 8.1, 8.4 | Pending (gap closure 8.4) |
 | PROG-01 | Phase 7 | Complete |
 | PROG-02 | Phase 7 | Complete |
 | PROG-03 | Phase 7 | Complete |
-| PROF-01 | Phase 6, 8.1 | Complete |
+| PROF-01 | Phase 6, 8.1, 8.4 | Pending (gap closure 8.4) |
 | PROF-02 | Phase 6 | Complete |
-| PROF-03 | Phase 10 | Pending |
+| PROF-03 | Phase 11 | Pending |
 | AV-01 | Phase 8, 8.1 | Complete |
 | AV-02 | Phase 9 | Pending |
 | AV-03 | Phase 9 | Pending |
@@ -112,7 +112,7 @@
 | DX-03 | Phase 1 | Complete |
 | DX-04 | Phase 1 | Complete |
 | DX-05 | Phase 1 | Complete |
-| INFRA-01 | Phase 1 | Partial (needs GitHub secrets) |
+| INFRA-01 | Phase 1 | Complete |
 | INFRA-02 | Phase 10 | Pending |
 | INFRA-03 | Phase 10 | Pending |
 
@@ -120,8 +120,8 @@
 - v1 requirements: 29 total
 - Mapped to phases: 29
 - Unmapped: 0
-- Complete: 21 | Pending (gap closure): 4 (PROF-01, DIFF-04, AV-01, DX-01) | Partial: 1 (INFRA-01) | Out of scope: 3 (PROF-03, AV-02, AV-03)
+- Complete: 22 | Pending (gap closure 8.4): 2 (PROF-01, DIFF-04) | Pending (Phase 9): 2 (AV-02, AV-03) | Pending (Phase 10): 2 (INFRA-02, INFRA-03) | Pending (Phase 11): 1 (PROF-03)
 
 ---
 *Requirements defined: 2026-03-28*
-*Last updated: 2026-04-12 after gap closure phase creation*
+*Last updated: 2026-04-28 after v1.0 re-audit gap closure (Phase 8.4) and Phase 10 split (Phase 11 created for Firebase sync)*

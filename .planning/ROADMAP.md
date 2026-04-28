@@ -23,8 +23,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 8.1: Critical Integration Fixes** - Fix avatar ID mismatch, word mode difficulty signal, alien idle animation (INSERTED — gap closure) (2026-04-12)
 - [x] **Phase 8.2: Word Mode UX Polish** - Per-character typing feedback and menu preferred mode highlight (INSERTED — gap closure) (completed 2026-04-19)
 - [x] **Phase 8.3: DX & Dead Code Cleanup** - Commit-msg hook, dead code removal, vitest config fix (INSERTED — gap closure) (completed 2026-04-26)
+- [ ] **Phase 8.4: Re-fix Phase 8.1 Regressions** - Restore avatar IDs, word-mode difficulty signal, and regression tests reverted by commit b861ebe (INSERTED — gap closure)
 - [ ] **Phase 9: Audio System** - Sound effects, background music, volume controls, and autoplay policy handling
 - [ ] **Phase 10: Responsive Layout & Cross-Browser** - Desktop-first responsive design with tablet/mobile support and browser compatibility
+- [ ] **Phase 11: Firebase Cloud Sync (Optional)** - Opt-in cross-device profile synchronization via anonymous Firebase Auth + Firestore
 
 ## Phase Details
 
@@ -183,6 +185,19 @@ Plans:
 - [x] 08.3-02-PLAN.md -- i18n cleanup (6 audit-listed keys) + new keys-used safeguard test + smoke.test.ts trim
 - [x] 08.3-03-PLAN.md -- commit-msg hook propagation via README install command + vite.config.ts verify
 
+### Phase 8.4: Re-fix Phase 8.1 Regressions (INSERTED — gap closure)
+**Goal**: Restore Phase 8.1 fixes silently reverted by commit b861ebe and re-add the regression tests deleted in the same commit
+**Depends on**: Phase 8.3
+**Requirements**: PROF-01, DIFF-04
+**Gap Closure**: Closes REG-01, REG-02, REG-03, P-01 from v1.0 milestone re-audit (2026-04-28)
+**Success Criteria** (what must be TRUE):
+  1. `DEFAULT_UNLOCKED_AVATARS` in `src/persistence/types.ts` uses current avatar IDs (avatar-kid-01, avatar-kid-02, avatar-alien-01) — REG-01 closed
+  2. `_processWordInput` wrong-key branch in `src/game/states.ts:874-878` calls `this.difficulty.recordResult(false)` — REG-02 closed
+  3. `tests/persistence/schema.test.ts` contains the cross-validation describe block guarding REG-01
+  4. `tests/game/states.test.ts` contains the wrong-key recordResult assertion guarding REG-02
+  5. Phase 8.1 has a VERIFICATION.md (retroactive) OR Phase 8.4 has its own VERIFICATION.md confirming all four code-level fixes — P-01 closed
+**Plans**: TBD
+
 ### Phase 9: Audio System
 **Goal**: The game has satisfying sound effects and ambient music that make typing feel rewarding, with parent-friendly volume controls
 **Depends on**: Phase 3 (can run in parallel with Phases 6-8 after core gameplay exists)
@@ -197,19 +212,30 @@ Plans:
 ### Phase 10: Responsive Layout & Cross-Browser
 **Goal**: The game works well on desktop, is usable on tablets, and functions correctly across all modern browsers
 **Depends on**: Phase 8
-**Requirements**: INFRA-02, INFRA-03, PROF-03
+**Requirements**: INFRA-02, INFRA-03
 **Success Criteria** (what must be TRUE):
   1. On desktop, the game fills the viewport appropriately with readable text and comfortable play area
   2. On a tablet, the game layout adapts and remains playable (with a message about needing a physical keyboard)
   3. The game functions correctly on Chrome, Firefox, Safari, and Edge (latest versions)
-  4. Firebase cloud sync can be enabled for cross-device profile synchronization (optional feature toggle)
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 11: Firebase Cloud Sync (Optional)
+**Goal**: Children can optionally sync their profile and progression across devices via Firebase
+**Depends on**: Phase 6 (profile model)
+**Requirements**: PROF-03
+**Success Criteria** (what must be TRUE):
+  1. Firebase cloud sync can be enabled per-profile via an opt-in toggle (off by default)
+  2. With sync enabled, profile data (XP, level, unlocked avatars, settings) round-trips between two browsers signed in to the same anonymous-auth identity
+  3. Sync gracefully handles offline state and resumes when network returns
+  4. No PII is collected — anonymous Firebase Auth only, no email/password
 **Plans**: TBD
 **UI hint**: yes
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 8.2 -> 8.3 -> 9 -> 10
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 8.2 -> 8.3 -> 8.4 -> 9 -> 10 -> 11
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -224,8 +250,10 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 
 | 8.1 Critical Integration Fixes | 1/1 | Complete | 2026-04-12 |
 | 8.2 Word Mode UX Polish | 1/1 | Complete    | 2026-04-19 |
 | 8.3 DX & Dead Code Cleanup | 0/3 | Planning complete | - |
+| 8.4 Re-fix Phase 8.1 Regressions | 0/0 | Not started | - |
 | 9. Audio System | 0/0 | Not started | - |
 | 10. Responsive Layout & Cross-Browser | 0/0 | Not started | - |
+| 11. Firebase Cloud Sync (Optional) | 0/0 | Not started | - |
 
 ## Backlog
 
