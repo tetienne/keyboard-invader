@@ -42,12 +42,16 @@ export interface Profile {
   daily: { last: string | null; streak: number }
 }
 
+/** When the voice reads letters aloud. */
+export type VoiceMode = 'off' | 'lessons' | 'all'
+
 export interface Settings {
   lang: Lang
   layout: LayoutId
   music: number
   sfx: number
-  voice: boolean
+  voice: VoiceMode
+  voiceVolume: number
   keyboardHint: boolean
 }
 
@@ -123,7 +127,8 @@ export function defaultSettings(navigatorLang = 'fr'): Settings {
     layout: fr ? 'azerty' : 'qwerty',
     music: 0.5,
     sfx: 0.8,
-    voice: true,
+    voice: 'off',
+    voiceVolume: 0.8,
     keyboardHint: true,
   }
 }

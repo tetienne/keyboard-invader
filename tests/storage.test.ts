@@ -65,7 +65,7 @@ describe('save data', () => {
     const data = parseSave(raw, 'fr')
     expect(data.settings.lang).toBe('fr')
     expect(data.settings.music).toBe(1)
-    expect(data.settings.voice).toBe(true)
+    expect(data.settings.voice).toBe('off')
     expect(data.profiles).toHaveLength(1)
     const p = data.profiles[0]
     expect(p?.coins).toBe(0)
@@ -74,6 +74,14 @@ describe('save data', () => {
     expect(p?.ship).toBe('comet')
     expect(p?.keyStats).toEqual({})
     expect(data.lastProfileId).toBeNull()
+  })
+
+  it('turns the voice off by default and migrates the old boolean', () => {
+    expect(parseSave(null).settings.voice).toBe('off')
+    expect(parseSave(JSON.stringify({ settings: { voice: true } })).settings.voice).toBe('off')
+    const kept = parseSave(JSON.stringify({ settings: { voice: 'lessons', voiceVolume: 0.3 } }))
+    expect(kept.settings.voice).toBe('lessons')
+    expect(kept.settings.voiceVolume).toBe(0.3)
   })
 
   it('survives a storage that throws', () => {

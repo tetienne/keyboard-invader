@@ -37,6 +37,7 @@ export class App {
   private screen: Screen | null = null
   private last = 0
   private lastHover = 0
+  private modals: (() => void)[] = []
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -73,7 +74,8 @@ export class App {
     const s = this.settings
     setLang(s.lang)
     this.audio.setVolumes(s.music, s.sfx)
-    this.voice.enabled = s.voice
+    this.voice.enabled = s.voice !== 'off'
+    this.voice.volume = s.voiceVolume
   }
 
   selectProfile(profile: Profile): void {
@@ -91,6 +93,7 @@ export class App {
   go(screen: Screen): void {
     this.screen?.leave?.()
     this.screen = screen
+    this.modals = []
     this.root.replaceChildren(screen.el)
     const worlds = campaign(this.settings.layout)
     const theme = worlds[screen.world ?? 0]?.theme ?? worlds[0]?.theme
@@ -102,9 +105,12 @@ export class App {
   modal(content: HTMLElement, onClose?: () => void): () => void {
     const overlay = h('div', { class: 'overlay' }, content)
     const close = (): void => {
+      if (!overlay.isConnected) return
       overlay.remove()
+      this.modals = this.modals.filter((m) => m !== close)
       onClose?.()
     }
+    this.modals.push(close)
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) close()
     })
@@ -121,6 +127,12 @@ export class App {
       e.preventDefault()
     }
     this.unlockAudio()
+    // An open modal owns the keyboard: Escape closes it, nothing reaches the screen.
+    const top = this.modals.at(-1)
+    if (top) {
+      if (e.key === 'Escape') top()
+      return
+    }
     this.screen?.onKey?.(e)
   }
 

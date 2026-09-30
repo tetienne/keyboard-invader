@@ -1497,3 +1497,18 @@ input[type='range'] {
   pointer-events: auto;
   cursor: pointer;
 }
+
+.setting-title {
+  font-size: 18px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 6px;
+  padding-bottom: 4px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.setting .seg button {
+  font-size: 15px;
+  padding: 7px 11px;
+}

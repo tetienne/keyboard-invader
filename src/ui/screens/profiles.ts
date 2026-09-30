@@ -3,7 +3,9 @@ import { levelInfo } from '../../game/progression'
 import { AVATARS, createProfile, totalStars } from '../../state/profile'
 import type { App, Screen } from '../app'
 import { h } from '../dom'
+import { settingsButton } from '../widgets'
 import { hubScreen } from './hub'
+import { openSettings } from './settings'
 
 export function profilesScreen(app: App): Screen {
   const profiles = app.store.data.profiles
@@ -32,6 +34,11 @@ export function profilesScreen(app: App): Screen {
   const el = h(
     'div',
     { class: 'screen' },
+    h(
+      'div',
+      { class: 'topbar', style: 'justify-content:flex-end' },
+      settingsButton(() => openSettings(app, () => app.go(profilesScreen(app)))),
+    ),
     h('h1', { class: 'title' }, t('whoPlays')),
     h(
       'div',

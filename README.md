@@ -62,7 +62,8 @@ prek install --hook-type pre-commit --hook-type commit-msg
 | `pnpm format`    | Prettier                  |
 | `pnpm typecheck` | TypeScript                |
 
-Pushes to `main` deploy `dist/` to Cloudflare Workers static assets (see
+Pushes to `main` deploy `dist/` to Cloudflare Workers static assets at
+https://invader.etienne.pw (see
 `.github/workflows/ci.yml` and `wrangler.toml`).
 
 ## License
