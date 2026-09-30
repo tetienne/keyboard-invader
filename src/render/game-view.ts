@@ -83,6 +83,9 @@ export class GameView {
   private recoil = 0
   private aimId: number | null = null
   private slowmo = 0
+  /** Seconds left in the boss build-up, and its total length. */
+  private tension = 0
+  private tensionTotal = 1
   private shotOrigins = new Map<number, { x: number; y: number }>()
   private layout: Layout = computeLayout(1, 1, 0)
   private clock = 0
@@ -287,11 +290,33 @@ export class GameView {
         }
         break
       }
-      case 'bossSpawn':
-        this.showCallout(t('callout.boss'), ['#ffd6d6', '#ff4d6d'], 1.8, 1.1)
-        this.redAlert = 0.8
-        this.shake = 0.5
+      case 'bossIncoming':
+        this.tension = event.delay
+        this.tensionTotal = event.delay
+        this.showCallout(t('callout.bossIncoming'), ['#f3e6ff', '#b58cff'], event.delay - 0.6, 0.9)
         break
+      case 'bossSpawn': {
+        this.tension = 0
+        this.showCallout(t('callout.boss'), ['#fff27a', '#ff7a3d'], 1.6, 1.1)
+        this.redAlert = 0.35
+        this.shake = 0.6
+        this.flash = 0.45
+        this.flashColor = '#f3e6ff'
+        const p = this.pos(event.enemy)
+        for (let i = 0; i < 3; i++) {
+          this.particles.add({
+            kind: 'ring',
+            x: p.x,
+            y: L.top + (L.shieldY - L.top) * 0.3,
+            color: i === 1 ? '#ffffff' : '#c985ff',
+            size: 20,
+            vx: 500 + i * 300,
+            life: 0.8,
+            drag: 0,
+          })
+        }
+        break
+      }
       case 'bossHit': {
         const p = this.pos(event.enemy)
         this.particles.explosion(p.x, p.y + L.unit, this.colorsOf(event.enemy), 1.6 * (L.unit / 32))
@@ -301,12 +326,9 @@ export class GameView {
         break
       }
       case 'wave':
-        this.showCallout(
-          event.boss ? t('callout.boss') : t('wave', { n: event.wave }),
-          event.boss ? ['#ffd6d6', '#ff4d6d'] : ['#e6fbff', '#5fd4ff'],
-          1.6,
-          1.1,
-        )
+        if (!event.boss) {
+          this.showCallout(t('wave', { n: event.wave }), ['#e6fbff', '#5fd4ff'], 1.6, 1.1)
+        }
         break
       case 'victory':
         this.showCallout(t('callout.victory'), ['#fff27a', '#ff9f1c'], 2, 1.2)
@@ -346,6 +368,11 @@ export class GameView {
     this.shake = Math.max(0, this.shake - dt * 1.8)
     this.flash = Math.max(0, this.flash - dt * 2.5)
     this.redAlert = Math.max(0, this.redAlert - dt * 1.4)
+    if (this.tension > 0) {
+      this.tension = Math.max(0, this.tension - dt)
+      // A gentle rumble that builds up as the mothership approaches.
+      this.shake = Math.max(this.shake, 0.05 + 0.2 * this.tensionProgress)
+    }
     this.shieldFlash = Math.max(0, this.shieldFlash - dt * 2)
     if (this.shieldFlash === 0) this.shieldColor = '#5fd4ff'
     if (this.slowmo > 0) {
@@ -401,6 +428,7 @@ export class GameView {
     const s = this.shake * this.shake * 16
     if (s > 0.1) ctx.translate((Math.random() - 0.5) * s, (Math.random() - 0.5) * s)
 
+    this.drawTension(ctx)
     this.drawShield(ctx, session)
     const hint = session.locked ? null : lowest(session.enemies)
     for (const e of session.enemies) {
@@ -438,6 +466,59 @@ export class GameView {
       ctx.globalAlpha = 1
     }
     this.drawCallout(ctx)
+  }
+
+  private get tensionProgress(): number {
+    return this.tension > 0 ? 1 - this.tension / this.tensionTotal : 0
+  }
+
+  /** Boss build-up: the sky dims, a spotlight opens and a big shadow grows. */
+  private drawTension(ctx: CanvasRenderingContext2D): void {
+    if (this.tension <= 0) return
+    const L = this.layout
+    const k = this.tensionProgress
+    const fade = Math.min(1, this.tension / 0.4, (this.tensionTotal - this.tension) / 0.6)
+    const cx = L.left + L.width / 2
+    const cy = L.top + (L.shieldY - L.top) * 0.3
+    ctx.save()
+    const dim = ctx.createRadialGradient(
+      cx,
+      cy,
+      L.unit * (1 + k * 3),
+      cx,
+      cy,
+      Math.max(L.w, L.h) * 0.8,
+    )
+    dim.addColorStop(0, 'rgba(40, 10, 70, 0)')
+    dim.addColorStop(1, `rgba(20, 5, 45, ${0.55 * fade})`)
+    ctx.fillStyle = dim
+    ctx.fillRect(0, 0, L.w, L.h)
+
+    // Shadow of the mothership, drifting down and growing.
+    const r = L.unit * 3 * (0.3 + 0.7 * k)
+    const sy = L.top - r + (cy - L.top + r) * k
+    ctx.globalAlpha = 0.35 * fade
+    ctx.fillStyle = '#0d0420'
+    ctx.beginPath()
+    ctx.ellipse(cx, sy, r * 1.3, r * 0.45, 0, 0, TAU)
+    ctx.fill()
+
+    // Soft pulsing purple beams from the top, faster as it gets close.
+    ctx.globalCompositeOperation = 'lighter'
+    const pulse = 0.5 + 0.5 * Math.sin(this.clock * (4 + k * 10))
+    ctx.globalAlpha = (0.08 + 0.12 * pulse) * fade
+    const beam = ctx.createLinearGradient(0, 0, 0, L.shieldY)
+    beam.addColorStop(0, '#c985ff')
+    beam.addColorStop(1, 'rgba(201,133,255,0)')
+    ctx.fillStyle = beam
+    ctx.beginPath()
+    ctx.moveTo(cx - r * 0.6, 0)
+    ctx.lineTo(cx + r * 0.6, 0)
+    ctx.lineTo(cx + r * 2.2, L.shieldY)
+    ctx.lineTo(cx - r * 2.2, L.shieldY)
+    ctx.closePath()
+    ctx.fill()
+    ctx.restore()
   }
 
   private drawShield(ctx: CanvasRenderingContext2D, session: Session): void {

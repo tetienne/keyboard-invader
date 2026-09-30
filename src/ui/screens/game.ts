@@ -1,3 +1,4 @@
+import { worldTrack, type TrackId } from '../../audio/music'
 import { campaign, learnedLetters, nextLevel, type LevelDef } from '../../content/campaign'
 import { allLetters, FINGER_COLORS, fingerFor, rowLetters } from '../../content/keyboard'
 import { findLaser, findShip } from '../../content/ships'
@@ -59,6 +60,9 @@ export function gameScreen(app: App, launch: Launch, skipBrief = false): Screen 
   const lang = app.settings.lang
   const level = launch.kind === 'level' ? launch.level : null
   const world = level ? campaign(layout)[level.world] : undefined
+  /** Each world has its own tune; endless mode changes tune every two waves. */
+  const gameTrack = (): TrackId =>
+    worldTrack(level ? level.world : Math.floor((session.wave - 1) / 2))
   const session = buildSession(app, profile, launch)
   if (import.meta.env.DEV) Object.assign(window, { kiSession: session })
   const view = new GameView(findShip(profile.ship), findLaser(profile.laser))
@@ -181,16 +185,23 @@ export function gameScreen(app: App, launch: Launch, skipBrief = false): Screen 
         if (e.power === 'freeze') sfx.freeze()
         else sfx.powerup()
         break
+      case 'bossIncoming':
+        app.music.play('bossIntro')
+        app.background.setWarp(0.35)
+        break
       case 'bossSpawn':
         sfx.bossAlarm()
-        app.music.play('boss')
+        app.background.setWarp(0)
+        app.background.jump()
+        if (app.music.current !== 'bossIntro') app.music.play('boss')
         break
       case 'bossHit':
         sfx.explode(12)
+        if (e.enemy.hp / e.enemy.maxHp <= 0.34) app.music.finale = true
         break
       case 'wave':
         sfx.wave()
-        if (!e.boss) app.music.play('game')
+        if (!e.boss) app.music.play(gameTrack())
         break
       case 'victory':
         sfx.fanfare()
@@ -212,7 +223,7 @@ export function gameScreen(app: App, launch: Launch, skipBrief = false): Screen 
     app.background.jump()
     app.sfx.warp()
     app.music.intensity = 1
-    app.music.play(level?.boss ? 'boss' : 'game')
+    if (!level?.boss) app.music.play(gameTrack())
     view.showCallout(t('callout.ready'), ['#e6fbff', '#5fd4ff'], 1.2)
     app.voice.stop()
   }

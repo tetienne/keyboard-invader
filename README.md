@@ -21,6 +21,9 @@ kids coming back.
   power-ups (freeze, bomb, shield), coins to buy ships and lasers, 21 trophies,
   pilot XP and ranks, daily gift with streak bonus.
 - **Profiles**: pick an avatar, no password, everything saved in `localStorage`.
+- **Music**: a chiptune tune per world (plus menu and boss themes) that adds layers
+  as the combo grows; a short build-up (heartbeat, rising bass, drum roll) announces
+  each boss, and the boss theme speeds up when the boss is almost beaten.
 - **Zero assets**: all art is drawn procedurally on a canvas, all sound effects and
   music are synthesised with the Web Audio API. No network calls, no tracking.
 
