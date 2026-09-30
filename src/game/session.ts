@@ -51,6 +51,7 @@ export type GameEvent =
   | { type: 'escape'; enemy: Enemy }
   | { type: 'powerup'; power: Power; enemy: Enemy }
   | { type: 'bossHit'; enemy: Enemy }
+  | { type: 'bossIncoming'; delay: number }
   | { type: 'bossSpawn'; enemy: Enemy }
   | { type: 'wave'; wave: number; boss: boolean }
   | { type: 'victory' }
@@ -126,6 +127,8 @@ export function multiplierFor(combo: number): number {
 export const SHOT_DURATION = 0.12
 export const BOSS_Y = 0.3
 const FIRST_SPAWN_DELAY = 1.2
+/** Build-up before a boss appears: calm screen, rising music. */
+export const BOSS_INTRO = 4.2
 const VICTORY_DELAY = 1.1
 const DEFEAT_DELAY = 1.2
 const FREEZE_SECONDS = 6
@@ -193,7 +196,7 @@ export class Session {
     this.keyWeight = config.keyWeight ?? (() => 1)
     this.maxHearts = config.hearts ?? 5
     this.hearts = this.maxHearts
-    if (this.level?.boss) this.bossPending = 1.6
+    if (this.level?.boss) this.announceBoss()
   }
 
   get multiplier(): number {
@@ -508,8 +511,8 @@ export class Session {
     this.wave = wave
     this.waveKills = 0
     const boss = isBossWave(wave)
-    if (boss) this.bossPending = 2
     this.emit({ type: 'wave', wave, boss })
+    if (boss) this.announceBoss()
   }
 
   private checkBreaches(): void {
@@ -556,11 +559,16 @@ export class Session {
     }
   }
 
+  private announceBoss(): void {
+    this.bossPending = BOSS_INTRO
+    this.emit({ type: 'bossIncoming', delay: BOSS_INTRO })
+  }
+
   private canSpawn(): boolean {
     if (this.level && !this.level.boss) return this.quotaSpawned < this.level.enemies
-    if (this.level?.boss) return !this.bossDefeated
-    // Endless boss wave: let the boss arrive before minions pour in.
-    return this.bossPending === null
+    // Let the boss make its entrance before minions pour in.
+    if (this.bossPending !== null) return false
+    return !this.bossDefeated
   }
 
   private moveEnemies(dt: number): void {

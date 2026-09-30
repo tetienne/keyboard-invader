@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { createRng } from '../src/core/rng'
-import { endlessWaveTarget, multiplierFor, Session, SHOT_DURATION } from '../src/game/session'
+import {
+  BOSS_INTRO,
+  endlessWaveTarget,
+  multiplierFor,
+  Session,
+  SHOT_DURATION,
+} from '../src/game/session'
 import { autoplay, level, makeSession, run, waitForEnemy } from './helpers'
 
 describe('multiplier', () => {
@@ -144,7 +150,10 @@ describe('Session – words', () => {
 describe('Session – boss', () => {
   it('spawns a boss whose hit points drop with each completed code', () => {
     const s = makeSession({ level: level('1-8') })
-    run(s, 2)
+    const intro = run(s, BOSS_INTRO - 0.2)
+    expect(intro.some((e) => e.type === 'bossIncoming')).toBe(true)
+    expect(s.enemies).toHaveLength(0)
+    run(s, 0.5)
     const boss = s.boss
     expect(boss).toBeDefined()
     if (!boss) return

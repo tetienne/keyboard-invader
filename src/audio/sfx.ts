@@ -260,18 +260,26 @@ export class Sfx {
     })
   }
 
+  /** Boss arrival: a playful two-note horn, not a siren. */
   bossAlarm(): void {
-    for (let i = 0; i < 3; i++) {
+    ;[57, 64, 57, 64, 69].forEach((n, i) => {
+      const when = this.now + i * 0.16
       playTone(this.engine, this.out, {
-        type: 'sawtooth',
-        freq: 330,
-        freqEnd: 660,
-        duration: 0.3,
-        volume: 0.07,
-        when: this.now + i * 0.38,
-        filter: { type: 'lowpass', freq: 2000 },
+        type: 'triangle',
+        freq: midi(n),
+        duration: 0.22,
+        volume: 0.14,
+        when,
       })
-    }
+      playTone(this.engine, this.out, {
+        type: 'square',
+        freq: midi(n),
+        duration: 0.18,
+        volume: 0.04,
+        when,
+        filter: { type: 'lowpass', freq: 1400 },
+      })
+    })
   }
 
   wave(): void {
