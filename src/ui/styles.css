@@ -1512,3 +1512,174 @@ input[type='range'] {
   font-size: 15px;
   padding: 7px 11px;
 }
+
+/* ---- touch / mobile ---- */
+
+html,
+body {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+#stage {
+  touch-action: none;
+}
+
+.kbd.touch {
+  pointer-events: auto;
+  touch-action: none;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  gap: 6px;
+  padding: 10px;
+}
+
+.kbd.touch .kbd-row {
+  gap: 5px;
+}
+
+.kbd.touch .key {
+  cursor: pointer;
+  opacity: 0.85;
+  border-radius: 12px;
+  font-size: calc(var(--ks) * 0.5);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.45);
+}
+
+.kbd.touch .key.active {
+  opacity: 1;
+}
+
+.kbd.touch .key.inert {
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+.kbd.touch .key.back {
+  --kc: #b9b0e6;
+  font-size: calc(var(--ks) * 0.45);
+}
+
+.kbd.touch .key:active {
+  transform: translateY(3px) scale(0.95);
+}
+
+@media (max-width: 640px) {
+  .topbar {
+    flex-wrap: wrap;
+    top: max(10px, env(safe-area-inset-top));
+    left: 10px;
+    right: 10px;
+  }
+  .pilot-bar .who {
+    min-width: 110px;
+  }
+  .pilot-bar .avatar {
+    font-size: 34px;
+  }
+  .chip {
+    font-size: 17px;
+    padding: 6px 12px;
+  }
+  .icon-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 21px;
+  }
+  .hub-card {
+    min-height: 110px;
+  }
+  .hub-card .big-emoji {
+    font-size: 60px;
+  }
+  .title {
+    font-size: 28px;
+  }
+  .panel {
+    padding: 18px 14px;
+  }
+  .setting {
+    flex-wrap: wrap;
+    font-size: 17px;
+  }
+  .pilot-card {
+    width: 150px;
+  }
+  .pilot-card .avatar {
+    font-size: 64px;
+  }
+  .hud-score .score {
+    font-size: 24px;
+  }
+  .hearts {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Menus scroll on phones; auto margins keep them centred when they fit. */
+  .screen:not(.play) {
+    justify-content: flex-start;
+    overflow-y: auto;
+    pointer-events: auto;
+  }
+  .screen:not(.play) > :first-child {
+    margin-top: auto;
+  }
+  .screen:not(.play) > :last-child {
+    margin-bottom: auto;
+  }
+  .screen:not(.play) > .topbar {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    width: 100%;
+    margin-top: 0;
+  }
+  .hub-grid {
+    margin-top: 0;
+    width: 100%;
+  }
+}
+
+.rotate-hint {
+  display: none;
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .rotate-hint {
+    display: flex;
+  }
+}
+
+.rotate-hint {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 700;
+  background: rgba(8, 4, 24, 0.85);
+  pointer-events: auto;
+}
+
+.rotate-hint .phone {
+  font-size: 72px;
+  animation: rotate-phone 1.8s ease-in-out infinite;
+}
+
+@keyframes rotate-phone {
+  0%,
+  30% {
+    transform: rotate(-90deg);
+  }
+  60%,
+  100% {
+    transform: rotate(0deg);
+  }
+}

@@ -38,6 +38,12 @@ export class App {
   private last = 0
   private lastHover = 0
   private modals: (() => void)[] = []
+  /** Phone or tablet: finger is the main pointer and nothing mouse-like is attached. */
+  readonly touchDevice =
+    typeof window !== 'undefined' &&
+    window.matchMedia('(pointer: coarse)').matches &&
+    !window.matchMedia('(any-pointer: fine)').matches
+  private physicalKeyboard = false
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -60,6 +66,11 @@ export class App {
       if (target && !target.disabled) this.sfx.click()
     })
     requestAnimationFrame((t) => this.loop(t))
+  }
+
+  /** Touch controls replace the keyboard until a real key is pressed. */
+  get touchMode(): boolean {
+    return this.touchDevice && !this.physicalKeyboard
   }
 
   get settings(): Settings {
@@ -120,6 +131,7 @@ export class App {
 
   private onKey(e: KeyboardEvent): void {
     const typing = e.target instanceof HTMLInputElement
+    if (!typing && /^[a-zA-Z]$/.test(e.key)) this.physicalKeyboard = true
     if (
       !typing &&
       (e.key === ' ' || e.key === 'Backspace' || e.key === "'" || e.key === '/' || e.key === 'Tab')

@@ -4,15 +4,15 @@ import { h } from '../dom'
 import { profilesScreen } from './profiles'
 
 export function titleScreen(app: App): Screen {
-  const touchOnly =
-    window.matchMedia('(pointer: coarse)').matches && !window.matchMedia('(pointer: fine)').matches
   const el = h(
     'div',
     { class: 'screen clickable' },
     h('div', { class: 'logo' }, h('span', null, 'KEYBOARD'), h('span', null, 'INVADER')),
     h('p', { class: 'subtitle' }, t('tagline')),
-    h('p', { class: 'press' }, t('pressToStart')),
-    touchOnly ? h('p', { class: 'notice' }, t('noKeyboard')) : null,
+    h('p', { class: 'press' }, t(app.touchMode ? 'tapToStart' : 'pressToStart')),
+    app.touchMode
+      ? h('p', { class: 'subtitle', style: 'font-size:15px;max-width:520px' }, t('touchNotice'))
+      : null,
   )
   let done = false
   const next = (): void => {

@@ -52,3 +52,37 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  # Every PR gets its own test URL: https://pr-<number>-keyboard-invader.<account>.workers.dev
+  preview:
+    needs: check
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: jdx/mise-action@v2
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Upload preview version
+        id: preview
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: versions upload --preview-alias pr-${{ github.event.pull_request.number }}
+
+      - name: Show preview URL
+        env:
+          OUTPUT: ${{ steps.preview.outputs.command-output }}
+        run: |
+          url=$(printf '%s\n' "$OUTPUT" | grep -oE 'https://pr-[^ ]+\.workers\.dev' | head -1)
+          echo "Preview: ${url:-see logs above}"
+          echo "### 🚀 Preview: ${url:-see the upload step logs}" >> "$GITHUB_STEP_SUMMARY"

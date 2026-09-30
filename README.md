@@ -20,6 +20,9 @@ kids coming back.
 - **Rewards**: 1–3 stars per level, combo multiplier up to x5, golden aliens,
   power-ups (freeze, bomb, shield), coins to buy ships and lasers, 21 trophies,
   pilot XP and ranks, daily gift with streak bonus.
+- **Phones & tablets**: with a Bluetooth keyboard the game plays as on a computer;
+  without one, the finger-coloured keyboard becomes tappable (touch mode, slower
+  start). Phones held sideways are asked to turn upright.
 - **Profiles**: pick an avatar, no password, everything saved in `localStorage`.
 - **Music**: a chiptune tune per world (plus menu and boss themes) that adds layers
   as the combo grows; a short build-up (heartbeat, rising bass, drum roll) announces
@@ -65,7 +68,8 @@ prek install --hook-type pre-commit --hook-type commit-msg
 | `pnpm format`    | Prettier                  |
 | `pnpm typecheck` | TypeScript                |
 
-Pushes to `main` deploy `dist/` to Cloudflare Workers static assets at
+Every pull request gets a preview URL (`pr-<number>-keyboard-invader.<account>.workers.dev`,
+shown in the CI job summary). Pushes to `main` deploy `dist/` to Cloudflare Workers static assets at
 https://invader.etienne.pw (see
 `.github/workflows/ci.yml` and `wrangler.toml`).
 

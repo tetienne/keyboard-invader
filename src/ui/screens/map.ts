@@ -61,10 +61,13 @@ export function mapScreen(app: App, worldIndex = defaultWorld(app)): Screen {
   )
 
   const n = world.levels.length
-  const points = world.levels.map((_, i) => ({
-    x: 7 + (i * 86) / (n - 1),
-    y: 50 + Math.sin(i * 1.25) * 28,
-  }))
+  // Narrow phones get a path winding downwards instead of across.
+  const vertical = window.innerWidth < 640
+  const points = world.levels.map((_, i) =>
+    vertical
+      ? { x: 50 + Math.sin(i * 1.25) * 30, y: 6 + (i * 88) / (n - 1) }
+      : { x: 7 + (i * 86) / (n - 1), y: 50 + Math.sin(i * 1.25) * 28 },
+  )
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
   svg.setAttribute('viewBox', '0 0 100 100')
   svg.setAttribute('preserveAspectRatio', 'none')
@@ -112,7 +115,7 @@ export function mapScreen(app: App, worldIndex = defaultWorld(app)): Screen {
 
   const el = h(
     'div',
-    { class: 'screen' },
+    { class: vertical ? 'screen scroll' : 'screen' },
     h(
       'div',
       { class: 'topbar' },
@@ -127,7 +130,7 @@ export function mapScreen(app: App, worldIndex = defaultWorld(app)): Screen {
     ),
     h(
       'div',
-      { class: 'map' },
+      { class: 'map', style: vertical ? 'margin-top:64px;padding-bottom:40px' : '' },
       h(
         'div',
         { class: 'world-head' },
@@ -152,7 +155,15 @@ export function mapScreen(app: App, worldIndex = defaultWorld(app)): Screen {
       ),
       h('div', { class: 'world-tabs' }, ...tabs),
       unlocked
-        ? h('div', { class: 'path' }, svg, ...nodes)
+        ? h(
+            'div',
+            {
+              class: vertical ? 'path vertical' : 'path',
+              style: vertical ? `height:${n * 92}px` : '',
+            },
+            svg,
+            ...nodes,
+          )
         : h('div', { class: 'panel lock-note' }, '🔒 ', t('worldLocked')),
     ),
   )

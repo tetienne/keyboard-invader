@@ -1,6 +1,7 @@
 import {
   FINGER_COLORS,
   fingerFor,
+  isLetter,
   LAYOUT_ROWS,
   ROW_ORDER,
   type LayoutId,
@@ -9,9 +10,13 @@ import { h } from './dom'
 
 const ROW_OFFSET = { top: 0, home: 0.3, bottom: 0.8 } as const
 
+/** Key pressed on the touch keyboard: a letter (a-z), or "back" to release the target. */
+export type TouchKey = string
+
 /**
  * On-screen keyboard showing where the next key is, coloured by finger:
- * the child learns key positions without looking down.
+ * the child learns key positions without looking down. On touch devices
+ * without a keyboard it becomes the controller: tapping a key types it.
  */
 export class KeyboardHint {
   readonly el: HTMLElement
@@ -19,8 +24,14 @@ export class KeyboardHint {
   private current: string | null = null
   private timers = new Map<string, number>()
 
-  constructor(layout: LayoutId, active: readonly string[]) {
-    this.el = h('div', { class: 'kbd', style: '--ks: clamp(20px, min(3.4vw, 5vh), 42px)' })
+  constructor(layout: LayoutId, active: readonly string[], onTouch?: (key: TouchKey) => void) {
+    const touch = onTouch !== undefined
+    this.el = h('div', {
+      class: touch ? 'kbd touch' : 'kbd',
+      style: touch
+        ? '--ks: min(calc((100vw - 84px) / 11.2), 11vh, 64px)'
+        : '--ks: clamp(20px, min(3.4vw, 5vh), 42px)',
+    })
     for (const row of ROW_ORDER) {
       const rowEl = h('div', {
         class: 'kbd-row',
@@ -32,6 +43,7 @@ export class KeyboardHint {
           'key',
           active.includes(ch) ? 'active' : '',
           ch === 'f' || ch === 'j' ? 'bump' : '',
+          touch && !isLetter(ch) ? 'inert' : '',
         ]
         const key = h(
           'div',
@@ -39,13 +51,27 @@ export class KeyboardHint {
             class: cls.filter(Boolean).join(' '),
             style: `--kc:${finger ? FINGER_COLORS[finger] : '#8f86d9'}`,
           },
-          /^[a-z]$/.test(ch) ? ch.toUpperCase() : ch,
+          isLetter(ch) ? ch.toUpperCase() : ch,
         )
+        if (onTouch && isLetter(ch)) this.bindTouch(key, () => onTouch(ch))
         this.keys.set(ch, key)
         rowEl.append(key)
       }
+      if (onTouch && row === 'top') {
+        const back = h('div', { class: 'key active back', 'aria-label': 'Backspace' }, '⌫')
+        this.bindTouch(back, () => onTouch('back'))
+        rowEl.append(back)
+      }
       this.el.append(rowEl)
     }
+  }
+
+  /** pointerdown reacts instantly (no click delay) and ignores multi-touch ghosts. */
+  private bindTouch(el: HTMLElement, fire: () => void): void {
+    el.addEventListener('pointerdown', (e) => {
+      e.preventDefault()
+      fire()
+    })
   }
 
   setNext(ch: string | null): void {
