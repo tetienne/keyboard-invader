@@ -1,16 +1,17 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vite'
-import tailwindcss from '@tailwindcss/vite'
 import { resolve } from 'node:path'
 
 export default defineConfig({
-  plugins: [tailwindcss()],
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src'),
+      '@': resolve(import.meta.dirname, 'src'),
     },
   },
+  build: {
+    target: 'es2022',
+  },
   test: {
-    exclude: ['.claude/**', 'node_modules/**'],
+    include: ['tests/**/*.test.ts'],
   },
 })

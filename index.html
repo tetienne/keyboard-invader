@@ -3,21 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0620" />
+    <meta
+      name="description"
+      content="Keyboard Invader : le jeu spatial pour apprendre à taper au clavier."
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Keyboard Invader</title>
-    <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-        background: #1a1a2e;
-      }
-      #game-container {
-        width: 100vw;
-        height: 100vh;
-      }
-    </style>
   </head>
   <body>
-    <div id="game-container"></div>
+    <canvas id="stage" aria-hidden="true"></canvas>
+    <div id="ui"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
