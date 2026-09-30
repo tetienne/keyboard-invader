@@ -15,21 +15,18 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@fontsource/fredoka": "^5.2.10",
-    "pixi.js": "8.17.1"
+    "@fontsource/fredoka": "^5.2.10"
   },
   "devDependencies": {
     "@commitlint/cli": "20.5.0",
     "@commitlint/config-conventional": "20.5.0",
     "@eslint/js": "10.0.1",
-    "@tailwindcss/vite": "4.2.2",
     "@types/node": "^25.5.0",
     "eslint": "10.1.0",
     "eslint-config-prettier": "10.1.8",
     "eslint-import-resolver-typescript": "4.4.3",
     "eslint-plugin-import-x": "4.16.2",
     "prettier": "3.8.1",
-    "tailwindcss": "4.2.2",
     "typescript": "6.0.2",
     "typescript-eslint": "8.57.2",
     "vite": "8.0.3",
