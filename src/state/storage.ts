@@ -27,7 +27,12 @@ function sanitizeSettings(raw: unknown, fallback: Settings): Settings {
       raw['layout'] === 'qwerty' || raw['layout'] === 'azerty' ? raw['layout'] : fallback.layout,
     music: num(raw['music'], fallback.music, 0, 1),
     sfx: num(raw['sfx'], fallback.sfx, 0, 1),
-    voice: typeof raw['voice'] === 'boolean' ? raw['voice'] : fallback.voice,
+    // v2.0 stored a boolean; letters read on every spawn felt noisy, so it restarts off.
+    voice:
+      raw['voice'] === 'lessons' || raw['voice'] === 'all' || raw['voice'] === 'off'
+        ? raw['voice']
+        : fallback.voice,
+    voiceVolume: num(raw['voiceVolume'], fallback.voiceVolume, 0, 1),
     keyboardHint:
       typeof raw['keyboardHint'] === 'boolean' ? raw['keyboardHint'] : fallback.keyboardHint,
   }

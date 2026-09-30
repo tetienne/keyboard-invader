@@ -1,5 +1,6 @@
 import type { LayoutId } from '../../content/keyboard'
 import type { Lang } from '../../content/words'
+import type { VoiceMode } from '../../state/profile'
 import { t } from '../../core/i18n'
 import type { App } from '../app'
 import { h } from '../dom'
@@ -96,6 +97,30 @@ export function openSettings(app: App, onClose: () => void): void {
     const closeConfirm = app.modal(confirmBox)
   })
 
+  const preview = (): void => {
+    if (s.voice !== 'off') app.voice.say('A', s.lang)
+  }
+  const voiceMode = seg<VoiceMode>(
+    [
+      ['off', t('voice.off')],
+      ['lessons', t('voice.lessons')],
+      ['all', t('voice.all')],
+    ],
+    () => s.voice,
+    (v) => {
+      s.voice = v
+      app.applySettings()
+      preview()
+    },
+  )
+  const voiceVolume = slider(
+    () => s.voiceVolume,
+    (v) => (s.voiceVolume = v),
+  )
+  voiceVolume.addEventListener('change', preview)
+
+  const section = (title: string): HTMLElement => h('h3', { class: 'setting-title' }, title)
+
   const body = h(
     'div',
     { class: 'dialog panel pop' },
@@ -103,6 +128,24 @@ export function openSettings(app: App, onClose: () => void): void {
     h(
       'div',
       { class: 'settings' },
+      section(`🔊 ${t('sectionSound')}`),
+      row(
+        `🎵 ${t('music')}`,
+        slider(
+          () => s.music,
+          (v) => (s.music = v),
+        ),
+      ),
+      row(
+        `💥 ${t('sfx')}`,
+        slider(
+          () => s.sfx,
+          (v) => (s.sfx = v),
+        ),
+      ),
+      row(`🗣️ ${t('voice')}`, voiceMode),
+      row(`🔈 ${t('voiceVolume')}`, voiceVolume),
+      section(`🎮 ${t('sectionGame')}`),
       row(
         t('language'),
         seg<Lang>(
@@ -123,27 +166,6 @@ export function openSettings(app: App, onClose: () => void): void {
           ],
           () => s.layout,
           (v) => (s.layout = v),
-        ),
-      ),
-      row(
-        `🎵 ${t('music')}`,
-        slider(
-          () => s.music,
-          (v) => (s.music = v),
-        ),
-      ),
-      row(
-        `🔊 ${t('sfx')}`,
-        slider(
-          () => s.sfx,
-          (v) => (s.sfx = v),
-        ),
-      ),
-      row(
-        `🗣️ ${t('voice')}`,
-        toggle(
-          () => s.voice,
-          (v) => (s.voice = v),
         ),
       ),
       row(

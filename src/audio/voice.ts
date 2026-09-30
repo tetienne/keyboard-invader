@@ -3,6 +3,7 @@ import type { Lang } from '../content/words'
 /** Reads letters aloud for pre-readers, using the browser's speech synthesis. */
 export class Voice {
   enabled = true
+  volume = 0.8
   private lastSpoke = 0
 
   private get synth(): SpeechSynthesis | null {
@@ -13,7 +14,7 @@ export class Voice {
 
   say(text: string, lang: Lang, minGapMs = 0): void {
     const synth = this.synth
-    if (!this.enabled || !synth) return
+    if (!this.enabled || !synth || this.volume <= 0) return
     const now = performance.now()
     if (now - this.lastSpoke < minGapMs) return
     this.lastSpoke = now
@@ -23,7 +24,7 @@ export class Voice {
     if (voice) u.voice = voice
     u.rate = 0.95
     u.pitch = 1.25
-    u.volume = 0.9
+    u.volume = this.volume
     synth.cancel()
     synth.speak(u)
   }

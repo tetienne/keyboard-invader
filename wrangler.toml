@@ -1,5 +1,8 @@
 name = "keyboard-invader"
 compatibility_date = "2026-03-27"
+# Keep the *.workers.dev URL as a fallback next to the custom domain.
+workers_dev = true
+routes = [{ pattern = "invader.etienne.pw", custom_domain = true }]
 
 [assets]
 directory = "./dist"

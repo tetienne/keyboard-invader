@@ -4,7 +4,8 @@ import { isLevelUnlocked, isWorldUnlocked, levelStars } from '../../game/progres
 import { totalStars } from '../../state/profile'
 import type { App, Screen } from '../app'
 import { h, starsText } from '../dom'
-import { backButton, coinChip, starChip } from '../widgets'
+import { backButton, coinChip, settingsButton, starChip } from '../widgets'
+import { openSettings } from './settings'
 import { gameScreen, levelLaunch } from './game'
 import { hubScreen } from './hub'
 
@@ -116,7 +117,13 @@ export function mapScreen(app: App, worldIndex = defaultWorld(app)): Screen {
       'div',
       { class: 'topbar' },
       backButton(() => app.go(hubScreen(app))),
-      h('div', { class: 'row' }, starChip(totalStars(profile)), coinChip(profile.coins)),
+      h(
+        'div',
+        { class: 'row' },
+        starChip(totalStars(profile)),
+        coinChip(profile.coins),
+        settingsButton(() => openSettings(app, () => app.go(mapScreen(app, world.index)))),
+      ),
     ),
     h(
       'div',

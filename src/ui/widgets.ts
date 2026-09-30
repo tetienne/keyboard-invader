@@ -62,6 +62,11 @@ export function shipCanvas(
   return { canvas, tick }
 }
 
+/** Gear button opening the settings modal; `refresh` re-renders the screen after changes. */
+export function settingsButton(open: () => void): HTMLElement {
+  return h('button', { class: 'btn ghost icon-btn', title: t('settings'), onClick: open }, '⚙️')
+}
+
 export function backButton(onClick: () => void): HTMLElement {
   return h('button', { class: 'btn ghost small', onClick }, '◀ ', t('back'))
 }

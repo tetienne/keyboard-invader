@@ -19,6 +19,7 @@ import { h } from '../dom'
 import { KeyboardHint } from '../keyboard-hint'
 import { hubScreen } from './hub'
 import { mapScreen } from './map'
+import { openSettings } from './settings'
 
 export type Launch = { kind: 'level'; level: LevelDef } | { kind: 'endless' }
 
@@ -145,7 +146,12 @@ export function gameScreen(app: App, launch: Launch, skipBrief = false): Screen 
     const sfx = app.sfx
     switch (e.type) {
       case 'spawn':
-        if (speakLetters && e.enemy.text.length === 1 && session.enemies.length <= 2) {
+        if (
+          speakLetters &&
+          app.settings.voice === 'all' &&
+          e.enemy.text.length === 1 &&
+          session.enemies.length <= 2
+        ) {
           app.voice.say(e.enemy.text.toUpperCase(), lang, 1100)
         }
         break
@@ -211,6 +217,12 @@ export function gameScreen(app: App, launch: Launch, skipBrief = false): Screen 
     app.voice.stop()
   }
 
+  const settings = (): void => {
+    openSettings(app, () => {
+      view.setLoadout(findShip(profile.ship), findLaser(profile.laser))
+    })
+  }
+
   const pause = (): void => {
     if (phase !== 'play') return
     phase = 'pause'
@@ -235,6 +247,7 @@ export function gameScreen(app: App, launch: Launch, skipBrief = false): Screen 
         ),
         h('button', { class: 'btn ghost', onClick: () => quit() }, '🏠 ', t('quit')),
       ),
+      h('button', { class: 'btn purple small', onClick: settings }, '⚙️ ', t('settings')),
     )
     setLayer(box)
   }
@@ -424,7 +437,12 @@ export function gameScreen(app: App, launch: Launch, skipBrief = false): Screen 
       world ? h('p', { class: 'subtitle' }, t(`world.${world.index}` as 'world.0')) : null,
       ...body,
       h('button', { class: 'btn big', onClick: start }, '🚀 ', t('pressSpace')),
-      h('button', { class: 'btn ghost small', onClick: quit }, '◀ ', t('back')),
+      h(
+        'div',
+        { class: 'row' },
+        h('button', { class: 'btn ghost small', onClick: quit }, '◀ ', t('back')),
+        h('button', { class: 'btn ghost small', onClick: settings }, '⚙️ ', t('settings')),
+      ),
     )
   }
 
@@ -432,7 +450,7 @@ export function gameScreen(app: App, launch: Launch, skipBrief = false): Screen 
     setTimeout(start, 0)
   } else {
     setLayer(briefing())
-    if (level && level.newKeys.length > 0 && app.settings.voice) {
+    if (level && level.newKeys.length > 0 && app.settings.voice !== 'off') {
       setTimeout(
         () => app.voice.say(level.newKeys.map((k) => k.toUpperCase()).join(', '), lang),
         400,
