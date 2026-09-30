@@ -42,6 +42,8 @@ function buildSession(app: App, profile: Profile, launch: Launch): Session {
     rng: createRng(Date.now() >>> 0),
     words: wordList(lang),
     keyWeight: (ch) => keyWeight(profile, ch),
+    // Hunting keys with one finger is slower than typing: start gentler.
+    pace: app.touchMode ? 0.75 : 1,
   }
   if (launch.kind === 'level') {
     config.level = launch.level
@@ -95,11 +97,31 @@ export function gameScreen(app: App, launch: Launch, skipBrief = false): Screen 
       ? level.pool
       : allLetters(layout)
     : endlessPool(app, profile)
-  const keyboard = app.settings.keyboardHint
-    ? new KeyboardHint(layout, profile.reader && !level ? allLetters(layout) : activeKeys)
-    : null
+  const hintKeys = profile.reader && !level ? allLetters(layout) : activeKeys
+  const keyboard = app.touchMode
+    ? new KeyboardHint(layout, hintKeys, (key) => {
+        app.unlockAudio()
+        if (phase !== 'play') return
+        if (key === 'back') session.releaseLock()
+        else typeKey(key)
+      })
+    : app.settings.keyboardHint
+      ? new KeyboardHint(layout, hintKeys)
+      : null
   const layer = h('div', { class: 'overlay clear', style: 'pointer-events:none' })
-  const el = h('div', { class: 'screen', style: 'padding:0' }, hud, keyboard?.el ?? null, layer)
+  // Phones held sideways leave no room to play: ask to turn them (tablets are fine).
+  const rotateHint = app.touchMode
+    ? h('div', { class: 'rotate-hint' }, h('div', { class: 'phone' }, '📱'), t('rotatePhone'))
+    : null
+  const cramped = window.matchMedia('(orientation: landscape) and (max-height: 500px)')
+  const el = h(
+    'div',
+    { class: 'screen play', style: 'padding:0' },
+    hud,
+    keyboard?.el ?? null,
+    layer,
+    rotateHint,
+  )
 
   const measure = (): void => {
     view.bottomReserve = keyboard ? keyboard.el.offsetHeight + 16 : 0
@@ -212,6 +234,13 @@ export function gameScreen(app: App, launch: Launch, skipBrief = false): Screen 
       default:
         break
     }
+  }
+
+  const typeKey = (ch: string): void => {
+    const before = session.correct
+    session.press(ch)
+    keyboard?.flash(ch, session.correct > before)
+    for (const ev of session.drainEvents()) onEvent(ev)
   }
 
   // --- phases ------------------------------------------------------------------
@@ -447,7 +476,12 @@ export function gameScreen(app: App, launch: Launch, skipBrief = false): Screen 
       h('h2', { class: 'title' }, level ? t('levelTitle', { id: level.id }) : t('endless')),
       world ? h('p', { class: 'subtitle' }, t(`world.${world.index}` as 'world.0')) : null,
       ...body,
-      h('button', { class: 'btn big', onClick: start }, '🚀 ', t('pressSpace')),
+      h(
+        'button',
+        { class: 'btn big', onClick: start },
+        '🚀 ',
+        t(app.touchMode ? 'tapToTakeOff' : 'pressSpace'),
+      ),
       h(
         'div',
         { class: 'row' },
@@ -480,6 +514,7 @@ export function gameScreen(app: App, launch: Launch, skipBrief = false): Screen 
     music: 'menu',
     world: level?.world ?? 5,
     update(dt) {
+      if (phase === 'play' && rotateHint && cramped.matches) pause()
       if (phase === 'play') {
         session.update(dt * view.timeScale)
         for (const e of session.drainEvents()) onEvent(e)
@@ -524,10 +559,7 @@ export function gameScreen(app: App, launch: Launch, skipBrief = false): Screen 
       if (e.repeat || e.key.length !== 1) return
       const ch = e.key.toLowerCase()
       if (!/^[a-z]$/.test(ch)) return
-      const before = session.correct
-      session.press(ch)
-      keyboard?.flash(ch, session.correct > before)
-      for (const ev of session.drainEvents()) onEvent(ev)
+      typeKey(ch)
     },
     leave() {
       window.removeEventListener('resize', measure)

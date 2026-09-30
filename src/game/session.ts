@@ -73,6 +73,8 @@ export interface SessionConfig {
   /** Extra weight for letters the child struggles with (1 = neutral). */
   keyWeight?: (ch: string) => number
   hearts?: number
+  /** Starting speed factor (touch play is slower than typing). */
+  pace?: number
 }
 
 export interface KeyStat {
@@ -196,6 +198,7 @@ export class Session {
     this.keyWeight = config.keyWeight ?? (() => 1)
     this.maxHearts = config.hearts ?? 5
     this.hearts = this.maxHearts
+    this.pace = config.pace ?? 1
     if (this.level?.boss) this.announceBoss()
   }
 
