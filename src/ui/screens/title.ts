@@ -23,6 +23,8 @@ export function titleScreen(app: App): Screen {
           onClick: () => {
             if (app.settings.lang === lang) return
             app.settings.lang = lang
+            // AZERTY is mostly a French thing; the settings screen still lets anyone override it.
+            app.settings.layout = lang === 'fr' ? 'azerty' : 'qwerty'
             app.applySettings()
             app.save()
             done = true
