@@ -1683,3 +1683,12 @@ body {
     transform: rotate(0deg);
   }
 }
+
+/* ---- title screen language picker ---- */
+
+.title-lang {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  cursor: default;
+}
