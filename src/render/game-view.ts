@@ -253,8 +253,8 @@ export class GameView {
         break
       case 'breach': {
         const p = this.pos(event.enemy)
-        this.shake = Math.max(this.shake, 0.65)
-        this.redAlert = 1
+        this.shake = Math.max(this.shake, 0.3)
+        this.redAlert = 0.5
         this.shieldFlash = 1
         this.particles.explosion(p.x, L.shieldY, ['#ff4d6d', '#ffae57', '#ffffff'], L.unit / 30)
         break
@@ -595,7 +595,7 @@ export class GameView {
     const danger = e.y > 0.72 && !e.doomed
     const glowColor = danger ? '#ff4d6d' : pal.body
     ctx.globalAlpha = danger
-      ? 0.35 + 0.3 * Math.sin(session.time * 12)
+      ? 0.3 + 0.15 * Math.sin(session.time * 4)
       : e.kind === 'golden'
         ? 0.6
         : 0.28
