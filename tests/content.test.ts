@@ -59,6 +59,14 @@ describe('campaign', () => {
     }
   })
 
+  it.each(LAYOUTS)('%s: lessons never show more than 3 letters at once', (layout) => {
+    for (const w of campaign(layout).slice(0, FIRST_WORD_WORLD)) {
+      const lessons = w.levels.filter((l) => l.tag === 'lesson')
+      expect(lessons.length).toBeGreaterThan(0)
+      for (const l of lessons) expect(l.maxOnScreen).toBeLessThanOrEqual(3)
+    }
+  })
+
   it('gets harder along a world', () => {
     const w = campaign('azerty')[0]
     const first = w?.levels[0]
