@@ -1,4 +1,4 @@
-import type { LevelDef } from '../content/campaign'
+import { themeFor, WORLD_COUNT, type LevelDef, type WorldTheme } from '../content/campaign'
 import { clamp } from '../core/math'
 import { pick, randRange, weightedPick, type Rng } from '../core/rng'
 
@@ -51,7 +51,8 @@ export type GameEvent =
   | { type: 'escape'; enemy: Enemy }
   | { type: 'powerup'; power: Power; enemy: Enemy }
   | { type: 'bossHit'; enemy: Enemy }
-  | { type: 'bossIncoming'; delay: number }
+  /** `world` picks the boss's look and name. */
+  | { type: 'bossIncoming'; delay: number; world: number }
   | { type: 'bossSpawn'; enemy: Enemy }
   | { type: 'wave'; wave: number; boss: boolean }
   | { type: 'victory' }
@@ -564,7 +565,20 @@ export class Session {
 
   private announceBoss(): void {
     this.bossPending = BOSS_INTRO
-    this.emit({ type: 'bossIncoming', delay: BOSS_INTRO })
+    // Endless mode meets each world's boss in turn, one every 5 waves.
+    const world = this.level?.world ?? (Math.floor(this.wave / 5) - 1) % WORLD_COUNT
+    this.emit({ type: 'bossIncoming', delay: BOSS_INTRO, world })
+  }
+
+  /** Campaign invaders belong to their world's family; endless mixes them all. */
+  private get theme(): WorldTheme | null {
+    return this.level ? themeFor(this.level.world) : null
+  }
+
+  /** Exactly one rng draw whatever the mode, so seeded games stay reproducible. */
+  private pickLook(options: readonly number[] | undefined, count: number): number {
+    const roll = this.rng()
+    return options ? (options[Math.floor(roll * options.length)] ?? 0) : Math.floor(roll * count)
   }
 
   private canSpawn(): boolean {
@@ -673,8 +687,8 @@ export class Session {
       wobbleAmp: 0,
       wobbleFreq: 0,
       wobblePhase: 0,
-      species: Math.floor(this.rng() * SPECIES),
-      palette: Math.floor(this.rng() * PALETTES),
+      species: this.pickLook(this.theme?.species, SPECIES),
+      palette: this.pickLook(this.theme?.palettes, PALETTES),
       born: this.time,
       doomed: false,
       hp,
@@ -717,8 +731,8 @@ export class Session {
       wobbleAmp: randRange(this.rng, 0.005, useWord ? 0.015 : 0.03),
       wobbleFreq: randRange(this.rng, 0.6, 1.4),
       wobblePhase: randRange(this.rng, 0, Math.PI * 2),
-      species: Math.floor(this.rng() * SPECIES),
-      palette: Math.floor(this.rng() * PALETTES),
+      species: this.pickLook(this.theme?.species, SPECIES),
+      palette: this.pickLook(this.theme?.palettes, PALETTES),
       born: this.time,
       doomed: false,
       hp: 1,
