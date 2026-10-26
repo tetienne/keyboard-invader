@@ -37,6 +37,8 @@ describe('save data', () => {
     const p = createProfile('Lina', '🦊', false)
     p.coins = 42
     p.levels['1-1'] = { stars: 2, best: 900 }
+    p.ships.push('galaxy')
+    p.ship = 'galaxy'
     store.data.profiles.push(p)
     store.data.lastProfileId = p.id
     store.save()

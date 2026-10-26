@@ -570,7 +570,7 @@ p {
 
 .hub-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(180px, 270px));
+  grid-template-columns: repeat(4, minmax(160px, 230px));
   gap: 22px;
   margin-top: 70px;
 }
@@ -634,7 +634,7 @@ p {
 
 .hub-card.adventure {
   background: linear-gradient(135deg, #ffb13d, #ff5f6d);
-  grid-column: span 3;
+  grid-column: 1 / -1;
   min-height: 200px;
 }
 
@@ -1691,4 +1691,455 @@ body {
   top: 16px;
   right: 16px;
   cursor: default;
+}
+
+/* ---- campaign rewards: album, ending, diploma ---- */
+
+.hub-card.adventure.done {
+  grid-column: span 3;
+}
+
+.hub-card.album {
+  background: linear-gradient(135deg, #ffd23f, #ff7a3d);
+}
+
+.hub-card.diploma {
+  background: linear-gradient(135deg, #c985ff, #ff5fa2 55%, #ffd23f);
+}
+
+.shop-item {
+  position: relative;
+}
+
+.shop-item.exclusive {
+  border-color: #ffd23f;
+  background: linear-gradient(135deg, rgba(255, 210, 63, 0.2), rgba(201, 133, 255, 0.16));
+  box-shadow: 0 0 26px rgba(255, 210, 63, 0.3);
+}
+
+.shop-item.exclusive .btn {
+  white-space: normal;
+}
+
+.shop-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  color: var(--ink);
+  background: linear-gradient(90deg, #ffe066, #ff9f1c);
+}
+
+.sticker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 20px;
+  width: min(1000px, 100%);
+}
+
+.sticker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 12px 14px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.sticker.got {
+  border-color: rgba(255, 210, 63, 0.45);
+  background: linear-gradient(135deg, rgba(255, 210, 63, 0.14), rgba(255, 95, 162, 0.08));
+}
+
+.sticker-art {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 6px solid #fff;
+  box-shadow:
+    0 6px 0 rgba(0, 0, 0, 0.3),
+    0 10px 24px rgba(0, 0, 0, 0.4);
+  transform: rotate(var(--tilt, 0deg));
+}
+
+.sticker.locked .sticker-art {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 5px dashed rgba(255, 255, 255, 0.28);
+  box-shadow: none;
+  transform: none;
+}
+
+.sticker.locked canvas {
+  filter: brightness(0);
+  opacity: 0.5;
+}
+
+.sticker-q {
+  position: absolute;
+  font-size: 64px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.75);
+  text-shadow: 0 4px 0 var(--ink);
+}
+
+.sticker b {
+  font-size: 20px;
+}
+
+.sticker.locked b {
+  color: var(--muted);
+}
+
+.sticker-meta {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.medal {
+  font-size: 30px;
+  filter: grayscale(1) brightness(0.55);
+  opacity: 0.55;
+}
+
+.medal.on {
+  filter: drop-shadow(0 0 8px #ffd23f);
+  opacity: 1;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.screen.ending {
+  justify-content: space-between;
+  padding: 36px 16px 44px;
+}
+
+.ending-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.ending-crown {
+  font-size: 60px;
+  animation: float 2s ease-in-out infinite;
+}
+
+.ending-title {
+  font-size: clamp(36px, 7vw, 76px);
+  background: linear-gradient(90deg, #ffe066, #ff5fa2, #5fd4ff, #7be07b, #ffe066);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 4px 0 var(--ink)) drop-shadow(0 0 24px rgba(255, 210, 63, 0.45));
+  animation:
+    pop-in 0.7s both,
+    shine 4s linear infinite;
+}
+
+.ending-head .subtitle {
+  color: #fff;
+  text-shadow: 0 3px 0 var(--ink);
+}
+
+.ending-reward {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 28px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(255, 210, 63, 0.28), rgba(255, 95, 162, 0.28));
+  border: 3px solid #ffd23f;
+  box-shadow: 0 0 30px rgba(255, 210, 63, 0.45);
+  backdrop-filter: blur(6px);
+}
+
+.ending-reward small {
+  font-size: 16px;
+  color: #fff6c2;
+}
+
+.ending-reward b {
+  font-size: 28px;
+  color: #ffe066;
+  text-shadow: 0 3px 0 var(--ink);
+}
+
+.diploma {
+  width: min(1000px, 100%);
+  margin-top: 64px;
+  padding: 14px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #ff5fa2, #ffae57, #ffe066, #7be07b, #5fd4ff, #c985ff);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  color: #2b1747;
+  user-select: text;
+}
+
+.diploma-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 30px 56px 24px;
+  border-radius: 10px;
+  background: #fffdf6;
+  outline: 3px dashed #e0b84a;
+  outline-offset: -12px;
+  text-align: center;
+}
+
+.diploma-corner {
+  position: absolute;
+  font-size: 34px;
+}
+
+.diploma-corner.tl {
+  top: 18px;
+  left: 20px;
+}
+
+.diploma-corner.tr {
+  top: 18px;
+  right: 20px;
+}
+
+.diploma-corner.bl {
+  bottom: 18px;
+  left: 20px;
+}
+
+.diploma-corner.br {
+  bottom: 18px;
+  right: 20px;
+}
+
+.diploma-title {
+  font-size: clamp(26px, 4vw, 46px);
+  color: #b0402a;
+  letter-spacing: 0.5px;
+}
+
+.diploma-line {
+  font-size: clamp(15px, 1.8vw, 20px);
+  color: #5b4a7a;
+  max-width: 620px;
+}
+
+.diploma-name {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 28px 4px;
+  font-size: clamp(34px, 6vw, 62px);
+  font-weight: 700;
+  border-bottom: 4px solid #ffd23f;
+}
+
+.diploma-facts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+}
+
+.diploma-fact {
+  display: flex;
+  flex-direction: column;
+  min-width: 130px;
+  padding: 8px 18px;
+  border-radius: 14px;
+  background: #f1ebff;
+}
+
+.diploma-fact small {
+  font-size: 13px;
+  color: #7a6a9a;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.diploma-fact b {
+  font-size: 22px;
+}
+
+.diploma-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  padding: 0 24px;
+}
+
+.diploma-ship,
+.diploma-sign {
+  width: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.diploma-seal {
+  position: relative;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 58px;
+  background: radial-gradient(circle at 35% 30%, #fff6c2, #ffd23f 45%, #c98a00);
+  box-shadow:
+    0 0 0 6px #fffdf6,
+    0 0 0 10px #ffd23f,
+    0 8px 18px rgba(0, 0, 0, 0.25);
+  transform: rotate(-8deg);
+}
+
+.diploma-seal::before,
+.diploma-seal::after {
+  content: '';
+  position: absolute;
+  bottom: -38px;
+  width: 30px;
+  height: 52px;
+  background: #ff4d6d;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
+  z-index: -1;
+}
+
+.diploma-seal::before {
+  left: 22px;
+  transform: rotate(14deg);
+}
+
+.diploma-seal::after {
+  right: 22px;
+  background: #3d8bff;
+  transform: rotate(-14deg);
+}
+
+.diploma-sign i {
+  font-size: 34px;
+  font-style: normal;
+}
+
+.diploma-sign span {
+  width: 100%;
+  padding-top: 6px;
+  border-top: 2px solid #2b1747;
+  font-size: 16px;
+  font-style: italic;
+}
+
+@media (max-width: 640px) {
+  .hub-card.adventure.done {
+    grid-column: auto;
+  }
+  .sticker-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .sticker-art {
+    width: 120px;
+    height: 120px;
+  }
+  .sticker-art canvas {
+    width: 104px !important;
+    height: 104px !important;
+  }
+  .screen.ending {
+    padding: 24px 12px 32px;
+  }
+  .ending-crown {
+    font-size: 44px;
+  }
+  .diploma {
+    margin-top: 0;
+    padding: 8px;
+  }
+  .diploma-inner {
+    padding: 44px 16px 24px;
+    gap: 10px;
+  }
+  .diploma-corner {
+    font-size: 24px;
+  }
+  .diploma-foot {
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 0;
+  }
+  .diploma-seal {
+    order: -1;
+  }
+}
+
+@page {
+  size: A4 landscape;
+  margin: 8mm;
+}
+
+@media print {
+  html,
+  body {
+    height: auto;
+    overflow: visible;
+    background: #fff !important;
+  }
+  #stage,
+  .no-print,
+  .overlay {
+    display: none !important;
+  }
+  #ui,
+  .screen {
+    position: static !important;
+    display: block !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    animation: none !important;
+  }
+  .diploma {
+    display: flex;
+    width: 281mm;
+    height: 192mm;
+    margin: 0 !important;
+    padding: 4mm;
+    box-shadow: none;
+    animation: none !important;
+    break-inside: avoid;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .diploma-inner {
+    flex: 1;
+    justify-content: space-evenly;
+    padding: 10mm 16mm;
+  }
+  .diploma-title {
+    font-size: 34pt;
+  }
+  .diploma-line {
+    font-size: 15pt;
+  }
+  .diploma-name {
+    font-size: 44pt;
+  }
 }

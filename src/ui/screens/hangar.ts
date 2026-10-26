@@ -7,6 +7,13 @@ import { h } from '../dom'
 import { backButton, coinChip, shipCanvas } from '../widgets'
 import { hubScreen } from './hub'
 
+interface Item {
+  id: string
+  price: number
+  minLevel?: number
+  exclusive?: boolean
+}
+
 export function hangarScreen(app: App, tab: 'ships' | 'lasers' = 'ships'): Screen {
   const profile = app.profile
   if (!profile) return hubScreen(app)
@@ -14,10 +21,7 @@ export function hangarScreen(app: App, tab: 'ships' | 'lasers' = 'ships'): Scree
   const level = levelInfo(profile.xp).level
   const ticks: ((time: number) => void)[] = []
 
-  const purchase = (
-    kind: 'ship' | 'laser',
-    item: { id: string; price: number; minLevel?: number },
-  ): void => {
+  const purchase = (kind: 'ship' | 'laser', item: Item): void => {
     const outcome = buy(profile, kind, item)
     if (outcome === 'ok') {
       awardTrophies(profile)
@@ -38,10 +42,7 @@ export function hangarScreen(app: App, tab: 'ships' | 'lasers' = 'ships'): Scree
     app.go(hangarScreen(app, tab))
   }
 
-  const action = (
-    kind: 'ship' | 'laser',
-    item: { id: string; price: number; minLevel?: number },
-  ): HTMLElement => {
+  const action = (kind: 'ship' | 'laser', item: Item): HTMLElement => {
     const owned = (kind === 'ship' ? profile.ships : profile.lasers).includes(item.id)
     const equipped = (kind === 'ship' ? profile.ship : profile.laser) === item.id
     if (equipped)
@@ -52,6 +53,8 @@ export function hangarScreen(app: App, tab: 'ships' | 'lasers' = 'ships'): Scree
         { class: 'btn blue small', onClick: () => equip(kind, item.id) },
         t('equip'),
       )
+    if (item.exclusive)
+      return h('button', { class: 'btn ghost small', disabled: true }, '🔒 ', t('exclusiveHint'))
     if ((item.minLevel ?? 1) > level)
       return h(
         'button',
@@ -78,7 +81,10 @@ export function hangarScreen(app: App, tab: 'ships' | 'lasers' = 'ships'): Scree
           ticks.push(preview.tick)
           return h(
             'div',
-            { class: `shop-item pop${profile.ship === ship.id ? ' equipped' : ''}` },
+            {
+              class: `shop-item pop${profile.ship === ship.id ? ' equipped' : ''}${ship.exclusive ? ' exclusive' : ''}`,
+            },
+            ship.exclusive ? h('span', { class: 'shop-badge' }, '✨ ', t('exclusive')) : null,
             preview.canvas,
             h('div', { class: 'nm' }, ship.name[lang]),
             action('ship', ship),
