@@ -40,12 +40,11 @@ describe('world identity', () => {
   })
 
   it('stays deterministic for a given seed', () => {
-    const looks = (): string =>
-      run(makeSession({ level: level('3-2'), rng: createRng(7) }), 30)
-        .filter((e) => e.type === 'spawn')
-        .map((e) => `${e.enemy.species}/${e.enemy.palette}`)
-        .join(',')
-    expect(looks()).toBe(looks())
+    const looks = run(makeSession({ level: level('3-2'), rng: createRng(7) }), 30)
+      .filter((e) => e.type === 'spawn')
+      .map((e) => `${e.enemy.species}/${e.enemy.palette}`)
+      .join(',')
+    expect(looks).toBe('4/8,4/2,5/2,4/2')
   })
 
   it('announces the boss of the level world', () => {

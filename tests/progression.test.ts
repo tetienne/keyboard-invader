@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { campaign } from '../src/content/campaign'
+import { campaign, WORLD_COUNT } from '../src/content/campaign'
 import { CAMPAIGN_SHIP, findShip } from '../src/content/ships'
 import {
   applyResult,
@@ -237,7 +237,7 @@ describe('campaign rewards', () => {
     for (const l of world?.levels ?? []) p.levels[l.id] = { stars: 3, best: 1 }
     p.levels[bosses('azerty')[1] ?? ''] = { stars: 1, best: 1 }
     const badges = worldBadges(p, 'azerty')
-    expect(badges).toHaveLength(6)
+    expect(badges).toHaveLength(WORLD_COUNT)
     expect(badges[0]).toMatchObject({ sticker: true, medal: true })
     expect(badges[0]?.stars).toBe(badges[0]?.maxStars)
     expect(badges[1]).toMatchObject({ sticker: true, medal: false, stars: 1 })
