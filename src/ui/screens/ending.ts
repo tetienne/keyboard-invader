@@ -25,29 +25,26 @@ export function endingScreen(app: App): Screen {
   const toDiploma = (): void => app.go(diplomaScreen(app))
   const toMap = (): void => app.go(mapScreen(app))
 
-  const el = h(
+  const head = h(
     'div',
-    { class: 'screen ending' },
+    { class: 'ending-head' },
+    h('div', { class: 'ending-crown pop' }, '🌟'),
+    h('h1', { class: 'title ending-title pop' }, t('endingTitle')),
+    h('p', { class: 'subtitle pop' }, t('endingSub', { name: profile.name })),
     h(
       'div',
-      { class: 'ending-head' },
-      h('div', { class: 'ending-crown pop' }, '🌟'),
-      h('h1', { class: 'title ending-title pop' }, t('endingTitle')),
-      h('p', { class: 'subtitle pop' }, t('endingSub', { name: profile.name })),
-      h(
-        'div',
-        { class: 'ending-reward pop' },
-        h('small', null, t('endingReward')),
-        h('b', null, '✨ ', ship.name[app.settings.lang], ' ✨'),
-      ),
-    ),
-    h(
-      'div',
-      { class: 'row ending-actions pop' },
-      h('button', { class: 'btn big green', onClick: toDiploma }, '📜 ', t('seeDiploma')),
-      h('button', { class: 'btn ghost', onClick: toMap }, '🗺️ ', t('map')),
+      { class: 'ending-reward pop' },
+      h('small', null, t('endingReward')),
+      h('b', null, '✨ ', ship.name[app.settings.lang], ' ✨'),
     ),
   )
+  const actions = h(
+    'div',
+    { class: 'row ending-actions pop' },
+    h('button', { class: 'btn big green', onClick: toDiploma }, '📜 ', t('seeDiploma')),
+    h('button', { class: 'btn ghost', onClick: toMap }, '🗺️ ', t('map')),
+  )
+  const el = h('div', { class: 'screen ending' }, head, actions)
 
   app.sfx.fanfare()
   const cheers = [
@@ -93,9 +90,12 @@ export function endingScreen(app: App): Screen {
       width = w
       height = hgt
       const unit = Math.min(w, hgt)
+      // Keep the parade in the free band between the text and the buttons.
+      const top = head.getBoundingClientRect().bottom
+      const band = Math.max(unit * 0.3, actions.getBoundingClientRect().top - top)
       const cx = w / 2
-      const cy = hgt * 0.5
-      const size = unit * 0.11
+      const cy = top + band * 0.4
+      const size = Math.min(unit * 0.11, band * 0.2)
 
       // Rotating rainbow rays behind the ship.
       ctx.save()
@@ -120,13 +120,13 @@ export function endingScreen(app: App): Screen {
       // Dancing aliens on an arc under the ship.
       const n = 6
       const rx = Math.min(w * 0.42, unit * 0.7)
-      const ry = unit * 0.2
+      const ry = band * 0.32
       for (let i = 0; i < n; i++) {
         const a = Math.PI * (0.08 + (0.84 * i) / (n - 1))
-        const hop = Math.abs(Math.sin(time * 4 + i * 0.9)) * unit * 0.035
+        const r = Math.min(unit * 0.045, band * 0.09)
+        const hop = Math.abs(Math.sin(time * 4 + i * 0.9)) * r * 0.8
         const x = cx + Math.cos(a) * rx
-        const y = cy + Math.sin(a) * ry + unit * 0.06 - hop
-        const r = unit * 0.045
+        const y = cy + Math.sin(a) * ry + r - hop
         ctx.save()
         ctx.translate(x, y)
         ctx.rotate(Math.sin(time * 3 + i) * 0.25)

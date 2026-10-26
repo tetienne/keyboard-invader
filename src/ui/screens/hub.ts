@@ -81,7 +81,7 @@ export function hubScreen(app: App): Screen {
         () => app.go(mapScreen(app)),
       ),
       complete
-        ? card('diploma', '📜', t('diploma'), profile.name, () => app.go(diplomaScreen(app)))
+        ? card('diploma-card', '📜', t('diploma'), profile.name, () => app.go(diplomaScreen(app)))
         : null,
       card(
         'endless',

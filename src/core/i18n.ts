@@ -146,7 +146,7 @@ const fr = {
   exclusive: 'Exclusif',
   exclusiveHint: 'Termine tous les mondes',
   continue: 'Continuer',
-  endingTitle: 'Tu as sauvé la galaxie !',
+  endingTitle: 'Tu as sauvé la galaxie\u00a0!',
   endingSub: 'Bravo {name} ! Les 6 mondes sont libérés grâce à toi.',
   endingReward: 'Vaisseau exclusif débloqué :',
   seeDiploma: 'Voir mon diplôme',

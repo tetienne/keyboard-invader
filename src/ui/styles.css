@@ -1703,7 +1703,7 @@ body {
   background: linear-gradient(135deg, #ffd23f, #ff7a3d);
 }
 
-.hub-card.diploma {
+.hub-card.diploma-card {
   background: linear-gradient(135deg, #c985ff, #ff5fa2 55%, #ffd23f);
 }
 
@@ -2067,6 +2067,13 @@ body {
   .screen.ending {
     padding: 24px 12px 32px;
   }
+  .screen.ending > :first-child,
+  .screen.ending > :last-child {
+    margin: 0;
+  }
+  .ending-title {
+    font-size: 32px;
+  }
   .ending-crown {
     font-size: 44px;
   }
@@ -2082,12 +2089,19 @@ body {
     font-size: 24px;
   }
   .diploma-foot {
-    flex-wrap: wrap;
-    justify-content: center;
-    padding: 0;
+    padding: 0 12px 36px;
   }
   .diploma-seal {
-    order: -1;
+    width: 88px;
+    height: 88px;
+    font-size: 44px;
+  }
+  .diploma-ship {
+    display: none;
+  }
+  .diploma-sign {
+    width: auto;
+    flex: 1;
   }
 }
 
