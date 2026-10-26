@@ -135,6 +135,9 @@ const VICTORY_DELAY = 1.1
 const DEFEAT_DELAY = 1.2
 const FREEZE_SECONDS = 6
 const FREEZE_FACTOR = 0.25
+/** Invaders close to the shield slow down so a child still has time to react. */
+const SLOW_ZONE_Y = 0.7
+const SLOW_ZONE_FACTOR = 0.5
 const SPECIES = 6
 const PALETTES = 8
 const POWERS: readonly Power[] = ['freeze', 'bomb', 'heal']
@@ -412,12 +415,13 @@ export class Session {
     if (expected) this.stat(expected).ko++
     if (this.combo >= 5) this.emit({ type: 'comboBreak', combo: this.combo })
     this.combo = 0
-    this.pace = clamp(this.pace - 0.004, ...this.paceRange())
+    const penalty = this.mode === 'endless' ? 0.004 : 0.02
+    this.pace = clamp(this.pace - penalty, ...this.paceRange())
     this.emit({ type: 'mistake', key, expected })
   }
 
   private paceRange(): [number, number] {
-    return this.mode === 'endless' ? [0.6, 1.8] : [0.55, 1.5]
+    return this.mode === 'endless' ? [0.6, 1.8] : [0.55, 1.2]
   }
 
   private advanceProjectiles(): void {
@@ -582,7 +586,7 @@ export class Session {
         e.x = 0.5 + 0.28 * Math.sin((this.time - e.born) * 0.35)
         continue
       }
-      e.y += e.vy * speed * dt
+      e.y += e.vy * speed * (e.y > SLOW_ZONE_Y ? SLOW_ZONE_FACTOR : 1) * dt
       e.x = e.baseX + e.wobbleAmp * Math.sin((this.time - e.born) * e.wobbleFreq + e.wobblePhase)
     }
   }
@@ -628,10 +632,9 @@ export class Session {
     const taken = this.firstLettersOnScreen()
     const free = pool.filter((k) => !taken.has(k))
     const candidates = free.length > 0 ? free : pool
-    return weightedPick(
-      this.rng,
-      candidates,
-      (k) => (focus.includes(k) ? 3 : 1) * this.keyWeight(k),
+    // Focus and struggle boosts compound; capped so one letter cannot flood the screen.
+    return weightedPick(this.rng, candidates, (k) =>
+      Math.min(3, (focus.includes(k) ? 3 : 1) * this.keyWeight(k)),
     )
   }
 

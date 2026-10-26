@@ -111,6 +111,8 @@ function letterWorld(layout: LayoutId, world: number, learnedBefore: readonly st
     const p = index / (steps.length - 1)
     const boss = step.tag === 'boss'
     const speedy = step.tag === 'speed' || step.tag === 'mix'
+    // Lessons introduce new keys: restart each world calm instead of stacking difficulty.
+    const lesson = step.tag === 'lesson'
     return {
       id: `${world + 1}-${index + 1}`,
       world,
@@ -122,10 +124,16 @@ function letterWorld(layout: LayoutId, world: number, learnedBefore: readonly st
       pool: step.pool,
       wordLen: [1, 1],
       enemies: 12 + index * 2 + world * 2,
-      fallTime: round1((13 - 1.2 * world - 3 * p) * (speedy ? 0.85 : 1)),
+      fallTime: lesson
+        ? round1(13 - 0.5 * world - 2 * p)
+        : round1((13 - 1.2 * world - 3 * p) * (speedy ? 0.85 : 1)),
       fallPerChar: 0,
       spawnEvery: round1(Math.max(1, 2.6 - 0.2 * world - 0.8 * p)),
-      maxOnScreen: boss ? 3 : 2 + Math.floor(p * 2) + world,
+      maxOnScreen: boss
+        ? 3
+        : lesson
+          ? Math.min(3, 2 + Math.floor(p * 2))
+          : Math.min(5, 2 + Math.floor(p * 2) + world),
       bossHp: 6 + world * 2,
       powerups: world > 0 || index >= 2,
     }
@@ -161,7 +169,7 @@ function wordWorld(layout: LayoutId, world: number): WorldDef {
       fallTime: round1(7 - 0.8 * tier - 1.5 * p),
       fallPerChar: round1(1.4 - 0.15 * tier - 0.25 * p),
       spawnEvery: round1(Math.max(1.2, 3.4 - 0.3 * tier - 0.8 * p)),
-      maxOnScreen: boss ? 3 : 2 + Math.floor(p * 2) + tier,
+      maxOnScreen: boss ? 3 : Math.min(4, 2 + Math.floor(p * 2) + tier),
       bossHp: 5 + tier * 2,
       powerups: true,
     })

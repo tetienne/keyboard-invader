@@ -92,6 +92,58 @@ describe('Session – letters', () => {
     expect(s.pace).toBeLessThan(1)
   })
 
+  it('caps the campaign pace at 1.2 however fast the child plays', () => {
+    const s = makeSession({ level: level('1-1', { enemies: 80, maxOnScreen: 3, spawnEvery: 0.6 }) })
+    let max = s.pace
+    for (let t = 0; t < 300 && s.status === 'playing'; t += 1 / 30) {
+      const key = s.nextKeyHint()
+      if (key && !s.ending) s.press(key)
+      s.update(1 / 30)
+      s.drainEvents()
+      max = Math.max(max, s.pace)
+    }
+    expect(max).toBeCloseTo(1.2)
+  })
+
+  it('a mistake slows the campaign pace down noticeably', () => {
+    const s = makeSession()
+    waitForEnemy(s)
+    s.press('z')
+    expect(s.pace).toBeCloseTo(0.98)
+  })
+
+  it('halves the fall speed close to the shield', () => {
+    const s = makeSession()
+    waitForEnemy(s)
+    const e = s.enemies[0]
+    if (!e) throw new Error('no enemy')
+    const step = (y: number): number => {
+      e.y = y
+      s.update(0.05)
+      return e.y - y
+    }
+    expect(step(0.75) / step(0.5)).toBeCloseTo(0.5)
+  })
+
+  it('caps the combined focus and struggle weight of a letter', () => {
+    const s = makeSession({
+      level: level('1-1', { pool: ['f', 'j', 'd'], newKeys: ['f'], maxOnScreen: 1, enemies: 400 }),
+      keyWeight: (k) => (k === 'f' ? 3.5 : 1),
+    })
+    const letters: string[] = []
+    for (let t = 0; t < 600 && s.status === 'playing'; t += 1 / 30) {
+      const key = s.nextKeyHint()
+      if (key && !s.ending) s.press(key)
+      s.update(1 / 30)
+      for (const ev of s.drainEvents()) if (ev.type === 'spawn') letters.push(ev.enemy.text)
+    }
+    expect(letters.length).toBeGreaterThan(300)
+    // Weights 3:1:1 once capped (uncapped 10.5:1:1 would give ~84%).
+    const share = letters.filter((l) => l === 'f').length / letters.length
+    expect(share).toBeGreaterThan(0.5)
+    expect(share).toBeLessThan(0.7)
+  })
+
   it('is won once the quota is cleared', () => {
     const s = makeSession()
     autoplay(s)
