@@ -1233,6 +1233,7 @@ p {
 }
 
 .shop-item {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1705,10 +1706,6 @@ body {
 
 .hub-card.diploma-card {
   background: linear-gradient(135deg, #c985ff, #ff5fa2 55%, #ffd23f);
-}
-
-.shop-item {
-  position: relative;
 }
 
 .shop-item.exclusive {

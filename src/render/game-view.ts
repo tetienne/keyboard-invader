@@ -758,6 +758,7 @@ export class GameView {
     const bw = r * 1.9
     const bh = Math.max(8, r * 0.1)
     const by = -r * 1.2
+    const name = t(`boss.${this.bossWorld}` as 'boss.0')
     const nameSize = Math.round(clamp(r * 0.16, 14, 24))
     ctx.font = `700 ${nameSize}px ${FONT}`
     ctx.textAlign = 'center'
@@ -765,9 +766,9 @@ export class GameView {
     ctx.lineJoin = 'round'
     ctx.lineWidth = 4
     ctx.strokeStyle = INK
-    ctx.strokeText(t(`boss.${this.bossWorld}` as 'boss.0'), 0, by - 6)
+    ctx.strokeText(name, 0, by - 6)
     ctx.fillStyle = pal.light
-    ctx.fillText(t(`boss.${this.bossWorld}` as 'boss.0'), 0, by - 6)
+    ctx.fillText(name, 0, by - 6)
     ctx.beginPath()
     ctx.roundRect(-bw / 2 - 3, by - 3, bw + 6, bh + 6, bh)
     ctx.fillStyle = 'rgba(10,5,25,0.85)'

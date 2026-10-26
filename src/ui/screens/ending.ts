@@ -1,6 +1,7 @@
 import { CAMPAIGN_SHIP, findShip } from '../../content/ships'
 import { TAU } from '../../core/math'
 import { t } from '../../core/i18n'
+import { pick } from '../../core/rng'
 import { drawAlien, drawShip, glowSprite, palette } from '../../render/art'
 import { Particles } from '../../render/particles'
 import type { App, Screen } from '../app'
@@ -40,7 +41,7 @@ export function endingScreen(app: App): Screen {
   )
   const actions = h(
     'div',
-    { class: 'row ending-actions pop' },
+    { class: 'row pop' },
     h('button', { class: 'btn big green', onClick: toDiploma }, '📜 ', t('seeDiploma')),
     h('button', { class: 'btn ghost', onClick: toMap }, '🗺️ ', t('map')),
   )
@@ -70,7 +71,7 @@ export function endingScreen(app: App): Screen {
       nextConfetti -= dt
       if (nextFirework <= 0) {
         nextFirework = 0.35 + Math.random() * 0.5
-        const colors = FIREWORK_COLORS[Math.floor(Math.random() * FIREWORK_COLORS.length)] ?? []
+        const colors = pick(Math.random, FIREWORK_COLORS)
         particles.explosion(
           width * (0.1 + Math.random() * 0.8),
           height * (0.08 + Math.random() * 0.45),

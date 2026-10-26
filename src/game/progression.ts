@@ -81,10 +81,7 @@ export function isWorldUnlocked(profile: Profile, layout: LayoutId, world: numbe
 // --- campaign rewards -----------------------------------------------------------
 
 export function isCampaignComplete(profile: Profile, layout: LayoutId): boolean {
-  return campaign(layout).every((w) => {
-    const boss = w.levels.at(-1)
-    return boss ? levelStars(profile, boss.id) > 0 : false
-  })
+  return worldBadges(profile, layout).every((b) => b.sticker)
 }
 
 export interface WorldBadge {

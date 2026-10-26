@@ -375,7 +375,7 @@ export function drawWorldBoss(
 }
 
 /** Big mothership boss; `style` adds its world's accessory. */
-export function drawBoss(
+function drawBoss(
   ctx: CanvasRenderingContext2D,
   p: Palette,
   pose: AlienPose,

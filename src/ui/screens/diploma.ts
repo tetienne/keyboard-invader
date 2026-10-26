@@ -19,7 +19,7 @@ export function diplomaScreen(app: App, from: 'hub' | 'album' = 'hub'): Screen {
 
   const el = h(
     'div',
-    { class: 'screen scroll diploma-screen' },
+    { class: 'screen scroll' },
     h(
       'div',
       { class: 'topbar no-print' },
