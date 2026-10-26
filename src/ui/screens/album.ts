@@ -1,22 +1,16 @@
-import { campaign, type WorldTheme } from '../../content/campaign'
+import { campaign } from '../../content/campaign'
 import { t } from '../../core/i18n'
 import { isCampaignComplete, worldBadges } from '../../game/progression'
-import { drawBoss, type Palette } from '../../render/art'
+import { drawWorldBoss } from '../../render/art'
 import type { App, Screen } from '../app'
 import { h } from '../dom'
 import { backButton } from '../widgets'
 import { diplomaScreen } from './diploma'
 import { hubScreen } from './hub'
 
-const themePalette = (theme: WorldTheme): Palette => ({
-  body: theme.accent,
-  dark: theme.planet.shade,
-  light: theme.planet.glow,
-})
-
 /** Small animated canvas of a world's boss. */
 function bossCanvas(
-  theme: WorldTheme,
+  world: number,
   size: number,
 ): {
   canvas: HTMLCanvasElement
@@ -27,17 +21,16 @@ function bossCanvas(
   canvas.width = canvas.height = size * dpr
   canvas.style.width = canvas.style.height = `${size}px`
   const ctx = canvas.getContext('2d')
-  const p = themePalette(theme)
   const tick = (time: number): void => {
     if (!ctx) return
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     ctx.clearRect(0, 0, size, size)
-    // drawBoss spans about x ±1.25 and y -0.9..1.6 (tractor beam included).
-    ctx.translate(size / 2, size * 0.42)
-    ctx.scale(size * 0.34, size * 0.34)
-    drawBoss(
+    // The boss spans about x ±1.25 and y -1.2..1.6 (accessory and tractor beam included).
+    ctx.translate(size / 2, size * 0.46)
+    ctx.scale(size * 0.32, size * 0.32)
+    drawWorldBoss(
       ctx,
-      p,
+      world,
       {
         t: time,
         lookX: Math.sin(time * 0.8),
@@ -66,7 +59,7 @@ export function albumScreen(app: App): Screen {
   const cards = worlds.map((w, i) => {
     const b = badges[i]
     const got = b?.sticker ?? false
-    const art = bossCanvas(w.theme, 130)
+    const art = bossCanvas(w.index, 130)
     if (got) ticks.push(art.tick)
     const { base, glow, shade } = w.theme.planet
     return h(
