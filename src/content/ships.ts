@@ -7,6 +7,7 @@ export type ShipShape =
   | 'star'
   | 'shark'
   | 'crown'
+  | 'legend'
 
 export interface ShipDef {
   id: string
@@ -18,6 +19,8 @@ export interface ShipDef {
   price: number
   /** Pilot level required before it can be bought. */
   minLevel: number
+  /** Not for sale: earned by finishing the whole campaign. */
+  exclusive?: boolean
 }
 
 export const SHIPS: readonly ShipDef[] = [
@@ -101,7 +104,20 @@ export const SHIPS: readonly ShipDef[] = [
     price: 1000,
     minLevel: 12,
   },
+  {
+    id: 'galaxy',
+    name: { fr: 'Galaxie', en: 'Galaxy' },
+    shape: 'legend',
+    body: '#ffd23f',
+    accent: '#ff5fa2',
+    cockpit: '#5fd4ff',
+    price: 0,
+    minLevel: 1,
+    exclusive: true,
+  },
 ]
+
+export const CAMPAIGN_SHIP = 'galaxy'
 
 export interface LaserDef {
   id: string

@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'vitest'
+import { wordsBetween } from '../src/content/words'
 import { createRng } from '../src/core/rng'
 import {
   BOSS_INTRO,
+  BOSS_LOW,
+  BOSS_Y,
   endlessWaveTarget,
   multiplierFor,
   Session,
   SHOT_DURATION,
+  type GameEvent,
 } from '../src/game/session'
 import { autoplay, level, makeSession, run, waitForEnemy } from './helpers'
 
@@ -92,6 +96,58 @@ describe('Session – letters', () => {
     expect(s.pace).toBeLessThan(1)
   })
 
+  it('caps the campaign pace at 1.2 however fast the child plays', () => {
+    const s = makeSession({ level: level('1-1', { enemies: 80, maxOnScreen: 3, spawnEvery: 0.6 }) })
+    let max = s.pace
+    for (let t = 0; t < 300 && s.status === 'playing'; t += 1 / 30) {
+      const key = s.nextKeyHint()
+      if (key && !s.ending) s.press(key)
+      s.update(1 / 30)
+      s.drainEvents()
+      max = Math.max(max, s.pace)
+    }
+    expect(max).toBeCloseTo(1.2)
+  })
+
+  it('a mistake slows the campaign pace down noticeably', () => {
+    const s = makeSession()
+    waitForEnemy(s)
+    s.press('z')
+    expect(s.pace).toBeCloseTo(0.98)
+  })
+
+  it('halves the fall speed close to the shield', () => {
+    const s = makeSession()
+    waitForEnemy(s)
+    const e = s.enemies[0]
+    if (!e) throw new Error('no enemy')
+    const step = (y: number): number => {
+      e.y = y
+      s.update(0.05)
+      return e.y - y
+    }
+    expect(step(0.75) / step(0.5)).toBeCloseTo(0.5)
+  })
+
+  it('caps the combined focus and struggle weight of a letter', () => {
+    const s = makeSession({
+      level: level('1-1', { pool: ['f', 'j', 'd'], newKeys: ['f'], maxOnScreen: 1, enemies: 400 }),
+      keyWeight: (k) => (k === 'f' ? 3.5 : 1),
+    })
+    const letters: string[] = []
+    for (let t = 0; t < 600 && s.status === 'playing'; t += 1 / 30) {
+      const key = s.nextKeyHint()
+      if (key && !s.ending) s.press(key)
+      s.update(1 / 30)
+      for (const ev of s.drainEvents()) if (ev.type === 'spawn') letters.push(ev.enemy.text)
+    }
+    expect(letters.length).toBeGreaterThan(300)
+    // Weights 3:1:1 once capped (uncapped 10.5:1:1 would give ~84%).
+    const share = letters.filter((l) => l === 'f').length / letters.length
+    expect(share).toBeGreaterThan(0.5)
+    expect(share).toBeLessThan(0.7)
+  })
+
   it('is won once the quota is cleared', () => {
     const s = makeSession()
     autoplay(s)
@@ -147,6 +203,23 @@ describe('Session – words', () => {
   })
 })
 
+/** A child typing the hinted key every `interval` seconds once the boss shows up. */
+function duel(s: Session, interval: number, maxSeconds = 300): GameEvent[] {
+  const events: GameEvent[] = []
+  let next: number | null = null
+  for (let t = 0; t < maxSeconds && s.status === 'playing'; t += 1 / 60) {
+    if (s.boss && next === null) next = s.time + interval
+    if (next !== null && s.time >= next && !s.ending) {
+      const key = s.nextKeyHint()
+      if (key) s.press(key)
+      next += interval
+    }
+    s.update(1 / 60)
+    events.push(...s.drainEvents())
+  }
+  return events
+}
+
 describe('Session – boss', () => {
   it('spawns a boss whose hit points drop with each completed code', () => {
     const s = makeSession({ level: level('1-8') })
@@ -157,7 +230,7 @@ describe('Session – boss', () => {
     const boss = s.boss
     expect(boss).toBeDefined()
     if (!boss) return
-    expect(boss.text).toHaveLength(3)
+    expect(boss.text).toHaveLength(2)
     const hp = boss.hp
     for (const ch of boss.text) {
       s.releaseLock()
@@ -173,6 +246,96 @@ describe('Session – boss', () => {
     autoplay(s)
     expect(s.status).toBe('won')
     expect(s.bossDefeated).toBe(true)
+  })
+
+  it('gets gentle hit points and short codes', () => {
+    const hp = ['1-8', '2-8', '3-8', '4-6', '5-6', '6-6'].map((id) => level(id).bossHp)
+    expect(hp).toEqual([4, 5, 6, 4, 5, 6])
+    const s = makeSession({ words: wordsBetween('fr', 5, 10), level: level('6-6') })
+    const codes: string[] = []
+    for (let t = 0; t < 300 && s.status === 'playing'; t += 1 / 30) {
+      const key = s.nextKeyHint()
+      if (key && !s.ending) s.press(key)
+      s.update(1 / 30)
+      for (const e of s.drainEvents())
+        if (e.type === 'bossSpawn' || e.type === 'bossHit') codes.push(e.enemy.text)
+    }
+    expect(codes).toHaveLength(6)
+    for (const code of codes) expect(code.length).toBeLessThanOrEqual(6)
+  })
+
+  it.each([1, 2, 3, 4, 5])(
+    'a slow child (one key every 2.5 s) beats the first boss without a breach (seed %i)',
+    (seed) => {
+      const s = makeSession({ rng: createRng(seed), level: level('1-8') })
+      const events = duel(s, 2.5)
+      expect(s.status).toBe('won')
+      expect(s.breaches).toBe(0)
+      expect(events.some((e) => e.type === 'spawn')).toBe(false)
+    },
+  )
+
+  it.each([1, 2, 3, 4, 5])(
+    'one key every 1.2 s beats the last word boss without a breach (seed %i)',
+    (seed) => {
+      const s = makeSession({
+        rng: createRng(seed),
+        words: wordsBetween('fr', 5, 10),
+        level: level('6-6'),
+      })
+      const events = duel(s, 1.2)
+      expect(s.status).toBe('won')
+      expect(s.breaches).toBe(0)
+      expect(events.some((e) => e.type === 'spawn')).toBe(false)
+    },
+  )
+
+  it('costs an idle child one heart, then climbs smoothly back up', () => {
+    const s = makeSession({ level: level('1-8') })
+    const events: GameEvent[] = []
+    let y = 0
+    for (let t = 0; t < 60 && !events.some((e) => e.type === 'breach'); t += 1 / 60) {
+      s.update(1 / 60)
+      events.push(...s.drainEvents())
+      y = s.boss?.y ?? 0
+    }
+    const breach = events.find((e) => e.type === 'breach')
+    expect(breach?.enemy.kind).toBe('boss')
+    expect(s.time).toBeGreaterThan(BOSS_INTRO + 8)
+    expect(s.hearts).toBe(s.maxHearts - 1)
+    expect(y).toBeGreaterThan(BOSS_LOW - 0.05)
+    let maxStep = 0
+    for (let t = 0; t < 2; t += 1 / 60) {
+      s.update(1 / 60)
+      events.push(...s.drainEvents())
+      const next = s.boss?.y ?? 0
+      maxStep = Math.max(maxStep, Math.abs(next - y))
+      y = next
+    }
+    expect(y).toBeLessThan(BOSS_Y + 0.1)
+    expect(maxStep).toBeLessThan(0.02)
+    expect(s.hearts).toBe(s.maxHearts - 1)
+    expect(events.some((e) => e.type === 'spawn')).toBe(false)
+  })
+
+  it('eventually beats a child who never types', () => {
+    const s = makeSession({ level: level('1-8') })
+    const events = run(s, 600)
+    expect(s.status).toBe('lost')
+    expect(s.breaches).toBe(s.maxHearts)
+    expect(events.filter((e) => e.type === 'defeat')).toHaveLength(1)
+  })
+
+  it('freeze slows the boss down too', () => {
+    const descent = (frozen: boolean): number => {
+      const s = makeSession({ level: level('1-8') })
+      run(s, BOSS_INTRO + 3)
+      if (frozen) s.freezeUntil = s.time + 100
+      const y = s.boss?.y ?? 0
+      run(s, 4)
+      return (s.boss?.y ?? 0) - y
+    }
+    expect(descent(true)).toBeLessThan(descent(false) * 0.5)
   })
 })
 
@@ -194,6 +357,81 @@ describe('Session – endless', () => {
     run(s, 600)
     expect(s.status).toBe('lost')
     expect(s.result().mode).toBe('endless')
+  })
+
+  it('fights the boss wave one-on-one, then minions come back', () => {
+    const s = new Session({
+      rng: createRng(3),
+      words: ['chat'],
+      endless: { pool: ['f', 'j', 'd', 'k'], reader: false },
+    })
+    let inBoss = false
+    let leftovers = 0
+    let duringBoss = 0
+    let afterBoss = 0
+    let world: number | null = null
+    let hp: number | null = null
+    for (let t = 0; t < 900 && s.wave < 7 && s.status === 'playing'; t += 1 / 30) {
+      const key = s.nextKeyHint()
+      if (key) s.press(key)
+      s.update(1 / 30)
+      for (const e of s.drainEvents()) {
+        if (e.type === 'bossIncoming') {
+          inBoss = true
+          leftovers = s.enemies.filter((o) => !o.doomed).length
+          world = e.world
+        } else if (e.type === 'bossSpawn') hp = e.enemy.hp
+        else if (e.type === 'wave' && !e.boss) inBoss = false
+        else if (e.type === 'spawn' && inBoss) duringBoss++
+        else if (e.type === 'spawn' && s.wave === 6) afterBoss++
+      }
+    }
+    expect(s.wave).toBeGreaterThanOrEqual(6)
+    expect(leftovers).toBe(0)
+    expect(duringBoss).toBe(0)
+    expect(afterBoss).toBeGreaterThan(0)
+    expect(world).toBe(0)
+    expect(hp).toBe(4)
+  })
+
+  /** Jumps an idle endless game to the end of `wave`, so the next one starts. */
+  function finishWave(s: Session, wave: number): GameEvent[] {
+    s.wave = wave
+    s.waveKills = endlessWaveTarget(wave)
+    s.update(1 / 60)
+    return s.drainEvents()
+  }
+
+  it('meets each world boss in turn', () => {
+    const s = new Session({
+      rng: createRng(3),
+      words: ['chat'],
+      endless: { pool: ['f', 'j', 'd', 'k'], reader: false },
+    })
+    const worlds: number[] = []
+    for (let wave = 5; wave <= 60; wave += 5)
+      for (const e of finishWave(s, wave - 1)) if (e.type === 'bossIncoming') worlds.push(e.world)
+    expect(worlds).toEqual([0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5])
+  })
+
+  it('lets the last invaders fly away quietly when the boss comes', () => {
+    const s = new Session({
+      rng: createRng(3),
+      words: ['chat'],
+      endless: { pool: ['f', 'j', 'd', 'k'], reader: false },
+    })
+    for (let t = 0; t < 30 && s.enemies.length < 2; t += 1 / 60) s.update(1 / 60)
+    s.drainEvents()
+    const leftovers = s.enemies.map((e) => e.id)
+    expect(leftovers.length).toBeGreaterThanOrEqual(2)
+    const { score, kills } = s
+    const events = finishWave(s, 4)
+    const escaped = events.flatMap((e) => (e.type === 'escape' ? [e.enemy.id] : []))
+    expect(escaped).toEqual(expect.arrayContaining(leftovers))
+    expect(events.some((e) => e.type === 'kill')).toBe(false)
+    expect(s.enemies).toHaveLength(0)
+    expect(s.score).toBe(score)
+    expect(s.kills).toBe(kills)
   })
 })
 

@@ -16,7 +16,7 @@ export interface LevelDef {
   /** Letters that may appear (letters levels only). */
   pool: string[]
   wordLen: readonly [number, number]
-  /** Number of invaders to clear (minions for boss levels are unlimited). */
+  /** Number of invaders to clear (unused by boss levels: the boss fights alone). */
   enemies: number
   /** Seconds for an invader to fall from the top to the shield. */
   fallTime: number
@@ -28,11 +28,18 @@ export interface LevelDef {
   powerups: boolean
 }
 
+/** Drives the world's ambient particles and its boss's accessory. */
+export type WorldStyle = 'meadow' | 'bubbles' | 'ice' | 'desert' | 'jungle' | 'void'
+
 export interface WorldTheme {
   /** Three nebula colours, from deep background to highlight. */
   nebula: readonly [string, string, string]
   planet: { base: string; shade: string; glow: string; ring: boolean }
   accent: string
+  style: WorldStyle
+  /** Alien family living in this world: drawAlien species and ALIEN_PALETTES indexes. */
+  species: readonly number[]
+  palettes: readonly number[]
 }
 
 export interface WorldDef {
@@ -48,31 +55,49 @@ export const WORLD_THEMES: readonly WorldTheme[] = [
     nebula: ['#0b0a2e', '#3a1c71', '#ff5fa2'],
     planet: { base: '#7be07b', shade: '#1f7a55', glow: '#b8ff6a', ring: false },
     accent: '#7be07b',
+    style: 'meadow',
+    species: [0, 2],
+    palettes: [0, 1, 5],
   },
   {
     nebula: ['#051530', '#10527a', '#38e8ff'],
     planet: { base: '#5fd4ff', shade: '#1b4f9c', glow: '#aef4ff', ring: true },
     accent: '#5fd4ff',
+    style: 'bubbles',
+    species: [1, 4],
+    palettes: [2, 7, 4],
   },
   {
     nebula: ['#170a24', '#5b1d6e', '#c985ff'],
     planet: { base: '#e6ecff', shade: '#7a86c9', glow: '#ffffff', ring: false },
     accent: '#c985ff',
+    style: 'ice',
+    species: [5, 4],
+    palettes: [8, 2, 4],
   },
   {
     nebula: ['#1f0a14', '#7a1f3d', '#ffae57'],
     planet: { base: '#ffae57', shade: '#b0402a', glow: '#ffe066', ring: true },
     accent: '#ffae57',
+    style: 'desert',
+    species: [3, 2],
+    palettes: [3, 5, 9],
   },
   {
     nebula: ['#04161a', '#0f5e55', '#6bffcf'],
     planet: { base: '#6bffcf', shade: '#127a6b', glow: '#d2fff0', ring: false },
     accent: '#6bffcf',
+    style: 'jungle',
+    species: [0, 1],
+    palettes: [7, 0, 5],
   },
   {
     nebula: ['#07040f', '#2b0d4a', '#ff4d6d'],
     planet: { base: '#2b1747', shade: '#0a0414', glow: '#ff4d6d', ring: true },
     accent: '#ff4d6d',
+    style: 'void',
+    species: [5, 3],
+    palettes: [10, 4, 6],
   },
 ]
 
@@ -111,6 +136,8 @@ function letterWorld(layout: LayoutId, world: number, learnedBefore: readonly st
     const p = index / (steps.length - 1)
     const boss = step.tag === 'boss'
     const speedy = step.tag === 'speed' || step.tag === 'mix'
+    // Lessons introduce new keys: restart each world calm instead of stacking difficulty.
+    const lesson = step.tag === 'lesson'
     return {
       id: `${world + 1}-${index + 1}`,
       world,
@@ -122,11 +149,15 @@ function letterWorld(layout: LayoutId, world: number, learnedBefore: readonly st
       pool: step.pool,
       wordLen: [1, 1],
       enemies: 12 + index * 2 + world * 2,
-      fallTime: round1((13 - 1.2 * world - 3 * p) * (speedy ? 0.85 : 1)),
+      fallTime: lesson
+        ? round1(13 - 0.5 * world - 2 * p)
+        : round1((13 - 0.8 * world - 3 * p) * (speedy ? 0.85 : 1)),
       fallPerChar: 0,
       spawnEvery: round1(Math.max(1, 2.6 - 0.2 * world - 0.8 * p)),
-      maxOnScreen: boss ? 3 : 2 + Math.floor(p * 2) + world,
-      bossHp: 6 + world * 2,
+      maxOnScreen: lesson
+        ? Math.min(3, 2 + Math.floor(p * 2))
+        : Math.min(4, 2 + Math.floor(p * 2) + Math.min(1, world)),
+      bossHp: 4 + world,
       powerups: world > 0 || index >= 2,
     }
   })
@@ -161,15 +192,15 @@ function wordWorld(layout: LayoutId, world: number): WorldDef {
       fallTime: round1(7 - 0.8 * tier - 1.5 * p),
       fallPerChar: round1(1.4 - 0.15 * tier - 0.25 * p),
       spawnEvery: round1(Math.max(1.2, 3.4 - 0.3 * tier - 0.8 * p)),
-      maxOnScreen: boss ? 3 : 2 + Math.floor(p * 2) + tier,
-      bossHp: 5 + tier * 2,
+      maxOnScreen: Math.min(4, 2 + Math.floor(p * 2) + tier),
+      bossHp: 4 + tier,
       powerups: true,
     })
   }
   return { index: world, kind: 'words', row: null, theme: themeFor(world), levels }
 }
 
-function themeFor(world: number): WorldTheme {
+export function themeFor(world: number): WorldTheme {
   return WORLD_THEMES[world % WORLD_THEMES.length] as WorldTheme
 }
 

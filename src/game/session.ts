@@ -1,4 +1,4 @@
-import type { LevelDef } from '../content/campaign'
+import { themeFor, WORLD_COUNT, type LevelDef, type WorldTheme } from '../content/campaign'
 import { clamp } from '../core/math'
 import { pick, randRange, weightedPick, type Rng } from '../core/rng'
 
@@ -51,7 +51,8 @@ export type GameEvent =
   | { type: 'escape'; enemy: Enemy }
   | { type: 'powerup'; power: Power; enemy: Enemy }
   | { type: 'bossHit'; enemy: Enemy }
-  | { type: 'bossIncoming'; delay: number }
+  /** `world` picks the boss's look and name. */
+  | { type: 'bossIncoming'; delay: number; world: number }
   | { type: 'bossSpawn'; enemy: Enemy }
   | { type: 'wave'; wave: number; boss: boolean }
   | { type: 'victory' }
@@ -128,6 +129,13 @@ export function multiplierFor(combo: number): number {
 
 export const SHOT_DURATION = 0.12
 export const BOSS_Y = 0.3
+/** The boss creeps down to here; reaching it costs a heart and sends the boss back up. */
+export const BOSS_LOW = 0.65
+/** Boss descent takes a regular invader's fall time for its code, times this. */
+const BOSS_DESCENT_SLACK = 1.2
+/** How far a laser hit pushes the boss back up; a completed code pushes harder. */
+const BOSS_PUSH = 0.04
+const BOSS_KNOCKBACK = 0.14
 const FIRST_SPAWN_DELAY = 1.2
 /** Build-up before a boss appears: calm screen, rising music. */
 export const BOSS_INTRO = 4.2
@@ -135,6 +143,9 @@ const VICTORY_DELAY = 1.1
 const DEFEAT_DELAY = 1.2
 const FREEZE_SECONDS = 6
 const FREEZE_FACTOR = 0.25
+/** Invaders close to the shield slow down so a child still has time to react. */
+const SLOW_ZONE_Y = 0.7
+const SLOW_ZONE_FACTOR = 0.5
 const SPECIES = 6
 const PALETTES = 8
 const POWERS: readonly Power[] = ['freeze', 'bomb', 'heal']
@@ -186,6 +197,8 @@ export class Session {
   private nextId = 1
   private spawnTimer = FIRST_SPAWN_DELAY
   private bossPending: number | null = null
+  /** Where the boss is heading; its drawn height eases toward it. */
+  private bossTargetY = BOSS_Y
   private endAt: number | null = null
   private recentWords: string[] = []
 
@@ -412,12 +425,13 @@ export class Session {
     if (expected) this.stat(expected).ko++
     if (this.combo >= 5) this.emit({ type: 'comboBreak', combo: this.combo })
     this.combo = 0
-    this.pace = clamp(this.pace - 0.004, ...this.paceRange())
+    const penalty = this.mode === 'endless' ? 0.004 : 0.02
+    this.pace = clamp(this.pace - penalty, ...this.paceRange())
     this.emit({ type: 'mistake', key, expected })
   }
 
   private paceRange(): [number, number] {
-    return this.mode === 'endless' ? [0.6, 1.8] : [0.55, 1.5]
+    return this.mode === 'endless' ? [0.6, 1.8] : [0.55, 1.2]
   }
 
   private advanceProjectiles(): void {
@@ -431,6 +445,11 @@ export class Session {
       const enemy = this.enemies.find((e) => e.id === p.targetId)
       if (!enemy) continue
       enemy.lastHit = this.time
+      if (enemy.kind === 'boss')
+        this.bossTargetY = Math.max(
+          BOSS_Y,
+          this.bossTargetY - (p.final ? BOSS_KNOCKBACK : BOSS_PUSH),
+        )
       if (!p.final) {
         this.emit({ type: 'hit', enemy })
       } else if (enemy.kind === 'boss') {
@@ -520,14 +539,20 @@ export class Session {
 
   private checkBreaches(): void {
     for (const e of [...this.enemies]) {
-      if (e.doomed || e.kind === 'boss' || e.y < 1) continue
-      this.enemies = this.enemies.filter((o) => o.id !== e.id)
-      if (this.lockId === e.id) this.lockId = null
-      if (e.kind === 'powerup') {
-        this.emit({ type: 'escape', enemy: e })
-        continue
+      if (e.doomed) continue
+      if (e.kind === 'boss') {
+        if (this.bossTargetY < BOSS_LOW) continue
+        this.bossTargetY = BOSS_Y
+      } else {
+        if (e.y < 1) continue
+        this.enemies = this.enemies.filter((o) => o.id !== e.id)
+        if (this.lockId === e.id) this.lockId = null
+        if (e.kind === 'powerup') {
+          this.emit({ type: 'escape', enemy: e })
+          continue
+        }
+        this.quotaResolved++
       }
-      this.quotaResolved++
       this.breaches++
       this.hearts = Math.max(0, this.hearts - 1)
       if (this.combo >= 5) this.emit({ type: 'comboBreak', combo: this.combo })
@@ -563,26 +588,49 @@ export class Session {
   }
 
   private announceBoss(): void {
+    // Boss fights are one-on-one: clear what is left of the previous endless wave.
+    for (const v of this.enemies.filter((e) => !e.doomed)) {
+      this.enemies = this.enemies.filter((o) => o.id !== v.id)
+      if (this.lockId === v.id) this.lockId = null
+      this.emit({ type: 'escape', enemy: v })
+    }
     this.bossPending = BOSS_INTRO
-    this.emit({ type: 'bossIncoming', delay: BOSS_INTRO })
+    // Endless mode meets each world's boss in turn, one every 5 waves.
+    const world = this.level?.world ?? (Math.floor(this.wave / 5) - 1) % WORLD_COUNT
+    this.emit({ type: 'bossIncoming', delay: BOSS_INTRO, world })
   }
 
+  /** Campaign invaders belong to their world's family; endless mixes them all. */
+  private get theme(): WorldTheme | null {
+    return this.level ? themeFor(this.level.world) : null
+  }
+
+  /** Exactly one rng draw whatever the mode, so seeded games stay reproducible. */
+  private pickLook(options: readonly number[] | undefined, count: number): number {
+    const roll = this.rng()
+    return options ? (options[Math.floor(roll * options.length)] ?? 0) : Math.floor(roll * count)
+  }
+
+  /** Boss fights are one-on-one: other invaders would steal the child's keys from the boss. */
   private canSpawn(): boolean {
-    if (this.level && !this.level.boss) return this.quotaSpawned < this.level.enemies
-    // Let the boss make its entrance before minions pour in.
-    if (this.bossPending !== null) return false
-    return !this.bossDefeated
+    if (this.level) return !this.level.boss && this.quotaSpawned < this.level.enemies
+    return !isBossWave(this.wave)
   }
 
   private moveEnemies(dt: number): void {
     const speed = this.pace * (this.frozen ? FREEZE_FACTOR : 1)
     for (const e of this.enemies) {
       if (e.kind === 'boss') {
-        e.y += (BOSS_Y - e.y) * Math.min(1, dt * 1.5)
+        if (this.endAt === null) {
+          const t = this.tuning()
+          const fall = (t.fallTime + t.fallPerChar * e.text.length) * BOSS_DESCENT_SLACK
+          this.bossTargetY += ((BOSS_LOW - BOSS_Y) / fall) * speed * dt
+        }
+        e.y += (this.bossTargetY - e.y) * Math.min(1, dt * 2)
         e.x = 0.5 + 0.28 * Math.sin((this.time - e.born) * 0.35)
         continue
       }
-      e.y += e.vy * speed * dt
+      e.y += e.vy * speed * (e.y > SLOW_ZONE_Y ? SLOW_ZONE_FACTOR : 1) * dt
       e.x = e.baseX + e.wobbleAmp * Math.sin((this.time - e.born) * e.wobbleFreq + e.wobblePhase)
     }
   }
@@ -597,7 +645,7 @@ export class Session {
         wordLen: level.wordLen,
         fallTime: level.fallTime,
         fallPerChar: level.fallPerChar,
-        spawnEvery: level.boss ? level.spawnEvery * 1.4 : level.spawnEvery,
+        spawnEvery: level.spawnEvery,
         maxOnScreen: level.maxOnScreen,
         powerups: level.powerups,
       }
@@ -612,7 +660,7 @@ export class Session {
       wordLen: [Math.min(5, 2 + Math.floor(w / 4)), Math.min(10, 3 + Math.floor(w / 2))],
       fallTime: Math.max(4, 12 - 0.6 * (w - 1)),
       fallPerChar: Math.max(0.5, 1.3 - 0.06 * (w - 1)),
-      spawnEvery: Math.max(0.6, 2.4 - 0.15 * (w - 1)) * (isBossWave(w) ? 1.4 : 1),
+      spawnEvery: Math.max(0.6, 2.4 - 0.15 * (w - 1)),
       maxOnScreen: Math.min(9, 2 + Math.floor((w - 1) / 1.5)),
       powerups: true,
     }
@@ -628,10 +676,9 @@ export class Session {
     const taken = this.firstLettersOnScreen()
     const free = pool.filter((k) => !taken.has(k))
     const candidates = free.length > 0 ? free : pool
-    return weightedPick(
-      this.rng,
-      candidates,
-      (k) => (focus.includes(k) ? 3 : 1) * this.keyWeight(k),
+    // Focus and struggle boosts compound; capped so one letter cannot flood the screen.
+    return weightedPick(this.rng, candidates, (k) =>
+      Math.min(3, (focus.includes(k) ? 3 : 1) * this.keyWeight(k)),
     )
   }
 
@@ -650,16 +697,18 @@ export class Session {
   private bossText(): string {
     const t = this.tuning()
     const useWords = this.level ? this.level.kind === 'words' : t.wordChance > 0.5
-    if (useWords) return this.pickWord(Math.max(3, t.wordLen[0]), Math.max(4, t.wordLen[1]))
+    if (useWords)
+      return this.pickWord(Math.max(3, t.wordLen[0]), Math.min(6, Math.max(4, t.wordLen[1])))
     let s = ''
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < (this.level?.world === 0 ? 2 : 3); i++) {
       s += weightedPick(this.rng, t.pool, (k) => this.keyWeight(k) * (s.endsWith(k) ? 0.2 : 1))
     }
     return s
   }
 
   private spawnBoss(): void {
-    const hp = this.level ? this.level.bossHp : 4 + Math.floor(this.wave / 5) * 2
+    const hp = this.level ? this.level.bossHp : 3 + Math.floor(this.wave / 5)
+    this.bossTargetY = BOSS_Y
     const boss: Enemy = {
       id: this.nextId++,
       kind: 'boss',
@@ -673,8 +722,8 @@ export class Session {
       wobbleAmp: 0,
       wobbleFreq: 0,
       wobblePhase: 0,
-      species: Math.floor(this.rng() * SPECIES),
-      palette: Math.floor(this.rng() * PALETTES),
+      species: this.pickLook(this.theme?.species, SPECIES),
+      palette: this.pickLook(this.theme?.palettes, PALETTES),
       born: this.time,
       doomed: false,
       hp,
@@ -717,8 +766,8 @@ export class Session {
       wobbleAmp: randRange(this.rng, 0.005, useWord ? 0.015 : 0.03),
       wobbleFreq: randRange(this.rng, 0.6, 1.4),
       wobblePhase: randRange(this.rng, 0, Math.PI * 2),
-      species: Math.floor(this.rng() * SPECIES),
-      palette: Math.floor(this.rng() * PALETTES),
+      species: this.pickLook(this.theme?.species, SPECIES),
+      palette: this.pickLook(this.theme?.palettes, PALETTES),
       born: this.time,
       doomed: false,
       hp: 1,

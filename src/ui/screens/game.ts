@@ -18,9 +18,11 @@ import { keyWeight, type Profile } from '../../state/profile'
 import type { App, Screen } from '../app'
 import { h } from '../dom'
 import { KeyboardHint } from '../keyboard-hint'
+import { endingScreen } from './ending'
 import { hubScreen } from './hub'
 import { mapScreen } from './map'
 import { openSettings } from './settings'
+import { travelScreen } from './travel'
 
 export type Launch = { kind: 'level'; level: LevelDef } | { kind: 'endless' }
 
@@ -55,12 +57,21 @@ function buildSession(app: App, profile: Profile, launch: Launch): Session {
   return new Session(config)
 }
 
-export function gameScreen(app: App, launch: Launch, skipBrief = false): Screen {
+export function gameScreen(app: App, launch: Launch, skipBrief = false, travel = true): Screen {
   const profile = app.profile
   if (!profile) return hubScreen(app)
   const layout = app.settings.layout
   const lang = app.settings.lang
   const level = launch.kind === 'level' ? launch.level : null
+  // First trip to a world (no stars on its first level yet): fly there before the briefing.
+  if (
+    travel &&
+    !skipBrief &&
+    level?.index === 0 &&
+    level.world > 0 &&
+    !levelStars(profile, level.id)
+  )
+    return travelScreen(app, level.world, () => gameScreen(app, launch, false, false))
   const world = level ? campaign(layout)[level.world] : undefined
   /** Each world has its own tune; endless mode changes tune every two waves. */
   const gameTrack = (): TrackId =>
@@ -311,7 +322,7 @@ export function gameScreen(app: App, launch: Launch, skipBrief = false): Screen 
   const finish = (): void => {
     phase = 'done'
     const result = session.result()
-    const rewards = applyResult(profile, result)
+    const rewards = applyResult(profile, result, layout)
     app.save()
     app.music.intensity = 1
     fireworks = result.won ? 5 : 0
@@ -333,7 +344,13 @@ export function gameScreen(app: App, launch: Launch, skipBrief = false): Screen 
     const actions: HTMLElement[] = []
     const replay = (): void => app.go(gameScreen(app, launch, true))
     actions.push(h('button', { class: 'btn blue', onClick: replay }, '🔄 ', t('replay')))
-    if (nextOpen) {
+    if (rewards.campaignCompleted) {
+      const goEnding = (): void => app.go(endingScreen(app))
+      actions.push(
+        h('button', { class: 'btn big green', onClick: goEnding }, '🌟 ', t('continue'), ' ▶'),
+      )
+      primary = goEnding
+    } else if (nextOpen) {
       const goNext = (): void => app.go(gameScreen(app, levelLaunch(nextOpen)))
       actions.push(h('button', { class: 'btn big green', onClick: goNext }, t('next'), ' ▶'))
       primary = goNext
@@ -354,6 +371,14 @@ export function gameScreen(app: App, launch: Launch, skipBrief = false): Screen 
       level ? h('div', { class: 'stars-big' }, ...starEls) : null,
       scoreBig,
       rewards.newBest ? h('div', { class: 'record' }, '🏅 ', t('newRecord')) : null,
+      level?.boss && result.won && rewards.previousStars === 0
+        ? h(
+            'div',
+            { class: 'record' },
+            '🌟 ',
+            t('newSticker', { world: t(`world.${level.world}` as 'world.0') }),
+          )
+        : null,
       h(
         'div',
         { class: 'stats' },

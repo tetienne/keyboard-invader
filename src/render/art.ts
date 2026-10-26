@@ -1,3 +1,4 @@
+import { themeFor, type WorldStyle } from '../content/campaign'
 import type { ShipDef } from '../content/ships'
 import { TAU } from '../core/math'
 
@@ -21,6 +22,10 @@ export const ALIEN_PALETTES: readonly Palette[] = [
   { body: '#ffe066', dark: '#a37d12', light: '#fff7cc' },
   { body: '#ff6b6b', dark: '#9c2323', light: '#ffd6d6' },
   { body: '#4fe3c1', dark: '#11705f', light: '#cffff2' },
+  // World-only colours (endless mode keeps drawing from the first 8).
+  { body: '#d8f1ff', dark: '#5a7fb0', light: '#ffffff' },
+  { body: '#f2cf8a', dark: '#9c6a2a', light: '#fff3d6' },
+  { body: '#7b5cff', dark: '#2a1470', light: '#d9ccff' },
 ]
 
 export const GOLDEN: Palette = { body: '#ffd23f', dark: '#a86d00', light: '#fff6c2' }
@@ -357,16 +362,30 @@ export function drawAlien(
   ctx.restore()
 }
 
-/** Big mothership boss. */
-export function drawBoss(
+export const bossPalette = (world: number): Palette => palette(themeFor(world).palettes[0] ?? 0)
+
+/** The boss of world N in unit space (1 unit = radius), with its world's palette and accessory. */
+export function drawWorldBoss(
+  ctx: CanvasRenderingContext2D,
+  world: number,
+  pose: AlienPose,
+  hpRatio = 1,
+): void {
+  drawBoss(ctx, bossPalette(world), pose, hpRatio, themeFor(world).style)
+}
+
+/** Big mothership boss; `style` adds its world's accessory. */
+function drawBoss(
   ctx: CanvasRenderingContext2D,
   p: Palette,
   pose: AlienPose,
   hpRatio: number,
+  style?: WorldStyle,
 ): void {
   const t = pose.t
   ctx.save()
   ctx.translate(0, Math.sin(t * 1.5) * 0.04)
+  if (style === 'void') bossSwirl(ctx, t)
   // tractor glow
   const beam = ctx.createLinearGradient(0, 0.3, 0, 1.6)
   beam.addColorStop(0, `${p.body}88`)
@@ -401,6 +420,8 @@ export function drawBoss(
   ctx.fillStyle = 'rgba(255,255,255,0.6)'
   ctx.fill()
 
+  if (style === 'desert') nemes(ctx)
+
   // hull
   ctx.beginPath()
   ctx.ellipse(0, 0.08, 1.25, 0.34, 0, 0, TAU)
@@ -432,7 +453,216 @@ export function drawBoss(
     ctx.fillStyle = on ? '#ffffff' : p.body
     ctx.fill()
   }
+  if (style) bossAccessory(ctx, style, t)
   ctx.restore()
+}
+
+/** Point on the dome outline, `a` from 0 (right) to PI (left). */
+const domeAt = (a: number, out = 0): [number, number] => [
+  Math.cos(a) * (0.62 + out),
+  -0.2 - Math.sin(a) * (0.66 + out),
+]
+
+function outlined(ctx: CanvasRenderingContext2D, fill: string, width = 0.04): void {
+  ctx.fillStyle = fill
+  ctx.fill()
+  ctx.lineWidth = width
+  ctx.strokeStyle = OUTLINE
+  ctx.lineJoin = 'round'
+  ctx.stroke()
+}
+
+function bossSwirl(ctx: CanvasRenderingContext2D, t: number): void {
+  ctx.save()
+  ctx.globalCompositeOperation = 'lighter'
+  ctx.lineCap = 'round'
+  ctx.scale(1, 0.55)
+  ctx.rotate(t * 0.6)
+  for (let arm = 0; arm < 3; arm++) {
+    ctx.rotate(TAU / 3)
+    ctx.beginPath()
+    for (let i = 0; i <= 16; i++) {
+      const k = i / 16
+      const a = k * 2.6
+      const r = 0.5 + k * 1.15
+      ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r)
+    }
+    ctx.lineWidth = 0.16
+    ctx.strokeStyle = arm === 0 ? 'rgba(255,77,109,0.35)' : 'rgba(201,133,255,0.35)'
+    ctx.stroke()
+  }
+  ctx.restore()
+}
+
+/** Pharaoh headdress: striped flaps falling from the dome, tucked behind the hull. */
+function nemes(ctx: CanvasRenderingContext2D): void {
+  for (const s of [-1, 1]) {
+    ctx.beginPath()
+    ctx.moveTo(s * 0.5, -0.6)
+    ctx.quadraticCurveTo(s * 0.86, -0.45, s * 0.98, 0.15)
+    ctx.lineTo(s * 0.6, 0.15)
+    ctx.quadraticCurveTo(s * 0.62, -0.2, s * 0.42, -0.45)
+    ctx.closePath()
+    outlined(ctx, '#ffd23f')
+    ctx.save()
+    ctx.clip()
+    ctx.strokeStyle = '#2f6fd6'
+    ctx.lineWidth = 0.08
+    for (let i = 0; i < 4; i++) {
+      ctx.beginPath()
+      ctx.moveTo(s * 0.3, -0.5 + i * 0.18)
+      ctx.lineTo(s * 1.1, -0.42 + i * 0.18)
+      ctx.stroke()
+    }
+    ctx.restore()
+  }
+}
+
+function bossAccessory(ctx: CanvasRenderingContext2D, style: WorldStyle, t: number): void {
+  ctx.lineCap = 'round'
+  switch (style) {
+    case 'meadow': {
+      // Crown of flowers along the dome.
+      const colors = ['#ff7aa8', '#ffe066', '#ffffff', '#ffe066', '#ff7aa8']
+      colors.forEach((color, i) => {
+        const [x, y] = domeAt(0.55 + i * 0.51, 0.02)
+        const r = i === 2 ? 0.1 : 0.08
+        ctx.save()
+        ctx.translate(x, y)
+        ctx.rotate(t * 0.8 + i)
+        ctx.beginPath()
+        for (let k = 0; k < 5; k++) {
+          const a = (k / 5) * TAU
+          ctx.moveTo(Math.cos(a) * r + r * 0.9, Math.sin(a) * r)
+          ctx.arc(Math.cos(a) * r, Math.sin(a) * r, r * 0.9, 0, TAU)
+        }
+        outlined(ctx, color, 0.03)
+        ctx.beginPath()
+        ctx.arc(0, 0, r * 0.6, 0, TAU)
+        outlined(ctx, '#ff9f1c', 0.03)
+        ctx.restore()
+      })
+      break
+    }
+    case 'bubbles': {
+      // Captain's cap on top of the dome, bubbles rising from the hull.
+      ctx.beginPath()
+      ctx.ellipse(0, -0.86, 0.36, 0.08, 0, 0, TAU)
+      outlined(ctx, '#1b3d8f')
+      ctx.beginPath()
+      ctx.moveTo(-0.3, -0.88)
+      ctx.quadraticCurveTo(-0.34, -1.06, 0, -1.08)
+      ctx.quadraticCurveTo(0.34, -1.06, 0.3, -0.88)
+      ctx.closePath()
+      outlined(ctx, '#ffffff')
+      ctx.beginPath()
+      ctx.rect(-0.3, -0.93, 0.6, 0.06)
+      outlined(ctx, '#1b3d8f', 0.03)
+      ctx.beginPath()
+      ctx.arc(0, -0.99, 0.05, 0, TAU)
+      outlined(ctx, '#ffd23f', 0.025)
+      for (let i = 0; i < 5; i++) {
+        const k = (t * 0.5 + i / 5) % 1
+        const side = i % 2 === 0 ? -1 : 1
+        ctx.beginPath()
+        ctx.arc(side * (1.05 + Math.sin(k * 9 + i) * 0.06), 0.05 - k * 0.9, 0.04 + k * 0.05, 0, TAU)
+        ctx.globalAlpha = 1 - k
+        ctx.lineWidth = 0.025
+        ctx.strokeStyle = '#dcf6ff'
+        ctx.stroke()
+        ctx.globalAlpha = 1
+      }
+      break
+    }
+    case 'ice': {
+      // Crown of ice spikes, icicles under the hull.
+      for (let i = 0; i < 5; i++) {
+        const a = 0.95 + i * 0.3
+        const len = i === 2 ? 0.26 : i % 2 === 0 ? 0.16 : 0.2
+        const [x0, y0] = domeAt(a - 0.11)
+        const [x1, y1] = domeAt(a + 0.11)
+        const [tx, ty] = domeAt(a, len)
+        ctx.beginPath()
+        ctx.moveTo(x0, y0)
+        ctx.lineTo(tx, ty)
+        ctx.lineTo(x1, y1)
+        ctx.closePath()
+        outlined(ctx, i === 2 ? '#ffffff' : '#bfefff', 0.03)
+      }
+      for (let i = 0; i < 6; i++) {
+        const x = -0.75 + i * 0.3
+        const len = 0.14 + ((i * 7) % 3) * 0.05
+        ctx.beginPath()
+        ctx.moveTo(x - 0.06, 0.33)
+        ctx.lineTo(x, 0.33 + len)
+        ctx.lineTo(x + 0.06, 0.33)
+        ctx.closePath()
+        outlined(ctx, '#dff7ff', 0.025)
+      }
+      break
+    }
+    case 'desert': {
+      // Gold uraeus jewel on top of the headdress.
+      ctx.beginPath()
+      ctx.ellipse(0, -0.9, 0.08, 0.12, 0, 0, TAU)
+      outlined(ctx, '#ffd23f', 0.03)
+      ctx.beginPath()
+      ctx.arc(0, -0.9, 0.045, 0, TAU)
+      ctx.fillStyle = '#2fd6b5'
+      ctx.fill()
+      break
+    }
+    case 'jungle': {
+      // Palm tuft on the dome and a leafy vine across the hull.
+      for (let i = 0; i < 3; i++) {
+        ctx.save()
+        ctx.translate(0, -0.84)
+        ctx.rotate(-0.7 + i * 0.7 + Math.sin(t * 2 + i) * 0.08)
+        ctx.beginPath()
+        ctx.ellipse(0, -0.16, 0.07, 0.18, 0, 0, TAU)
+        outlined(ctx, i === 1 ? '#7be07b' : '#3fbf5f', 0.03)
+        ctx.restore()
+      }
+      ctx.beginPath()
+      ctx.moveTo(-1.15, -0.02)
+      for (let i = 1; i <= 8; i++) {
+        const x = -1.15 + i * 0.29
+        ctx.quadraticCurveTo(x - 0.15, 0.24, x, 0.04 + (i % 2) * 0.06)
+      }
+      ctx.lineWidth = 0.05
+      ctx.strokeStyle = '#2e8f4a'
+      ctx.stroke()
+      for (let i = 0; i < 6; i++) {
+        const x = -0.95 + i * 0.38
+        ctx.save()
+        ctx.translate(x, 0.2)
+        ctx.rotate((i % 2 === 0 ? 0.5 : -0.5) + Math.sin(t * 3 + i) * 0.15)
+        ctx.beginPath()
+        ctx.ellipse(0, 0.08, 0.05, 0.11, 0, 0, TAU)
+        outlined(ctx, '#5fd47a', 0.025)
+        ctx.restore()
+      }
+      break
+    }
+    case 'void': {
+      // Little stars orbiting the mothership.
+      for (let i = 0; i < 4; i++) {
+        const a = t * 1.2 + (i * TAU) / 4
+        const x = Math.cos(a) * 1.35
+        const y = Math.sin(a) * 0.5 - 0.1
+        const r = 0.05 + 0.02 * Math.sin(t * 5 + i)
+        ctx.beginPath()
+        ctx.moveTo(x, y - r * 2)
+        ctx.lineTo(x + r * 0.6, y)
+        ctx.lineTo(x, y + r * 2)
+        ctx.lineTo(x - r * 0.6, y)
+        ctx.closePath()
+        ctx.fillStyle = i % 2 === 0 ? '#ffffff' : '#ffb3c6'
+        ctx.fill()
+      }
+      break
+    }
+  }
 }
 
 export type PowerIcon = 'freeze' | 'bomb' | 'heal'
@@ -708,6 +938,50 @@ export function drawShip(ctx: CanvasRenderingContext2D, ship: ShipDef, t: number
       fillAccent()
       cockpit(0, 0.02, 0.24, 0.24)
       break
+    case 'legend': {
+      const rainbow = ['#ff5fa2', '#ffae57', '#ffe066', '#7be07b', '#5fd4ff', '#c985ff']
+      for (const s of [-1, 1]) {
+        ctx.beginPath()
+        ctx.moveTo(s * 0.22, -0.45)
+        ctx.quadraticCurveTo(s * 1.05, -0.2, s * 1.25, 0.8)
+        ctx.lineTo(s * 0.7, 0.55)
+        ctx.lineTo(s * 0.28, 0.62)
+        ctx.closePath()
+        const g = ctx.createLinearGradient(s * 0.2, -0.45, s * 1.25, 0.8)
+        rainbow.forEach((c, i) => g.addColorStop(i / (rainbow.length - 1), c))
+        ctx.fillStyle = g
+        ctx.fill()
+        outline()
+      }
+      ctx.beginPath()
+      ctx.moveTo(0, -1.2)
+      ctx.bezierCurveTo(0.5, -0.65, 0.44, 0.4, 0.3, 0.8)
+      ctx.lineTo(-0.3, 0.8)
+      ctx.bezierCurveTo(-0.44, 0.4, -0.5, -0.65, 0, -1.2)
+      fillBody()
+      ctx.beginPath()
+      ctx.rect(-0.38, 0.36, 0.76, 0.14)
+      fillAccent()
+      cockpit(0, -0.3, 0.17, 0.3)
+      // Twinkling sparkles on the nose and wing tips.
+      ctx.fillStyle = '#ffffff'
+      for (const [x, y, k] of [
+        [0, -1.2, 0],
+        [-1.25, 0.8, 1],
+        [1.25, 0.8, 2],
+      ] as const) {
+        const r = 0.12 + 0.07 * Math.sin(t * 5 + k * 2)
+        ctx.beginPath()
+        for (let i = 0; i < 8; i++) {
+          const a = (i * Math.PI) / 4
+          const rr = i % 2 === 0 ? r * 1.8 : r * 0.35
+          ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr)
+        }
+        ctx.closePath()
+        ctx.fill()
+      }
+      break
+    }
   }
 }
 

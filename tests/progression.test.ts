@@ -1,15 +1,18 @@
 import { describe, expect, it } from 'vitest'
-import { findShip } from '../src/content/ships'
+import { campaign, WORLD_COUNT } from '../src/content/campaign'
+import { CAMPAIGN_SHIP, findShip } from '../src/content/ships'
 import {
   applyResult,
   buy,
   claimDaily,
   dailyAvailable,
+  isCampaignComplete,
   isLevelUnlocked,
   isWorldUnlocked,
   levelInfo,
   rankFor,
   starsFor,
+  worldBadges,
   xpToNext,
 } from '../src/game/progression'
 import type { SessionResult } from '../src/game/session'
@@ -70,7 +73,7 @@ describe('stars', () => {
 describe('applyResult', () => {
   it('stores the best record, pays coins and xp, and awards trophies', () => {
     const p = createProfile('Lina', '🦊', false)
-    const r = applyResult(p, result())
+    const r = applyResult(p, result(), 'azerty')
     expect(r.stars).toBe(3)
     expect(p.levels['1-1']).toEqual({ stars: 3, best: 2000 })
     expect(r.coins).toBeGreaterThan(0)
@@ -82,7 +85,7 @@ describe('applyResult', () => {
     )
     expect(totalStars(p)).toBe(3)
 
-    const again = applyResult(p, result({ score: 1000, accuracy: 0.7, breaches: 2 }))
+    const again = applyResult(p, result({ score: 1000, accuracy: 0.7, breaches: 2 }), 'azerty')
     expect(again.stars).toBe(1)
     expect(p.levels['1-1']).toEqual({ stars: 3, best: 2000 })
     expect(again.trophies).toHaveLength(0)
@@ -90,7 +93,7 @@ describe('applyResult', () => {
 
   it('does not record a lost level but still rewards effort', () => {
     const p = createProfile('Tom', '🐼', false)
-    const r = applyResult(p, result({ won: false, score: 500 }))
+    const r = applyResult(p, result({ won: false, score: 500 }), 'azerty')
     expect(p.levels['1-1']).toBeUndefined()
     expect(r.coins).toBeGreaterThan(0)
     expect(r.xp).toBeGreaterThan(0)
@@ -98,12 +101,17 @@ describe('applyResult', () => {
 
   it('tracks endless records', () => {
     const p = createProfile('Tom', '🐼', true)
-    applyResult(p, result({ mode: 'endless', levelId: null, score: 5000, wave: 6, won: false }))
+    applyResult(
+      p,
+      result({ mode: 'endless', levelId: null, score: 5000, wave: 6, won: false }),
+      'azerty',
+    )
     expect(p.endlessBest).toBe(5000)
     expect(p.endlessBestWave).toBe(6)
     const r = applyResult(
       p,
       result({ mode: 'endless', levelId: null, score: 7000, wave: 4, won: false }),
+      'azerty',
     )
     expect(r.newBest).toBe(true)
     expect(p.endlessBestWave).toBe(6)
@@ -111,7 +119,7 @@ describe('applyResult', () => {
 
   it('weights often-missed keys', () => {
     const p = createProfile('Tom', '🐼', true)
-    applyResult(p, result({ keyStats: { f: { ok: 2, ko: 8 }, j: { ok: 10, ko: 0 } } }))
+    applyResult(p, result({ keyStats: { f: { ok: 2, ko: 8 }, j: { ok: 10, ko: 0 } } }), 'azerty')
     expect(keyWeight(p, 'f')).toBeGreaterThan(keyWeight(p, 'j'))
     expect(keyWeight(p, 'z')).toBe(1)
   })
@@ -162,5 +170,77 @@ describe('shop', () => {
     expect(buy(p, 'ship', bubble)).toBe('owned')
     p.coins = 5000
     expect(buy(p, 'ship', findShip('royal'))).toBe('locked')
+    p.xp = 1e6
+    expect(buy(p, 'ship', findShip(CAMPAIGN_SHIP))).toBe('locked')
+  })
+})
+
+describe('campaign rewards', () => {
+  const bosses = (layout: 'azerty' | 'qwerty'): string[] =>
+    campaign(layout).map((w) => w.levels.at(-1)?.id ?? '')
+  const lastBoss = (layout: 'azerty' | 'qwerty'): string => bosses(layout).at(-1) ?? ''
+  const almostDone = (layout: 'azerty' | 'qwerty'): ReturnType<typeof createProfile> => {
+    const p = createProfile('Lina', '🦊', false)
+    for (const w of campaign(layout))
+      for (const l of w.levels)
+        if (l.id !== lastBoss(layout)) p.levels[l.id] = { stars: 1, best: 1 }
+    return p
+  }
+
+  it('is complete only when every world boss has a star', () => {
+    for (const layout of ['azerty', 'qwerty'] as const) {
+      const p = createProfile('Lina', '🦊', false)
+      expect(isCampaignComplete(p, layout)).toBe(false)
+      for (const id of bosses(layout)) p.levels[id] = { stars: 1, best: 1 }
+      expect(isCampaignComplete(p, layout)).toBe(true)
+      p.levels[bosses(layout)[2] ?? ''] = { stars: 0, best: 0 }
+      expect(isCampaignComplete(p, layout)).toBe(false)
+    }
+  })
+
+  it('grants the exclusive ship once, when the last boss falls', () => {
+    const p = almostDone('qwerty')
+    const lost = applyResult(p, result({ levelId: lastBoss('qwerty'), won: false }), 'qwerty')
+    expect(lost.campaignCompleted).toBe(false)
+    expect(p.ships).not.toContain(CAMPAIGN_SHIP)
+
+    const won = applyResult(p, result({ levelId: lastBoss('qwerty') }), 'qwerty')
+    expect(won.campaignCompleted).toBe(true)
+    expect(p.ships.filter((s) => s === CAMPAIGN_SHIP)).toHaveLength(1)
+
+    const replay = applyResult(p, result({ levelId: lastBoss('qwerty') }), 'qwerty')
+    expect(replay.campaignCompleted).toBe(false)
+    expect(p.ships.filter((s) => s === CAMPAIGN_SHIP)).toHaveLength(1)
+  })
+
+  it('completes on any boss for readers who skipped ahead', () => {
+    const p = createProfile('Max', '🐼', true)
+    const ids = bosses('azerty')
+    for (const id of ids) if (id !== ids[2]) p.levels[id] = { stars: 2, best: 1 }
+    expect(applyResult(p, result({ levelId: ids[2] ?? '' }), 'azerty').campaignCompleted).toBe(true)
+  })
+
+  it('hands the ship to saves that were already complete', () => {
+    const p = almostDone('azerty')
+    p.levels[lastBoss('azerty')] = { stars: 1, best: 1 }
+    const r = applyResult(p, result({ levelId: '1-1' }), 'azerty')
+    expect(r.campaignCompleted).toBe(false)
+    expect(p.ships).toContain(CAMPAIGN_SHIP)
+  })
+
+  it('derives stickers and gold medals per world', () => {
+    const p = createProfile('Lina', '🦊', false)
+    const world = campaign('azerty')[0]
+    expect(worldBadges(p, 'azerty').every((b) => !b.sticker && !b.medal && b.stars === 0)).toBe(
+      true,
+    )
+    for (const l of world?.levels ?? []) p.levels[l.id] = { stars: 3, best: 1 }
+    p.levels[bosses('azerty')[1] ?? ''] = { stars: 1, best: 1 }
+    const badges = worldBadges(p, 'azerty')
+    expect(badges).toHaveLength(WORLD_COUNT)
+    expect(badges[0]).toMatchObject({ sticker: true, medal: true })
+    expect(badges[0]?.stars).toBe(badges[0]?.maxStars)
+    expect(badges[1]).toMatchObject({ sticker: true, medal: false, stars: 1 })
+    expect(badges[2]).toMatchObject({ sticker: false, medal: false })
   })
 })

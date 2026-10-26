@@ -1,0 +1,75 @@
+<!-- Dev gallery: each world's background, alien family and boss. Run `pnpm dev`, open /tools/worlds.html. -->
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #000;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="c" width="1500" height="1000"></canvas>
+    <script type="module">
+      import '@fontsource/fredoka/latin-700.css'
+      import { Background } from '/src/render/background.ts'
+      import { WORLD_THEMES } from '/src/content/campaign.ts'
+      import { drawAlien, drawWorldBoss, palette } from '/src/render/art.ts'
+      import { setLang, t } from '/src/core/i18n.ts'
+
+      await document.fonts.load('700 30px Fredoka')
+      setLang(new URLSearchParams(location.search).get('lang') ?? 'fr')
+      const CW = 500,
+        CH = 500
+      const ctx = document.getElementById('c').getContext('2d')
+      const pose = (time) => ({
+        t: time,
+        lookX: 0,
+        lookY: 0.6,
+        scared: false,
+        blink: false,
+        flash: 0,
+      })
+      WORLD_THEMES.forEach((theme, i) => {
+        const ox = (i % 3) * CW,
+          oy = Math.floor(i / 3) * CH
+        const tile = document.createElement('canvas')
+        tile.width = CW
+        tile.height = CH
+        const g = tile.getContext('2d')
+        const bg = new Background()
+        bg.setTheme(theme)
+        bg.resize(CW, CH)
+        for (let k = 0; k < 120; k++) bg.update(1 / 30)
+        bg.draw(g)
+        g.save()
+        g.translate(CW / 2, 150)
+        g.scale(95, 95)
+        drawWorldBoss(g, i, pose(1.3 + i))
+        g.restore()
+        g.font = '700 22px Fredoka'
+        g.textAlign = 'center'
+        g.fillStyle = '#fff'
+        g.fillText(`${i}: ${t(`boss.${i}`)}`, CW / 2, 300)
+        let n = 0
+        for (const sp of theme.species)
+          for (const p of theme.palettes) {
+            g.save()
+            g.translate(50 + n * 80, 400)
+            g.scale(28, 28)
+            drawAlien(g, sp, palette(p), pose(n))
+            g.restore()
+            n++
+          }
+        ctx.drawImage(tile, ox, oy)
+      })
+      document.title = 'ready'
+    </script>
+  </body>
+</html>

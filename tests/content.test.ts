@@ -59,6 +59,28 @@ describe('campaign', () => {
     }
   })
 
+  it.each(LAYOUTS)('%s: lessons never show more than 3 letters at once', (layout) => {
+    for (const w of campaign(layout).slice(0, FIRST_WORD_WORLD)) {
+      const lessons = w.levels.filter((l) => l.tag === 'lesson')
+      expect(lessons.length).toBeGreaterThan(0)
+      for (const l of lessons) expect(l.maxOnScreen).toBeLessThanOrEqual(3)
+    }
+  })
+
+  it.each(LAYOUTS)('%s: never shows more than 4 invaders at once', (layout) => {
+    for (const w of campaign(layout))
+      for (const l of w.levels) expect(l.maxOnScreen).toBeLessThanOrEqual(4)
+  })
+
+  it.each(LAYOUTS)('%s: each letter world starts slower than the last one ended', (layout) => {
+    const worlds = campaign(layout)
+    for (let w = 1; w < FIRST_WORD_WORLD; w++) {
+      const start = worlds[w]?.levels[0]?.fallTime ?? 0
+      const end = worlds[w - 1]?.levels.at(-2)?.fallTime ?? Infinity
+      expect(start).toBeGreaterThan(end)
+    }
+  })
+
   it('gets harder along a world', () => {
     const w = campaign('azerty')[0]
     const first = w?.levels[0]
