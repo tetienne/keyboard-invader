@@ -126,14 +126,14 @@ function letterWorld(layout: LayoutId, world: number, learnedBefore: readonly st
       enemies: 12 + index * 2 + world * 2,
       fallTime: lesson
         ? round1(13 - 0.5 * world - 2 * p)
-        : round1((13 - 1.2 * world - 3 * p) * (speedy ? 0.85 : 1)),
+        : round1((13 - 0.8 * world - 3 * p) * (speedy ? 0.85 : 1)),
       fallPerChar: 0,
       spawnEvery: round1(Math.max(1, 2.6 - 0.2 * world - 0.8 * p)),
       maxOnScreen: boss
         ? 3
         : lesson
           ? Math.min(3, 2 + Math.floor(p * 2))
-          : Math.min(5, 2 + Math.floor(p * 2) + world),
+          : Math.min(4, 2 + Math.floor(p * 2) + Math.min(1, world)),
       bossHp: 6 + world * 2,
       powerups: world > 0 || index >= 2,
     }
