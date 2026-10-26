@@ -228,9 +228,9 @@ export class Background {
         case 'desert': {
           const x = wrap(m.x + time * 0.18 * speed) * (w + 80) - 80
           const y = wrap(m.y + Math.sin(time * 0.3 + m.phase) * 0.01) * h
-          ctx.globalAlpha = 0.16 * alpha * (0.6 + 0.4 * Math.sin(time * 0.8 + m.phase))
+          ctx.globalAlpha = 0.3 * alpha * (0.6 + 0.4 * Math.sin(time * 0.8 + m.phase))
           ctx.fillStyle = '#ffd9a0'
-          ctx.fillRect(x, y, 24 + m.size * 40, 1.5)
+          ctx.fillRect(x, y, 24 + m.size * 40, 2)
           break
         }
         case 'jungle': {
@@ -238,7 +238,8 @@ export class Background {
           const y = wrap(m.y + Math.cos(time * 0.25 * speed + m.phase * 1.3) * 0.04) * h
           const g = 8 + m.size * 10
           ctx.globalCompositeOperation = 'lighter'
-          ctx.globalAlpha = (0.08 + 0.22 * (0.5 + 0.5 * Math.sin(time * 2 * speed + m.phase))) * alpha
+          ctx.globalAlpha =
+            (0.08 + 0.22 * (0.5 + 0.5 * Math.sin(time * 2 * speed + m.phase))) * alpha
           ctx.drawImage(glowSprite('#d9ff6a'), x - g, y - g, g * 2, g * 2)
           break
         }

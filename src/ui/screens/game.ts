@@ -63,7 +63,13 @@ export function gameScreen(app: App, launch: Launch, skipBrief = false, travel =
   const lang = app.settings.lang
   const level = launch.kind === 'level' ? launch.level : null
   // First trip to a world (no stars on its first level yet): fly there before the briefing.
-  if (travel && !skipBrief && level?.index === 0 && level.world > 0 && !levelStars(profile, level.id))
+  if (
+    travel &&
+    !skipBrief &&
+    level?.index === 0 &&
+    level.world > 0 &&
+    !levelStars(profile, level.id)
+  )
     return travelScreen(app, level.world, () => gameScreen(app, launch, false, false))
   const world = level ? campaign(layout)[level.world] : undefined
   /** Each world has its own tune; endless mode changes tune every two waves. */
