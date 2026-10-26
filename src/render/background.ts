@@ -1,6 +1,6 @@
 import type { WorldTheme } from '../content/campaign'
 import { WORLD_THEMES } from '../content/campaign'
-import { approach, TAU } from '../core/math'
+import { approach, clamp, easeOutCubic, lerp, TAU } from '../core/math'
 import { createRng } from '../core/rng'
 import { glowSprite, shade } from './art'
 
@@ -21,12 +21,24 @@ interface Shooting {
   life: number
 }
 
+interface Mote {
+  x: number
+  y: number
+  /** 0..1, picks size, speed and orbit. */
+  size: number
+  phase: number
+}
+
 const STAR_COLORS = ['#ffffff', '#ffffff', '#cfe8ff', '#ffe9f5', '#fff4c9']
+const MOTES = 36
 
 /** Deep-space backdrop: painted nebula, parallax starfield, planet and warp effect. */
 export class Background {
   /** 0 = cruising, 1 = full hyperspace streaks. */
   warp = 0
+  /** Travel transition progress (0 = off): the planet grows from the centre into its spot. */
+  travel = 0
+  private motes: Mote[] = []
   private warpTarget = 0
   private stars: Star[] = []
   private shooting: Shooting[] = []
@@ -51,6 +63,9 @@ export class Background {
         twinkle: rng() * TAU,
         color: STAR_COLORS[Math.floor(rng() * STAR_COLORS.length)] ?? '#ffffff',
       })
+    }
+    for (let i = 0; i < MOTES; i++) {
+      this.motes.push({ x: rng(), y: rng(), size: rng(), phase: rng() * TAU })
     }
   }
 
@@ -110,10 +125,17 @@ export class Background {
     if (this.planet) {
       const pw = this.planet.width
       const ph = this.planet.height
-      const y = h * 0.62 + Math.sin(this.time * 0.1) * 6 + this.warp * 80
-      ctx.globalAlpha = 1 - this.warp * 0.6
-      ctx.drawImage(this.planet, w * 0.78 - pw / 2, y - ph / 2)
-      ctx.globalAlpha = 1
+      if (this.travel > 0) {
+        const k = easeOutCubic(clamp((this.travel - 0.35) / 0.65, 0, 1))
+        const s = lerp(0.04, 1, k)
+        const x = lerp(w * 0.5, w * 0.78, k)
+        const y = lerp(h * 0.42, this.planetY, k)
+        if (k > 0) ctx.drawImage(this.planet, x - (pw * s) / 2, y - (ph * s) / 2, pw * s, ph * s)
+      } else {
+        ctx.globalAlpha = 1 - this.warp * 0.6
+        ctx.drawImage(this.planet, w * 0.78 - pw / 2, this.planetY + this.warp * 80 - ph / 2)
+        ctx.globalAlpha = 1
+      }
     }
 
     ctx.save()
@@ -149,6 +171,90 @@ export class Background {
       ctx.moveTo(s.x, s.y)
       ctx.lineTo(s.x - s.vx * 0.25, s.y - s.vy * 0.25)
       ctx.stroke()
+    }
+    ctx.restore()
+    const calm = 1 - Math.max(this.warp, this.travel > 0 ? 1 : 0)
+    if (calm > 0.05) this.drawAmbient(ctx, calm)
+  }
+
+  private get planetY(): number {
+    return this.h * 0.62 + Math.sin(this.time * 0.1) * 6
+  }
+
+  /** Faint world particles (petals, bubbles, snow...), kept dim so letters stay readable. */
+  private drawAmbient(ctx: CanvasRenderingContext2D, alpha: number): void {
+    const { w, h, time } = this
+    const wrap = (v: number): number => ((v % 1) + 1) % 1
+    ctx.save()
+    for (const m of this.motes) {
+      const speed = 0.6 + m.size * 0.8
+      const sway = Math.sin(time * 0.7 + m.phase) * 0.02
+      switch (this.theme.style) {
+        case 'meadow': {
+          const x = wrap(m.x + sway) * w
+          const y = wrap(m.y + time * 0.02 * speed) * h
+          ctx.globalAlpha = 0.3 * alpha
+          ctx.fillStyle = m.size > 0.5 ? '#ffb3d1' : '#fff2a8'
+          ctx.beginPath()
+          ctx.ellipse(x, y, 3 + m.size * 3, 1.6 + m.size * 1.5, time * speed + m.phase, 0, TAU)
+          ctx.fill()
+          break
+        }
+        case 'bubbles': {
+          const x = wrap(m.x + sway) * w
+          const y = wrap(m.y - time * 0.025 * speed) * h
+          const r = 3 + m.size * 7
+          ctx.globalAlpha = 0.28 * alpha
+          ctx.strokeStyle = '#aef4ff'
+          ctx.lineWidth = 1.5
+          ctx.beginPath()
+          ctx.arc(x, y, r, 0, TAU)
+          ctx.stroke()
+          ctx.fillStyle = '#ffffff'
+          ctx.fillRect(x - r * 0.45, y - r * 0.45, 2, 2)
+          break
+        }
+        case 'ice': {
+          const x = wrap(m.x + sway * 1.5) * w
+          const y = wrap(m.y + time * 0.035 * speed) * h
+          const r = 1.2 + m.size * 2.2
+          ctx.globalAlpha = 0.5 * alpha
+          ctx.fillStyle = '#ffffff'
+          ctx.beginPath()
+          ctx.arc(x, y, r, 0, TAU)
+          ctx.fill()
+          break
+        }
+        case 'desert': {
+          const x = wrap(m.x + time * 0.18 * speed) * (w + 80) - 80
+          const y = wrap(m.y + Math.sin(time * 0.3 + m.phase) * 0.01) * h
+          ctx.globalAlpha = 0.16 * alpha * (0.6 + 0.4 * Math.sin(time * 0.8 + m.phase))
+          ctx.fillStyle = '#ffd9a0'
+          ctx.fillRect(x, y, 24 + m.size * 40, 1.5)
+          break
+        }
+        case 'jungle': {
+          const x = wrap(m.x + Math.sin(time * 0.3 * speed + m.phase) * 0.04) * w
+          const y = wrap(m.y + Math.cos(time * 0.25 * speed + m.phase * 1.3) * 0.04) * h
+          const g = 8 + m.size * 10
+          ctx.globalCompositeOperation = 'lighter'
+          ctx.globalAlpha = (0.08 + 0.22 * (0.5 + 0.5 * Math.sin(time * 2 * speed + m.phase))) * alpha
+          ctx.drawImage(glowSprite('#d9ff6a'), x - g, y - g, g * 2, g * 2)
+          break
+        }
+        case 'void': {
+          // Accretion disk: dots orbiting the black hole planet, inner ones faster.
+          const R = Math.min(w, h) * 0.21 * (1.15 + m.size * 1.3)
+          const a = m.phase + (time * 0.35) / (0.5 + m.size)
+          const x = w * 0.78 + Math.cos(a) * R
+          const y = this.planetY + Math.sin(a) * R * 0.28
+          ctx.globalCompositeOperation = 'lighter'
+          ctx.globalAlpha = 0.45 * alpha
+          ctx.fillStyle = m.size > 0.5 ? '#c985ff' : '#ff4d6d'
+          ctx.fillRect(x - 1.5, y - 1.5, 3, 3)
+          break
+        }
+      }
     }
     ctx.restore()
   }
