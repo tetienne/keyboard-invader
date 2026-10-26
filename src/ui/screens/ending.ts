@@ -153,6 +153,8 @@ export function endingScreen(app: App): Screen {
       particles.draw(ctx)
     },
     onKey(e) {
+      // Kids mash keys: the Enter that opened this screen must not skip it.
+      if (e.repeat || time < 1.2) return
       if (e.key === 'Enter' || e.key === ' ') toDiploma()
       else if (e.key === 'Escape') toMap()
     },

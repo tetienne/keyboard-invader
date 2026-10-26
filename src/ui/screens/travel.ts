@@ -24,7 +24,7 @@ export function travelScreen(app: App, world: number, then: () => Screen): Scree
     done = true
     app.go(then())
   }
-  const el = h('div', { class: 'screen play', style: 'padding:0' })
+  const el = h('div', { class: 'screen play', style: 'padding:0;pointer-events:auto' })
   el.addEventListener('pointerdown', finish)
   app.background.warp = 1
   app.background.setWarp(1)

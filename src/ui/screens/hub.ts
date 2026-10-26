@@ -1,3 +1,4 @@
+import { CAMPAIGN_SHIP } from '../../content/ships'
 import { formatNumber, t } from '../../core/i18n'
 import { claimDaily, dailyAvailable, isCampaignComplete, worldBadges } from '../../game/progression'
 import { TROPHIES } from '../../game/trophies'
@@ -21,6 +22,11 @@ export function hubScreen(app: App): Screen {
   const ship = shipCanvas(profile.ship, 150)
   const badges = worldBadges(profile, app.settings.layout)
   const complete = isCampaignComplete(profile, app.settings.layout)
+  // Saves that finished the campaign before the reward existed.
+  if (complete && !profile.ships.includes(CAMPAIGN_SHIP)) {
+    profile.ships.push(CAMPAIGN_SHIP)
+    app.save()
+  }
   const card = (
     cls: string,
     emoji: string,
