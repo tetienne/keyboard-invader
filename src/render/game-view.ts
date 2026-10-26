@@ -351,8 +351,12 @@ export class GameView {
       case 'defeat':
         this.showCallout(t('callout.defeat'), ['#ffd6e5', '#ff6b8a'], 2, 1.1)
         break
+      case 'escape': {
+        const p = this.pos(event.enemy)
+        this.particles.burst(p.x, p.y, this.colorsOf(event.enemy)[0] ?? '#fff', 10, 140, 'star', 2)
+        break
+      }
       case 'lock':
-      case 'escape':
         break
     }
   }
@@ -750,7 +754,7 @@ export class GameView {
     drawWorldBoss(ctx, this.bossWorld, this.pose(session, e, locked), e.hp / e.maxHp)
     ctx.restore()
 
-    // HP bar, raised above the accessories, with the boss's name on top
+    // Raised above the accessories.
     const bw = r * 1.9
     const bh = Math.max(8, r * 0.1)
     const by = -r * 1.2

@@ -131,7 +131,7 @@ export const SHOT_DURATION = 0.12
 export const BOSS_Y = 0.3
 /** The boss creeps down to here; reaching it costs a heart and sends the boss back up. */
 export const BOSS_LOW = 0.65
-/** The boss descends this much slower than a minion carrying its code would fall. */
+/** Boss descent takes a regular invader's fall time for its code, times this. */
 const BOSS_DESCENT_SLACK = 1.2
 /** How far a laser hit pushes the boss back up; a completed code pushes harder. */
 const BOSS_PUSH = 0.04
@@ -590,10 +590,6 @@ export class Session {
   private announceBoss(): void {
     // Boss fights are one-on-one: clear what is left of the previous endless wave.
     for (const v of this.enemies.filter((e) => !e.doomed)) {
-      if (v.kind !== 'powerup') {
-        this.kill(v, true)
-        continue
-      }
       this.enemies = this.enemies.filter((o) => o.id !== v.id)
       if (this.lockId === v.id) this.lockId = null
       this.emit({ type: 'escape', enemy: v })
@@ -615,7 +611,7 @@ export class Session {
     return options ? (options[Math.floor(roll * options.length)] ?? 0) : Math.floor(roll * count)
   }
 
-  /** No minions during boss fights: they stole the child's keys from the boss. */
+  /** Boss fights are one-on-one: other invaders would steal the child's keys from the boss. */
   private canSpawn(): boolean {
     if (this.level) return !this.level.boss && this.quotaSpawned < this.level.enemies
     return !isBossWave(this.wave)
@@ -628,7 +624,7 @@ export class Session {
         if (this.endAt === null) {
           const t = this.tuning()
           const fall = (t.fallTime + t.fallPerChar * e.text.length) * BOSS_DESCENT_SLACK
-          this.bossTargetY += ((BOSS_LOW - BOSS_Y) / fall) * this.pace * dt
+          this.bossTargetY += ((BOSS_LOW - BOSS_Y) / fall) * speed * dt
         }
         e.y += (this.bossTargetY - e.y) * Math.min(1, dt * 2)
         e.x = 0.5 + 0.28 * Math.sin((this.time - e.born) * 0.35)

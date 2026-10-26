@@ -317,6 +317,26 @@ describe('Session – boss', () => {
     expect(s.hearts).toBe(s.maxHearts - 1)
     expect(events.some((e) => e.type === 'spawn')).toBe(false)
   })
+
+  it('eventually beats a child who never types', () => {
+    const s = makeSession({ level: level('1-8') })
+    const events = run(s, 600)
+    expect(s.status).toBe('lost')
+    expect(s.breaches).toBe(s.maxHearts)
+    expect(events.filter((e) => e.type === 'defeat')).toHaveLength(1)
+  })
+
+  it('freeze slows the boss down too', () => {
+    const descent = (frozen: boolean): number => {
+      const s = makeSession({ level: level('1-8') })
+      run(s, BOSS_INTRO + 3)
+      if (frozen) s.freezeUntil = s.time + 100
+      const y = s.boss?.y ?? 0
+      run(s, 4)
+      return (s.boss?.y ?? 0) - y
+    }
+    expect(descent(true)).toBeLessThan(descent(false) * 0.5)
+  })
 })
 
 describe('Session – endless', () => {
@@ -349,6 +369,8 @@ describe('Session – endless', () => {
     let leftovers = 0
     let duringBoss = 0
     let afterBoss = 0
+    let world: number | null = null
+    let hp: number | null = null
     for (let t = 0; t < 900 && s.wave < 7 && s.status === 'playing'; t += 1 / 30) {
       const key = s.nextKeyHint()
       if (key) s.press(key)
@@ -357,7 +379,9 @@ describe('Session – endless', () => {
         if (e.type === 'bossIncoming') {
           inBoss = true
           leftovers = s.enemies.filter((o) => !o.doomed).length
-        } else if (e.type === 'wave' && !e.boss) inBoss = false
+          world = e.world
+        } else if (e.type === 'bossSpawn') hp = e.enemy.hp
+        else if (e.type === 'wave' && !e.boss) inBoss = false
         else if (e.type === 'spawn' && inBoss) duringBoss++
         else if (e.type === 'spawn' && s.wave === 6) afterBoss++
       }
@@ -366,6 +390,48 @@ describe('Session – endless', () => {
     expect(leftovers).toBe(0)
     expect(duringBoss).toBe(0)
     expect(afterBoss).toBeGreaterThan(0)
+    expect(world).toBe(0)
+    expect(hp).toBe(4)
+  })
+
+  /** Jumps an idle endless game to the end of `wave`, so the next one starts. */
+  function finishWave(s: Session, wave: number): GameEvent[] {
+    s.wave = wave
+    s.waveKills = endlessWaveTarget(wave)
+    s.update(1 / 60)
+    return s.drainEvents()
+  }
+
+  it('meets each world boss in turn', () => {
+    const s = new Session({
+      rng: createRng(3),
+      words: ['chat'],
+      endless: { pool: ['f', 'j', 'd', 'k'], reader: false },
+    })
+    const worlds: number[] = []
+    for (let wave = 5; wave <= 60; wave += 5)
+      for (const e of finishWave(s, wave - 1)) if (e.type === 'bossIncoming') worlds.push(e.world)
+    expect(worlds).toEqual([0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5])
+  })
+
+  it('lets the last invaders fly away quietly when the boss comes', () => {
+    const s = new Session({
+      rng: createRng(3),
+      words: ['chat'],
+      endless: { pool: ['f', 'j', 'd', 'k'], reader: false },
+    })
+    for (let t = 0; t < 30 && s.enemies.length < 2; t += 1 / 60) s.update(1 / 60)
+    s.drainEvents()
+    const leftovers = s.enemies.map((e) => e.id)
+    expect(leftovers.length).toBeGreaterThanOrEqual(2)
+    const { score, kills } = s
+    const events = finishWave(s, 4)
+    const escaped = events.flatMap((e) => (e.type === 'escape' ? [e.enemy.id] : []))
+    expect(escaped).toEqual(expect.arrayContaining(leftovers))
+    expect(events.some((e) => e.type === 'kill')).toBe(false)
+    expect(s.enemies).toHaveLength(0)
+    expect(s.score).toBe(score)
+    expect(s.kills).toBe(kills)
   })
 })
 
