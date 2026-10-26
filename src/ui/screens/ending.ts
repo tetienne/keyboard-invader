@@ -97,7 +97,6 @@ export function endingScreen(app: App): Screen {
       const cy = top + band * 0.4
       const size = Math.min(unit * 0.11, band * 0.2)
 
-      // Rotating rainbow rays behind the ship.
       ctx.save()
       ctx.translate(cx, cy)
       ctx.rotate(time * 0.25)
@@ -117,7 +116,6 @@ export function endingScreen(app: App): Screen {
       ctx.drawImage(glowSprite('#ffd23f'), -size * 3, -size * 3, size * 6, size * 6)
       ctx.restore()
 
-      // Dancing aliens on an arc under the ship.
       const n = 6
       const rx = Math.min(w * 0.42, unit * 0.7)
       const ry = band * 0.32
@@ -142,7 +140,6 @@ export function endingScreen(app: App): Screen {
         ctx.restore()
       }
 
-      // The hero ship, gently looping.
       ctx.save()
       ctx.translate(cx + Math.sin(time * 1.2) * unit * 0.03, cy + Math.sin(time * 2) * unit * 0.02)
       ctx.rotate(Math.sin(time * 1.2) * 0.12)

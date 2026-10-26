@@ -22,7 +22,7 @@ export function hubScreen(app: App): Screen {
   const ship = shipCanvas(profile.ship, 150)
   const badges = worldBadges(profile, app.settings.layout)
   const complete = isCampaignComplete(profile, app.settings.layout)
-  // Saves that finished the campaign before the reward existed.
+  // Grant from stored progress too, not only from the winning game.
   if (complete && !profile.ships.includes(CAMPAIGN_SHIP)) {
     profile.ships.push(CAMPAIGN_SHIP)
     app.save()

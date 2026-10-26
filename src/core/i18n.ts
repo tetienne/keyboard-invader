@@ -137,7 +137,6 @@ const fr = {
   'power.bomb': 'Bombe',
   'power.heal': 'Bouclier',
   voiceBravo: 'Bravo !',
-  // campaign rewards
   album: 'Album',
   albumStickers: '{n} sur {total} autocollants',
   albumMedals: '{n} sur {total} médailles d’or',
@@ -161,7 +160,6 @@ const fr = {
   diplomaDate: 'Date',
   diplomaSign: 'L’Amiral de la galaxie',
   print: 'Imprimer',
-  // world identity
   'boss.0': 'Princesse Pétale',
   'boss.1': 'Capitaine Bulle',
   'boss.2': 'Roi Glaçon',
@@ -316,7 +314,6 @@ const en: Record<Key, string> = {
   'power.bomb': 'Bomb',
   'power.heal': 'Shield',
   voiceBravo: 'Well done!',
-  // campaign rewards
   album: 'Stickers',
   albumStickers: '{n} of {total} stickers',
   albumMedals: '{n} of {total} gold medals',
@@ -338,7 +335,6 @@ const en: Record<Key, string> = {
   diplomaDate: 'Date',
   diplomaSign: 'The Galaxy Admiral',
   print: 'Print',
-  // world identity
   'boss.0': 'Princess Petal',
   'boss.1': 'Captain Bubble',
   'boss.2': 'King Icicle',

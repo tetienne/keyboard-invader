@@ -185,7 +185,6 @@ export function applyResult(
   profile.xp += xp
 
   const complete = isCampaignComplete(profile, layout)
-  // Also hands the ship to saves that finished the campaign before it existed.
   if (complete && !profile.ships.includes(CAMPAIGN_SHIP)) profile.ships.push(CAMPAIGN_SHIP)
 
   const trophies = awardTrophies(profile)
