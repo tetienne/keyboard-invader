@@ -3,9 +3,10 @@ import { approach, clamp, easeOutBack, lerp, TAU } from '../core/math'
 import { t } from '../core/i18n'
 import type { Enemy, GameEvent, Session } from '../game/session'
 import {
+  bossPalette,
   drawAlien,
-  drawBoss,
   drawPowerup,
+  drawWorldBoss,
   drawShip,
   glowSprite,
   GOLDEN,
@@ -86,6 +87,7 @@ export class GameView {
   /** Seconds left in the boss build-up, and its total length. */
   private tension = 0
   private tensionTotal = 1
+  private bossWorld = 0
   private shotOrigins = new Map<number, { x: number; y: number }>()
   private layout: Layout = computeLayout(1, 1, 0)
   private clock = 0
@@ -135,7 +137,12 @@ export class GameView {
   }
 
   private colorsOf(e: Enemy): readonly string[] {
-    const p = e.kind === 'golden' ? GOLDEN : palette(e.palette)
+    const p =
+      e.kind === 'golden'
+        ? GOLDEN
+        : e.kind === 'boss'
+          ? bossPalette(this.bossWorld)
+          : palette(e.palette)
     return [p.body, p.light, '#ffffff']
   }
 
@@ -293,7 +300,13 @@ export class GameView {
       case 'bossIncoming':
         this.tension = event.delay
         this.tensionTotal = event.delay
-        this.showCallout(t('callout.bossIncoming'), ['#f3e6ff', '#b58cff'], event.delay - 0.6, 0.9)
+        this.bossWorld = event.world
+        this.showCallout(
+          t('bossComing', { name: t(`boss.${event.world}` as 'boss.0') }),
+          ['#f3e6ff', '#b58cff'],
+          event.delay - 0.6,
+          0.9,
+        )
         break
       case 'bossSpawn': {
         this.tension = 0
@@ -722,7 +735,7 @@ export class GameView {
     const L = this.layout
     const { x, y } = this.pos(e)
     const r = L.unit * 3
-    const pal = palette(e.palette)
+    const pal = bossPalette(this.bossWorld)
     const locked = session.lockId === e.id
     ctx.save()
     const jitter = e.lastHit >= 0 && session.time - e.lastHit < 0.2 ? (Math.random() - 0.5) * 10 : 0
@@ -734,13 +747,23 @@ export class GameView {
     ctx.globalCompositeOperation = 'source-over'
     ctx.save()
     ctx.scale(r, r)
-    drawBoss(ctx, pal, this.pose(session, e, locked), e.hp / e.maxHp)
+    drawWorldBoss(ctx, this.bossWorld, this.pose(session, e, locked), e.hp / e.maxHp)
     ctx.restore()
 
-    // HP bar
+    // HP bar, raised above the accessories, with the boss's name on top
     const bw = r * 1.9
     const bh = Math.max(8, r * 0.1)
-    const by = -r * 1.05
+    const by = -r * 1.2
+    const nameSize = Math.round(clamp(r * 0.16, 14, 24))
+    ctx.font = `700 ${nameSize}px ${FONT}`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'bottom'
+    ctx.lineJoin = 'round'
+    ctx.lineWidth = 4
+    ctx.strokeStyle = INK
+    ctx.strokeText(t(`boss.${this.bossWorld}` as 'boss.0'), 0, by - 6)
+    ctx.fillStyle = pal.light
+    ctx.fillText(t(`boss.${this.bossWorld}` as 'boss.0'), 0, by - 6)
     ctx.beginPath()
     ctx.roundRect(-bw / 2 - 3, by - 3, bw + 6, bh + 6, bh)
     ctx.fillStyle = 'rgba(10,5,25,0.85)'
@@ -878,6 +901,9 @@ export class GameView {
     ctx.rotate(Math.sin(c.age * 5) * 0.03)
     ctx.globalAlpha = outro
     ctx.font = `700 ${size}px ${FONT}`
+    // Long callouts (world and boss names) shrink to fit narrow screens.
+    const fit = Math.min(1, (L.w * 0.9) / (ctx.measureText(c.text).width + size * 0.22))
+    ctx.scale(fit, fit)
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.lineJoin = 'round'

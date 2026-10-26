@@ -160,6 +160,20 @@ const fr = {
   diplomaDate: 'Date',
   diplomaSign: 'L’Amiral de la galaxie',
   print: 'Imprimer',
+  // world identity
+  'boss.0': 'Princesse Pétale',
+  'boss.1': 'Capitaine Bulle',
+  'boss.2': 'Roi Glaçon',
+  'boss.3': 'Sphinx Rigolo',
+  'boss.4': 'Baron Banane',
+  'boss.5': 'Docteur Tourbillon',
+  bossComing: '{name} arrive…',
+  'travel.0': 'Cap sur la Planète Douce !',
+  'travel.1': 'Cap sur la Nébuleuse Bleue !',
+  'travel.2': 'Cap sur la Lune Glacée !',
+  'travel.3': 'Cap sur le Désert des Mots !',
+  'travel.4': 'Cap sur la Jungle Cosmique !',
+  'travel.5': 'Cap sur le Trou Noir !',
 }
 
 type Key = keyof typeof fr
@@ -322,6 +336,20 @@ const en: Record<Key, string> = {
   diplomaDate: 'Date',
   diplomaSign: 'The Galaxy Admiral',
   print: 'Print',
+  // world identity
+  'boss.0': 'Princess Petal',
+  'boss.1': 'Captain Bubble',
+  'boss.2': 'King Icicle',
+  'boss.3': 'Silly Sphinx',
+  'boss.4': 'Baron Banana',
+  'boss.5': 'Doctor Swirl',
+  bossComing: '{name} is coming…',
+  'travel.0': 'Next stop: Cosy Planet!',
+  'travel.1': 'Next stop: Blue Nebula!',
+  'travel.2': 'Next stop: Ice Moon!',
+  'travel.3': 'Next stop: Word Desert!',
+  'travel.4': 'Next stop: Cosmic Jungle!',
+  'travel.5': 'Next stop: Black Hole!',
 }
 
 const DICTS: Record<Lang, Record<Key, string>> = { fr, en }
