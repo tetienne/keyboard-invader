@@ -18,6 +18,7 @@ import { keyWeight, type Profile } from '../../state/profile'
 import type { App, Screen } from '../app'
 import { h } from '../dom'
 import { KeyboardHint } from '../keyboard-hint'
+import { endingScreen } from './ending'
 import { hubScreen } from './hub'
 import { mapScreen } from './map'
 import { openSettings } from './settings'
@@ -311,7 +312,7 @@ export function gameScreen(app: App, launch: Launch, skipBrief = false): Screen 
   const finish = (): void => {
     phase = 'done'
     const result = session.result()
-    const rewards = applyResult(profile, result)
+    const rewards = applyResult(profile, result, layout)
     app.save()
     app.music.intensity = 1
     fireworks = result.won ? 5 : 0
@@ -333,7 +334,13 @@ export function gameScreen(app: App, launch: Launch, skipBrief = false): Screen 
     const actions: HTMLElement[] = []
     const replay = (): void => app.go(gameScreen(app, launch, true))
     actions.push(h('button', { class: 'btn blue', onClick: replay }, '🔄 ', t('replay')))
-    if (nextOpen) {
+    if (rewards.campaignCompleted) {
+      const goEnding = (): void => app.go(endingScreen(app))
+      actions.push(
+        h('button', { class: 'btn big green', onClick: goEnding }, '🌟 ', t('continue'), ' ▶'),
+      )
+      primary = goEnding
+    } else if (nextOpen) {
       const goNext = (): void => app.go(gameScreen(app, levelLaunch(nextOpen)))
       actions.push(h('button', { class: 'btn big green', onClick: goNext }, t('next'), ' ▶'))
       primary = goNext
@@ -354,6 +361,14 @@ export function gameScreen(app: App, launch: Launch, skipBrief = false): Screen 
       level ? h('div', { class: 'stars-big' }, ...starEls) : null,
       scoreBig,
       rewards.newBest ? h('div', { class: 'record' }, '🏅 ', t('newRecord')) : null,
+      level?.boss && result.won && rewards.previousStars === 0
+        ? h(
+            'div',
+            { class: 'record' },
+            '🌟 ',
+            t('newSticker', { world: t(`world.${level.world}` as 'world.0') }),
+          )
+        : null,
       h(
         'div',
         { class: 'stats' },

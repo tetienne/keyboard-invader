@@ -1,10 +1,12 @@
 import { formatNumber, t } from '../../core/i18n'
-import { claimDaily, dailyAvailable } from '../../game/progression'
+import { claimDaily, dailyAvailable, isCampaignComplete, worldBadges } from '../../game/progression'
 import { TROPHIES } from '../../game/trophies'
 import { totalStars } from '../../state/profile'
 import type { App, Screen } from '../app'
 import { h } from '../dom'
 import { coinChip, pilotBar, shipCanvas, starChip } from '../widgets'
+import { albumScreen } from './album'
+import { diplomaScreen } from './diploma'
 import { hangarScreen } from './hangar'
 import { mapScreen } from './map'
 import { endlessLaunch, gameScreen } from './game'
@@ -17,6 +19,8 @@ export function hubScreen(app: App): Screen {
   if (!profile) return profilesScreen(app)
 
   const ship = shipCanvas(profile.ship, 150)
+  const badges = worldBadges(profile, app.settings.layout)
+  const complete = isCampaignComplete(profile, app.settings.layout)
   const card = (
     cls: string,
     emoji: string,
@@ -69,9 +73,16 @@ export function hubScreen(app: App): Screen {
     h(
       'div',
       { class: 'hub-grid' },
-      card('adventure', '🚀', t('adventure'), `★ ${totalStars(profile)}`, () =>
-        app.go(mapScreen(app)),
+      card(
+        `adventure${complete ? ' done' : ''}`,
+        '🚀',
+        t('adventure'),
+        `★ ${totalStars(profile)}`,
+        () => app.go(mapScreen(app)),
       ),
+      complete
+        ? card('diploma-card', '📜', t('diploma'), profile.name, () => app.go(diplomaScreen(app)))
+        : null,
       card(
         'endless',
         '♾️',
@@ -88,6 +99,13 @@ export function hubScreen(app: App): Screen {
         t('trophies'),
         t('trophiesCount', { n: profile.trophies.length, total: TROPHIES.length }),
         () => app.go(trophiesScreen(app)),
+      ),
+      card(
+        'album',
+        '🌟',
+        t('album'),
+        `🌟 ${badges.filter((b) => b.sticker).length}/${badges.length} · 🏅 ${badges.filter((b) => b.medal).length}/${badges.length}`,
+        () => app.go(albumScreen(app)),
       ),
     ),
     h('div', { style: 'pointer-events:none' }, ship.canvas),

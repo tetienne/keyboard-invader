@@ -708,6 +708,50 @@ export function drawShip(ctx: CanvasRenderingContext2D, ship: ShipDef, t: number
       fillAccent()
       cockpit(0, 0.02, 0.24, 0.24)
       break
+    case 'legend': {
+      const rainbow = ['#ff5fa2', '#ffae57', '#ffe066', '#7be07b', '#5fd4ff', '#c985ff']
+      for (const s of [-1, 1]) {
+        ctx.beginPath()
+        ctx.moveTo(s * 0.22, -0.45)
+        ctx.quadraticCurveTo(s * 1.05, -0.2, s * 1.25, 0.8)
+        ctx.lineTo(s * 0.7, 0.55)
+        ctx.lineTo(s * 0.28, 0.62)
+        ctx.closePath()
+        const g = ctx.createLinearGradient(s * 0.2, -0.45, s * 1.25, 0.8)
+        rainbow.forEach((c, i) => g.addColorStop(i / (rainbow.length - 1), c))
+        ctx.fillStyle = g
+        ctx.fill()
+        outline()
+      }
+      ctx.beginPath()
+      ctx.moveTo(0, -1.2)
+      ctx.bezierCurveTo(0.5, -0.65, 0.44, 0.4, 0.3, 0.8)
+      ctx.lineTo(-0.3, 0.8)
+      ctx.bezierCurveTo(-0.44, 0.4, -0.5, -0.65, 0, -1.2)
+      fillBody()
+      ctx.beginPath()
+      ctx.rect(-0.38, 0.36, 0.76, 0.14)
+      fillAccent()
+      cockpit(0, -0.3, 0.17, 0.3)
+      // Twinkling sparkles on the nose and wing tips.
+      ctx.fillStyle = '#ffffff'
+      for (const [x, y, k] of [
+        [0, -1.2, 0],
+        [-1.25, 0.8, 1],
+        [1.25, 0.8, 2],
+      ] as const) {
+        const r = 0.12 + 0.07 * Math.sin(t * 5 + k * 2)
+        ctx.beginPath()
+        for (let i = 0; i < 8; i++) {
+          const a = (i * Math.PI) / 4
+          const rr = i % 2 === 0 ? r * 1.8 : r * 0.35
+          ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr)
+        }
+        ctx.closePath()
+        ctx.fill()
+      }
+      break
+    }
   }
 }
 

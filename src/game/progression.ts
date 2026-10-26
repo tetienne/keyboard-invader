@@ -1,5 +1,6 @@
 import { campaign, FIRST_WORD_WORLD, type LevelDef } from '../content/campaign'
 import type { LayoutId } from '../content/keyboard'
+import { CAMPAIGN_SHIP } from '../content/ships'
 import type { Profile } from '../state/profile'
 import type { SessionResult } from './session'
 import { awardTrophies, type TrophyDef } from './trophies'
@@ -77,6 +78,38 @@ export function isWorldUnlocked(profile: Profile, layout: LayoutId, world: numbe
   return boss ? levelStars(profile, boss.id) > 0 : false
 }
 
+// --- campaign rewards -----------------------------------------------------------
+
+export function isCampaignComplete(profile: Profile, layout: LayoutId): boolean {
+  return campaign(layout).every((w) => {
+    const boss = w.levels.at(-1)
+    return boss ? levelStars(profile, boss.id) > 0 : false
+  })
+}
+
+export interface WorldBadge {
+  /** The world's boss is beaten. */
+  sticker: boolean
+  /** Every level of the world has 3 stars. */
+  medal: boolean
+  stars: number
+  maxStars: number
+}
+
+export function worldBadges(profile: Profile, layout: LayoutId): WorldBadge[] {
+  return campaign(layout).map((w) => {
+    const boss = w.levels.at(-1)
+    const stars = w.levels.reduce((n, l) => n + levelStars(profile, l.id), 0)
+    const maxStars = w.levels.length * 3
+    return {
+      sticker: boss ? levelStars(profile, boss.id) > 0 : false,
+      medal: stars === maxStars,
+      stars,
+      maxStars,
+    }
+  })
+}
+
 // --- applying a finished game -------------------------------------------------
 
 export interface RewardSummary {
@@ -88,12 +121,19 @@ export interface RewardSummary {
   levelAfter: number
   newBest: boolean
   trophies: TrophyDef[]
+  /** This result finished the campaign for the first time. */
+  campaignCompleted: boolean
 }
 
 export const TROPHY_BONUS = 25
 
-export function applyResult(profile: Profile, result: SessionResult): RewardSummary {
+export function applyResult(
+  profile: Profile,
+  result: SessionResult,
+  layout: LayoutId,
+): RewardSummary {
   const levelBefore = levelInfo(profile.xp).level
+  const wasComplete = isCampaignComplete(profile, layout)
   const stars = result.mode === 'campaign' ? starsFor(result) : 0
   let previousStars = 0
   let newBest = false
@@ -144,6 +184,10 @@ export function applyResult(profile: Profile, result: SessionResult): RewardSumm
     (result.mode === 'endless' ? result.wave * 5 : 0)
   profile.xp += xp
 
+  const complete = isCampaignComplete(profile, layout)
+  // Also hands the ship to saves that finished the campaign before it existed.
+  if (complete && !profile.ships.includes(CAMPAIGN_SHIP)) profile.ships.push(CAMPAIGN_SHIP)
+
   const trophies = awardTrophies(profile)
   coins += trophies.length * TROPHY_BONUS
   profile.coins += coins
@@ -157,6 +201,7 @@ export function applyResult(profile: Profile, result: SessionResult): RewardSumm
     levelAfter: levelInfo(profile.xp).level,
     newBest,
     trophies,
+    campaignCompleted: complete && !wasComplete,
   }
 }
 
@@ -198,10 +243,11 @@ export type BuyOutcome = 'ok' | 'owned' | 'poor' | 'locked'
 export function buy(
   profile: Profile,
   kind: 'ship' | 'laser',
-  item: { id: string; price: number; minLevel?: number },
+  item: { id: string; price: number; minLevel?: number; exclusive?: boolean },
 ): BuyOutcome {
   const owned = kind === 'ship' ? profile.ships : profile.lasers
   if (owned.includes(item.id)) return 'owned'
+  if (item.exclusive) return 'locked'
   if ((item.minLevel ?? 1) > levelInfo(profile.xp).level) return 'locked'
   if (profile.coins < item.price) return 'poor'
   profile.coins -= item.price

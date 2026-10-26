@@ -136,6 +136,30 @@ const fr = {
   'power.bomb': 'Bombe',
   'power.heal': 'Bouclier',
   voiceBravo: 'Bravo !',
+  // campaign rewards
+  album: 'Album',
+  albumStickers: '{n} sur {total} autocollants',
+  albumMedals: '{n} sur {total} médailles d’or',
+  albumHint:
+    'Bats le boss d’un monde pour gagner son autocollant. 3 étoiles partout = médaille d’or !',
+  newSticker: 'Nouvel autocollant : {world} !',
+  exclusive: 'Exclusif',
+  exclusiveHint: 'Termine tous les mondes',
+  continue: 'Continuer',
+  endingTitle: 'Tu as sauvé la galaxie\u00a0!',
+  endingSub: 'Bravo {name} ! Les 6 mondes sont libérés grâce à toi.',
+  endingReward: 'Vaisseau exclusif débloqué :',
+  seeDiploma: 'Voir mon diplôme',
+  diploma: 'Diplôme',
+  diplomaTitle: 'Diplôme de Pilote de l’Espace',
+  diplomaAwarded: 'Ce diplôme est décerné à',
+  diplomaText:
+    'pour avoir sauvé les 6 mondes de la galaxie en tapant au clavier comme un vrai pilote !',
+  diplomaStars: 'Étoiles',
+  diplomaRank: 'Grade',
+  diplomaDate: 'Date',
+  diplomaSign: 'L’Amiral de la galaxie',
+  print: 'Imprimer',
 }
 
 type Key = keyof typeof fr
@@ -276,6 +300,28 @@ const en: Record<Key, string> = {
   'power.bomb': 'Bomb',
   'power.heal': 'Shield',
   voiceBravo: 'Well done!',
+  // campaign rewards
+  album: 'Stickers',
+  albumStickers: '{n} of {total} stickers',
+  albumMedals: '{n} of {total} gold medals',
+  albumHint: 'Beat a world’s boss to win its sticker. 3 stars everywhere = gold medal!',
+  newSticker: 'New sticker: {world}!',
+  exclusive: 'Exclusive',
+  exclusiveHint: 'Finish every world',
+  continue: 'Continue',
+  endingTitle: 'You saved the galaxy!',
+  endingSub: 'Well done {name}! All 6 worlds are free thanks to you.',
+  endingReward: 'Exclusive ship unlocked:',
+  seeDiploma: 'See my diploma',
+  diploma: 'Diploma',
+  diplomaTitle: 'Space Pilot Diploma',
+  diplomaAwarded: 'This diploma is awarded to',
+  diplomaText: 'for saving all 6 worlds of the galaxy by typing like a real pilot!',
+  diplomaStars: 'Stars',
+  diplomaRank: 'Rank',
+  diplomaDate: 'Date',
+  diplomaSign: 'The Galaxy Admiral',
+  print: 'Print',
 }
 
 const DICTS: Record<Lang, Record<Key, string>> = { fr, en }
