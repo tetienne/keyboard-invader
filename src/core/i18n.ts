@@ -57,7 +57,8 @@ const fr = {
   briefNew: 'Place tes doigts et trouve ces touches :',
   briefReview: 'Toutes les touches de la rangée ! Tu vas y arriver.',
   briefWords: 'Tape les mots en entier. Retour arrière pour changer de cible.',
-  briefBoss: 'Un boss géant attaque ! Tape ses lettres pour le vaincre.',
+  briefBoss:
+    'Un boss géant descend vers toi ! Chaque bonne lettre le repousse : continue pour le vaincre !',
   briefEndless: 'Tiens le plus longtemps possible ! Les vagues vont de plus en plus vite.',
   pressSpace: 'Appuie sur ESPACE pour décoller',
   'finger.lp': 'auriculaire gauche',
@@ -235,7 +236,8 @@ const en: Record<Key, string> = {
   briefNew: 'Place your fingers and find these keys:',
   briefReview: 'Every key of the row! You can do it.',
   briefWords: 'Type whole words. Backspace switches target.',
-  briefBoss: 'A giant boss attacks! Type its letters to beat it.',
+  briefBoss:
+    'A giant boss is coming down! Every right letter pushes it back: keep going to beat it!',
   briefEndless: 'Hold on as long as you can! Waves get faster and faster.',
   pressSpace: 'Press SPACE to take off',
   'finger.lp': 'left pinky',

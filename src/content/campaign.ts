@@ -16,7 +16,7 @@ export interface LevelDef {
   /** Letters that may appear (letters levels only). */
   pool: string[]
   wordLen: readonly [number, number]
-  /** Number of invaders to clear (minions for boss levels are unlimited). */
+  /** Number of invaders to clear (unused by boss levels: the boss fights alone). */
   enemies: number
   /** Seconds for an invader to fall from the top to the shield. */
   fallTime: number
@@ -154,12 +154,10 @@ function letterWorld(layout: LayoutId, world: number, learnedBefore: readonly st
         : round1((13 - 0.8 * world - 3 * p) * (speedy ? 0.85 : 1)),
       fallPerChar: 0,
       spawnEvery: round1(Math.max(1, 2.6 - 0.2 * world - 0.8 * p)),
-      maxOnScreen: boss
-        ? 3
-        : lesson
-          ? Math.min(3, 2 + Math.floor(p * 2))
-          : Math.min(4, 2 + Math.floor(p * 2) + Math.min(1, world)),
-      bossHp: 6 + world * 2,
+      maxOnScreen: lesson
+        ? Math.min(3, 2 + Math.floor(p * 2))
+        : Math.min(4, 2 + Math.floor(p * 2) + Math.min(1, world)),
+      bossHp: 4 + world,
       powerups: world > 0 || index >= 2,
     }
   })
@@ -194,8 +192,8 @@ function wordWorld(layout: LayoutId, world: number): WorldDef {
       fallTime: round1(7 - 0.8 * tier - 1.5 * p),
       fallPerChar: round1(1.4 - 0.15 * tier - 0.25 * p),
       spawnEvery: round1(Math.max(1.2, 3.4 - 0.3 * tier - 0.8 * p)),
-      maxOnScreen: boss ? 3 : Math.min(4, 2 + Math.floor(p * 2) + tier),
-      bossHp: 5 + tier * 2,
+      maxOnScreen: Math.min(4, 2 + Math.floor(p * 2) + tier),
+      bossHp: 4 + tier,
       powerups: true,
     })
   }
