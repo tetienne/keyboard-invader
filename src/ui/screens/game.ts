@@ -136,6 +136,7 @@ export function gameScreen(app: App, launch: Launch, skipBrief = false, travel =
 
   const measure = (): void => {
     view.bottomReserve = keyboard ? keyboard.el.offsetHeight + 16 : 0
+    view.topReserve = hud.offsetTop + hud.offsetHeight
   }
   requestAnimationFrame(measure)
   window.addEventListener('resize', measure)
