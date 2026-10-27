@@ -23,6 +23,8 @@ kids coming back.
 - **Phones & tablets**: with a Bluetooth keyboard the game plays as on a computer;
   without one, the finger-coloured keyboard becomes tappable (touch mode, slower
   start). Phones held sideways are asked to turn upright.
+- **Installable**: a web app (PWA) that can be added to the desktop or home screen
+  from the browser or from the settings, and then plays offline.
 - **Profiles**: pick an avatar, no password, everything saved in `localStorage`.
 - **Music**: a chiptune tune per world (plus menu and boss themes) that adds layers
   as the combo grows; a short build-up (heartbeat, rising bass, drum roll) announces
@@ -34,7 +36,9 @@ kids coming back.
 
 Vanilla TypeScript + Vite, Canvas 2D for the game, DOM/CSS for menus, Web Audio for
 sound, Speech Synthesis for the voice. The only runtime dependency is the bundled
-Fredoka font.
+Fredoka font. A small service worker (`src/sw.ts`, built by the `pwa` plugin in
+`vite.config.ts`) precaches the build so the installed app works offline. App icons
+are drawn by `tools/app-icons.html`.
 
 ```
 src/

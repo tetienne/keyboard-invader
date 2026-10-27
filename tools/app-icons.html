@@ -1,0 +1,101 @@
+<!-- Renders the PWA icons of public/icons/. Run `pnpm dev`, open /tools/app-icons.html and click each icon to save it. -->
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #333;
+      }
+      canvas {
+        margin: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module">
+      import '@fontsource/fredoka/latin-700.css'
+      import { Background } from '/src/render/background.ts'
+      import { WORLD_THEMES } from '/src/content/campaign.ts'
+      import { drawAlien, glowSprite, palette } from '/src/render/art.ts'
+
+      await document.fonts.load('700 100px Fredoka')
+      Math.random = (() => {
+        let s = 11
+        return () => (s = (s * 16807) % 2147483647) / 2147483647
+      })()
+
+      // Everything is drawn on a 512 grid, then scaled. `maskable` fills the whole square
+      // and keeps the art inside the 80% safe circle; `any` is a rounded tile.
+      function icon(name, size, maskable) {
+        const c = document.createElement('canvas')
+        c.width = c.height = size
+        const ctx = c.getContext('2d')
+        const k = size / 512
+        ctx.scale(k, k)
+        if (!maskable) {
+          const m = 20
+          ctx.beginPath()
+          ctx.roundRect(m, m, 512 - 2 * m, 512 - 2 * m, 110)
+          ctx.clip()
+        }
+        const bg = new Background()
+        bg.setTheme(WORLD_THEMES[0])
+        bg.showPlanet = false
+        bg.resize(512, 512)
+        bg.draw(ctx)
+
+        const p = palette(0)
+        const r = maskable ? 104 : 126
+        const x = 256
+        const y = maskable ? 238 : 232
+        ctx.save()
+        ctx.translate(x, y)
+        ctx.globalCompositeOperation = 'lighter'
+        ctx.globalAlpha = 0.45
+        ctx.drawImage(glowSprite(p.body), -r * 2.6, -r * 2.6, r * 5.2, r * 5.2)
+        ctx.globalCompositeOperation = 'source-over'
+        ctx.globalAlpha = 1
+        ctx.save()
+        ctx.scale(r, r)
+        drawAlien(ctx, 0, p, { t: 0, lookX: 0, lookY: 0.6, scared: false, blink: false, flash: 0 })
+        ctx.restore()
+        const br = r * 0.5
+        const by = r * 1.02
+        ctx.beginPath()
+        ctx.arc(0, by, br, 0, Math.PI * 2)
+        ctx.fillStyle = '#fff'
+        ctx.fill()
+        ctx.lineWidth = br * 0.16
+        ctx.strokeStyle = p.dark
+        ctx.stroke()
+        ctx.fillStyle = '#1b1033'
+        ctx.font = `700 ${Math.round(br * 1.35)}px Fredoka`
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText('A', 0, by + br * 0.06)
+        ctx.restore()
+        const url = c.toDataURL('image/png')
+        const a = document.createElement('a')
+        a.href = url
+        a.download = name
+        a.title = name
+        a.append(c)
+        document.body.append(a)
+        return url
+      }
+
+      window.icons = Object.fromEntries(
+        [
+          ['icon-192.png', 192, false],
+          ['icon-512.png', 512, false],
+          ['maskable-192.png', 192, true],
+          ['maskable-512.png', 512, true],
+          ['apple-touch-icon.png', 180, true],
+        ].map(([name, size, maskable]) => [name, icon(name, size, maskable)]),
+      )
+    </script>
+  </body>
+</html>
