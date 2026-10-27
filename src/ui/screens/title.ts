@@ -2,6 +2,7 @@ import type { Lang } from '../../content/words'
 import { t } from '../../core/i18n'
 import type { App, Screen } from '../app'
 import { h } from '../dom'
+import { introScreen } from './intro'
 import { profilesScreen } from './profiles'
 
 const LANGS: readonly [Lang, string][] = [
@@ -35,6 +36,12 @@ export function titleScreen(app: App): Screen {
       ),
     ),
   )
+  const replay = h(
+    'button',
+    { class: 'btn ghost small', onClick: () => start(true) },
+    '🎬 ',
+    t('introReplay'),
+  )
   const el = h(
     'div',
     { class: 'screen clickable' },
@@ -45,18 +52,21 @@ export function titleScreen(app: App): Screen {
     app.touchMode
       ? h('p', { class: 'subtitle', style: 'font-size:15px;max-width:520px' }, t('touchNotice'))
       : null,
+    replay,
   )
   let done = false
-  const next = (): void => {
+  const start = (intro: boolean): void => {
     if (done) return
     done = true
     app.unlockAudio()
     app.sfx.warp()
     app.background.jump()
-    app.go(profilesScreen(app))
+    app.go(intro ? introScreen(app, () => profilesScreen(app)) : profilesScreen(app))
   }
+  const next = (): void => start(!app.store.data.introSeen)
   el.addEventListener('click', (e) => {
-    if (!langPicker.contains(e.target as Node)) next()
+    const target = e.target as Node
+    if (!langPicker.contains(target) && !replay.contains(target)) next()
   })
   return {
     el,
