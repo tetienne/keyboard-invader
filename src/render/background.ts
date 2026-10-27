@@ -38,6 +38,8 @@ export class Background {
   warp = 0
   /** Travel transition progress (0 = off): the planet grows from the centre into its spot. */
   travel = 0
+  /** Lets a screen paint its own planets instead. */
+  showPlanet = true
   private motes: Mote[] = []
   private warpTarget = 0
   private stars: Star[] = []
@@ -122,7 +124,7 @@ export class Background {
       ctx.fillStyle = this.theme.nebula[0]
       ctx.fillRect(0, 0, w, h)
     }
-    if (this.planet) {
+    if (this.planet && this.showPlanet) {
       const pw = this.planet.width
       const ph = this.planet.height
       if (this.travel > 0) {
@@ -309,7 +311,7 @@ function paintNebula(theme: WorldTheme, w: number, h: number): HTMLCanvasElement
   return c
 }
 
-function paintPlanet(theme: WorldTheme, size: number): HTMLCanvasElement {
+export function paintPlanet(theme: WorldTheme, size: number): HTMLCanvasElement {
   const pad = size * 0.5
   const c = document.createElement('canvas')
   c.width = c.height = Math.round(size + pad * 2)

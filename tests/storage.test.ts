@@ -31,6 +31,12 @@ describe('save data', () => {
     expect(parseSave('[1,2]').profiles).toEqual([])
   })
 
+  it('remembers whether the intro was seen', () => {
+    expect(parseSave(null).introSeen).toBe(false)
+    expect(parseSave(JSON.stringify({ introSeen: 'yes' })).introSeen).toBe(false)
+    expect(parseSave(JSON.stringify({ introSeen: true })).introSeen).toBe(true)
+  })
+
   it('round-trips through storage', () => {
     const storage = new MemoryStorage()
     const store = openStore(storage, 'fr')

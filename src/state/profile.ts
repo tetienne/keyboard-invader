@@ -60,6 +60,8 @@ export interface SaveData {
   settings: Settings
   profiles: Profile[]
   lastProfileId: string | null
+  /** The opening cinematic plays by itself only once. */
+  introSeen: boolean
 }
 
 export const AVATARS: readonly string[] = [

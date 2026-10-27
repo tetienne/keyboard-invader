@@ -282,6 +282,41 @@ export class Sfx {
     })
   }
 
+  /** Cheeky villain laugh: hee-hee-hee, wobbling down. */
+  giggle(): void {
+    ;[84, 81, 79, 76, 72].forEach((n, i) => {
+      const when = this.now + i * 0.13
+      playTone(this.engine, this.out, {
+        type: 'triangle',
+        freq: midi(n + 1),
+        freqEnd: midi(n - 1),
+        duration: 0.11,
+        volume: 0.13,
+        when,
+      })
+      playTone(this.engine, this.out, {
+        type: 'square',
+        freq: midi(n - 12),
+        duration: 0.09,
+        volume: 0.03,
+        when,
+        filter: { type: 'lowpass', freq: 2000 },
+      })
+    })
+  }
+
+  /** Cartoon pop when something appears; `step` raises the pitch. */
+  pop(step = 0): void {
+    const f = 300 + step * 40
+    playTone(this.engine, this.out, {
+      type: 'sine',
+      freq: f,
+      freqEnd: f * 3,
+      duration: 0.09,
+      volume: 0.14,
+    })
+  }
+
   wave(): void {
     playNoise(this.engine, this.out, {
       duration: 0.8,

@@ -98,6 +98,7 @@ export function parseSave(text: string | null, navigatorLang?: string): SaveData
     settings: defaultSettings(navigatorLang),
     profiles: [],
     lastProfileId: null,
+    introSeen: false,
   }
   if (!text) return fallback
   let raw: unknown
@@ -116,6 +117,7 @@ export function parseSave(text: string | null, navigatorLang?: string): SaveData
     settings: sanitizeSettings(raw['settings'], fallback.settings),
     profiles,
     lastProfileId: profiles.some((p) => p.id === last) ? last : null,
+    introSeen: raw['introSeen'] === true,
   }
 }
 

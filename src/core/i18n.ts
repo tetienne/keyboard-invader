@@ -172,6 +172,22 @@ const fr = {
   'travel.3': 'Cap sur le Désert des Mots !',
   'travel.4': 'Cap sur la Jungle Cosmique !',
   'travel.5': 'Cap sur le Trou Noir !',
+  'intro.galaxy':
+    'Il était une fois… la Galaxie du Clavier, où les lettres brillaient comme des étoiles.',
+  'intro.villain': 'Mais un jour, le Docteur Tourbillon les a toutes aspirées ! Slurp !',
+  'intro.gang': 'Il les a confiées à sa bande d’aliens farceurs…',
+  'intro.chiefs': '…et six chefs rigolos gardent chacun une planète !',
+  'intro.hero': 'Heureusement, un pilote super courageux arrive à la rescousse…',
+  'intro.hangar':
+    'Gagne des pièces pour débloquer plein de vaisseaux… et peut-être le vaisseau légendaire !',
+  'intro.demo': 'Tape la lettre d’un alien : PIOU ! La lettre est libérée !',
+  'intro.finale': 'Prêt, pilote ? Sauve la galaxie, une lettre à la fois !',
+  introYou: 'TOI !',
+  introTry: 'Essaie !',
+  introBravo: 'BRAVO !',
+  introSkip: 'Passer',
+  introReplay: 'Revoir l’intro',
+  keySpace: 'Espace',
 }
 
 type Key = keyof typeof fr
@@ -346,6 +362,20 @@ const en: Record<Key, string> = {
   'travel.3': 'Next stop: Word Desert!',
   'travel.4': 'Next stop: Cosmic Jungle!',
   'travel.5': 'Next stop: Black Hole!',
+  'intro.galaxy': 'Once upon a time… in the Keyboard Galaxy, letters twinkled like stars.',
+  'intro.villain': 'But one day, Doctor Swirl sucked them all up! Slurp!',
+  'intro.gang': 'He handed them out to his gang of cheeky aliens…',
+  'intro.chiefs': '…and six silly chiefs each guard a planet!',
+  'intro.hero': 'Luckily, a super brave pilot is coming to the rescue…',
+  'intro.hangar': 'Earn coins to unlock lots of ships… and maybe the legendary one!',
+  'intro.demo': 'Type an alien’s letter: ZAP! The letter is free!',
+  'intro.finale': 'Ready, pilot? Save the galaxy, one letter at a time!',
+  introYou: 'YOU!',
+  introTry: 'Try it!',
+  introBravo: 'WELL DONE!',
+  introSkip: 'Skip',
+  introReplay: 'Watch the intro',
+  keySpace: 'Space',
 }
 
 const DICTS: Record<Lang, Record<Key, string>> = { fr, en }
