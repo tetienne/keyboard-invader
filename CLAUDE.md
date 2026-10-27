@@ -25,6 +25,9 @@ Application web ludique style "typing invaders" pour apprendre la dactylographie
 - **localStorage** for profiles (versioned, sanitised on load). Firebase sync is not
   implemented.
 - **Vitest** for unit tests, **ESLint** (typescript-eslint strict) and **Prettier**.
+- **PWA**: `public/manifest.webmanifest` + a service worker (`src/sw.ts`) that the `pwa`
+  plugin in `vite.config.ts` builds as `/sw.js` with the precache list; registered in
+  production only (`src/ui/pwa.ts`).
 - Deployed as static files on Cloudflare (`wrangler.toml`).
 
 ## Architecture

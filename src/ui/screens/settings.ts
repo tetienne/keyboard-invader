@@ -4,6 +4,7 @@ import type { VoiceMode } from '../../state/profile'
 import { t } from '../../core/i18n'
 import type { App } from '../app'
 import { h } from '../dom'
+import { canInstall, promptInstall } from '../pwa'
 import { profilesScreen } from './profiles'
 
 export function openSettings(app: App, onClose: () => void): void {
@@ -121,6 +122,23 @@ export function openSettings(app: App, onClose: () => void): void {
 
   const section = (title: string): HTMLElement => h('h3', { class: 'setting-title' }, title)
 
+  const install = canInstall()
+    ? row(
+        `📲 ${t('installApp')}`,
+        h(
+          'button',
+          {
+            class: 'btn green small',
+            onClick: () => {
+              install?.remove()
+              void promptInstall()
+            },
+          },
+          t('install'),
+        ),
+      )
+    : null
+
   const body = h(
     'div',
     { class: 'dialog panel pop' },
@@ -175,6 +193,7 @@ export function openSettings(app: App, onClose: () => void): void {
           (v) => (s.keyboardHint = v),
         ),
       ),
+      install,
     ),
     h(
       'div',
