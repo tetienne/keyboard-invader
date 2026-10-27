@@ -49,10 +49,15 @@ interface Callout {
 export const FONT = 'Fredoka, "Baloo 2", system-ui, sans-serif'
 const INK = '#1b1033'
 
-export function computeLayout(w: number, h: number, bottomReserve: number): Layout {
+export function computeLayout(w: number, h: number, bottomReserve: number, topReserve = 0): Layout {
   const width = Math.min(w - 32, h * 1.7)
+  const unit = clamp(Math.min(width, h) * 0.044, 20, 54)
   const shipY = h - bottomReserve - Math.max(44, h * 0.07)
-  const top = Math.max(70, h * 0.09)
+  const shieldY = shipY - Math.max(40, h * 0.06)
+  // Aliens enter below the HUD so its score and hearts never cover them, unless
+  // the screen is so short that the play area would get too cramped.
+  const belowHud = Math.min(topReserve + unit * 1.5, shieldY - h * 0.35)
+  const top = Math.max(70, h * 0.09, belowHud)
   return {
     w,
     h,
@@ -60,14 +65,16 @@ export function computeLayout(w: number, h: number, bottomReserve: number): Layo
     width,
     top,
     shipY,
-    shieldY: shipY - Math.max(40, h * 0.06),
-    unit: clamp(Math.min(width, h) * 0.044, 20, 54),
+    shieldY,
+    unit,
   }
 }
 
 /** Draws a running Session and turns its events into juicy visual effects. */
 export class GameView {
   bottomReserve = 0
+  /** Bottom edge of the HUD, in px. */
+  topReserve = 0
   /** Slow motion factor applied to the simulation (hit-stop on big moments). */
   timeScale = 1
   readonly particles = new Particles()
@@ -124,6 +131,13 @@ export class GameView {
       x: this.shipX + Math.sin(this.shipAngle) * s,
       y: L.shipY - Math.cos(this.shipAngle) * s,
     }
+  }
+
+  /** Beside the ship, on the roomier side: above it sits the letter the child must read. */
+  private besideShip(): number {
+    const L = this.layout
+    const side = this.shipX > L.left + L.width / 2 ? -1 : 1
+    return this.shipX + side * L.unit * 1.9
   }
 
   private laserColor(i: number): string {
@@ -236,8 +250,8 @@ export class GameView {
         this.shake = Math.max(this.shake, 0.12)
         this.popup(
           event.key.toUpperCase(),
-          this.shipX + (Math.random() - 0.5) * 30,
-          L.shipY - L.unit * 1.8,
+          this.besideShip(),
+          L.shipY - L.unit * 0.3,
           '#ff6b8a',
           1.1,
         )
@@ -256,7 +270,7 @@ export class GameView {
         break
       }
       case 'comboBreak':
-        this.popup(`x${event.combo}…`, this.shipX, L.shipY - L.unit * 2.4, '#b9a8ff', 0.8)
+        this.popup(`x${event.combo}…`, this.besideShip(), L.shipY + L.unit * 0.7, '#b9a8ff', 0.8)
         break
       case 'breach': {
         const p = this.pos(event.enemy)
@@ -363,7 +377,7 @@ export class GameView {
 
   update(dt: number, session: Session): void {
     this.clock += dt
-    this.layout = computeLayout(this.layout.w, this.layout.h, this.bottomReserve)
+    this.layout = computeLayout(this.layout.w, this.layout.h, this.bottomReserve, this.topReserve)
     const L = this.layout
     if (this.shipX < 0) this.shipX = L.left + L.width / 2
 
@@ -440,7 +454,7 @@ export class GameView {
   }
 
   draw(ctx: CanvasRenderingContext2D, session: Session, w: number, h: number): void {
-    this.layout = computeLayout(w, h, this.bottomReserve)
+    this.layout = computeLayout(w, h, this.bottomReserve, this.topReserve)
     ctx.save()
     const s = this.shake * this.shake * 16
     if (s > 0.1) ctx.translate((Math.random() - 0.5) * s, (Math.random() - 0.5) * s)
@@ -450,11 +464,15 @@ export class GameView {
     const hint = session.locked ? null : lowest(session.enemies)
     for (const e of session.enemies) {
       if (e.kind === 'boss') this.drawBossEnemy(ctx, session, e)
-      else this.drawEnemy(ctx, session, e, e === hint)
+      else this.drawEnemy(ctx, session, e)
     }
     this.drawProjectiles(ctx, session)
     this.drawShipSprite(ctx)
     this.particles.draw(ctx)
+    // Letters go on top of the ship and explosions so they always stay readable.
+    for (const e of session.enemies) {
+      if (e.kind !== 'boss') this.drawEnemyLabel(ctx, session, e, e === hint)
+    }
     this.drawPopups(ctx)
     ctx.restore()
 
@@ -591,23 +609,26 @@ export class GameView {
     }
   }
 
-  private drawEnemy(
-    ctx: CanvasRenderingContext2D,
-    session: Session,
-    e: Enemy,
-    hinted: boolean,
-  ): void {
-    const L = this.layout
+  private enemyRadius(session: Session, e: Enemy): number {
+    const grow = easeOutBack(clamp((session.time - e.born) / 0.45, 0, 1))
+    return this.layout.unit * (e.kind === 'powerup' ? 0.85 : e.text.length > 1 ? 1 : 1.05) * grow
+  }
+
+  /** Shared by the body and its label so both shake together when hit. */
+  private enemyJitter(session: Session, e: Enemy): number {
+    return e.lastHit >= 0 && session.time - e.lastHit < 0.15
+      ? Math.sin(session.time * 90 + e.id) * 3
+      : 0
+  }
+
+  private drawEnemy(ctx: CanvasRenderingContext2D, session: Session, e: Enemy): void {
     const { x, y } = this.pos(e)
-    const age = session.time - e.born
-    const grow = easeOutBack(clamp(age / 0.45, 0, 1))
-    const r = L.unit * (e.kind === 'powerup' ? 0.85 : e.text.length > 1 ? 1 : 1.05) * grow
+    const r = this.enemyRadius(session, e)
     const locked = session.lockId === e.id
     const pal: Palette = e.kind === 'golden' ? GOLDEN : palette(e.palette)
-    const jitter = e.lastHit >= 0 && session.time - e.lastHit < 0.15 ? (Math.random() - 0.5) * 6 : 0
 
     ctx.save()
-    ctx.translate(x + jitter, y)
+    ctx.translate(x + this.enemyJitter(session, e), y)
     ctx.globalCompositeOperation = 'lighter'
     const danger = e.y > 0.72 && !e.doomed
     const glowColor = danger ? '#ff4d6d' : pal.body
@@ -650,10 +671,27 @@ export class GameView {
       ctx.globalAlpha = 1
       ctx.globalCompositeOperation = 'source-over'
     }
-
-    if (e.text.length === 1) this.drawLetterBadge(ctx, e, pal, r, locked, hinted, session.time)
-    else this.drawWordLabel(ctx, e, pal, r * 1.25, locked, hinted, session.time)
     if (locked) drawReticle(ctx, r * 1.45, session.time)
+    ctx.restore()
+  }
+
+  private drawEnemyLabel(
+    ctx: CanvasRenderingContext2D,
+    session: Session,
+    e: Enemy,
+    hinted: boolean,
+  ): void {
+    const { x, y } = this.pos(e)
+    const r = this.enemyRadius(session, e)
+    const locked = session.lockId === e.id
+    const pal: Palette = e.kind === 'golden' ? GOLDEN : palette(e.palette)
+    // The closer an invader gets, the bigger its letters: that is the one to read first.
+    const zoom = 1 + 0.25 * clamp((e.y - 0.72) / 0.28, 0, 1)
+    ctx.save()
+    ctx.translate(x + this.enemyJitter(session, e), y)
+    if (e.text.length === 1)
+      this.drawLetterBadge(ctx, e, pal, r, zoom, locked, hinted, session.time)
+    else this.drawWordLabel(ctx, e, pal, r * 1.25, zoom, locked, hinted, session.time)
     ctx.restore()
   }
 
@@ -662,12 +700,13 @@ export class GameView {
     e: Enemy,
     pal: Palette,
     r: number,
+    zoom: number,
     locked: boolean,
     hinted: boolean,
     time: number,
   ): void {
     const by = r * 0.95
-    const br = Math.max(16, r * 0.62)
+    const br = Math.max(16, r * 0.62) * zoom
     if (hinted) {
       ctx.beginPath()
       ctx.arc(0, by, br + 5 + Math.sin(time * 6) * 3, 0, TAU)
@@ -694,12 +733,13 @@ export class GameView {
     e: Enemy,
     pal: Palette,
     offset: number,
+    zoom: number,
     locked: boolean,
     hinted: boolean,
     time: number,
   ): void {
     const L = this.layout
-    const size = clamp(L.unit * 0.8, 18, 32)
+    const size = clamp(L.unit * 0.8, 18, 32) * zoom
     ctx.font = `700 ${Math.round(size)}px ${FONT}`
     ctx.textBaseline = 'middle'
     ctx.textAlign = 'left'
@@ -806,7 +846,7 @@ export class GameView {
       }
     } else {
       const fake: Enemy = { ...e }
-      this.drawWordLabel(ctx, fake, pal, ty, locked || e.typed > 0, false, session.time)
+      this.drawWordLabel(ctx, fake, pal, ty, 1, locked || e.typed > 0, false, session.time)
     }
     ctx.restore()
   }
@@ -885,9 +925,11 @@ export class GameView {
       ctx.lineWidth = Math.max(3, size * 0.18)
       ctx.strokeStyle = INK
       ctx.lineJoin = 'round'
-      ctx.strokeText(p.text, p.x, p.y)
+      // Score popups float up from the top row but stop short of the HUD.
+      const y = Math.max(p.y, this.layout.top - this.layout.unit * 0.5)
+      ctx.strokeText(p.text, p.x, y)
       ctx.fillStyle = p.color
-      ctx.fillText(p.text, p.x, p.y)
+      ctx.fillText(p.text, p.x, y)
     }
     ctx.restore()
   }
